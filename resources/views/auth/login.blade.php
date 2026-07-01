@@ -2,6 +2,40 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    @if(session('warning'))
+        <div id="toast"
+            class="fixed top-5 right-5 bg-yellow-500 text-white px-4 py-3 rounded shadow-lg z-50 animate-slide-in">
+            {{ session('warning') }}
+        </div>
+        <script>
+            setTimeout(() => {
+                const toast = document.getElementById('toast');
+                if (toast) {
+                    toast.classList.add('opacity-0');
+                    setTimeout(() => toast.remove(), 500);
+                }
+            }, 2500);
+        </script>
+        <style>
+            @keyframes slide-in {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            .animate-slide-in {
+                animation: slide-in 0.4s ease-out;
+            }
+            .opacity-0 {
+                transition: opacity 0.5s ease;
+                opacity: 0;
+            }
+        </style>
+    @endif
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
