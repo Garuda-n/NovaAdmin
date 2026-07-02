@@ -29,6 +29,11 @@ Route::get('/users/{user}/edit', [UserController::class, 'edit'])
 Route::put('/users/{user}', [UserController::class, 'update'])
     ->middleware('auth')
     ->name('users.update');
+Route::get('/users/create', [UserController::class, 'create'])
+    ->name('users.create');
+
+Route::post('/users', [UserController::class, 'store'])
+    ->name('users.store');
 Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
 
 Route::get('/dashboard', function () {
