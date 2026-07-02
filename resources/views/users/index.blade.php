@@ -2,7 +2,7 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl">
 
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
@@ -41,31 +41,43 @@
                             }
                         </style>
                     @endif
-                    <h2 class="text-2xl font-bold mb-6">
-                        Users List
-                    </h2>
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white">
+                                Users
+                            </h1>
+                            <p class="text-slate-400 mt-1">
+                                Manage all users in your application.
+                            </p>
+                        </div>
+                        <a href="{{ route('users.create') }}"
+                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-200">
+                            <span class="text-lg">+</span>
+                            <span>Add User</span>
+                        </a>
+                    </div>
 
-                    <table class="min-w-full border border-gray-300">
+                    <table class="w-full">
                         <thead>
-                            <tr class="bg-gray-200 dark:bg-gray-700">
-                                <th class="border p-3 text-left">ID</th>
-                                <th class="border p-3 text-left">Name</th>
-                                <th class="border p-3 text-left">Email</th>
-                                <th class="border p-3 text-left">Phone</th>
-                                <th class="border p-3 text-center">Actions</th>
+                            <tr class="bg-slate-800">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Phone</th>
+                                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             @foreach ($users as $user)
-                                <tr>
-                                    <td class="border p-3">{{ $user->id }}</td>
-                                    <td class="border p-3">{{ $user->name }}</td>
-                                    <td class="border p-3">{{ $user->email }}</td>
-                                    <td class="border p-3">{{ $user->phone }}</td>
-                                    <td class="border p-3 text-center">
+                                <tr class="border-t border-slate-700 hover:bg-slate-800 transition">
+                                    <td class="px-6 py-4 text-slate-200">{{ $user->id }}</td>
+                                    <td class="px-6 py-4 text-slate-200">{{ $user->name }}</td>
+                                    <td class="px-6 py-4 text-slate-200">{{ $user->email }}</td>
+                                    <td class="px-6 py-4 text-slate-200">{{ $user->phone }}</td>
+                                    <td class="px-6 py-4 text-slate-200 text-center">
                                         <a href="{{ route('users.edit', $user->id) }}"
-                                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded">
+                                        class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition">
                                             Edit
                                         </a>
                                     </td>
