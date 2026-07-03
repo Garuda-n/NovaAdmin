@@ -35,6 +35,8 @@ Route::get('/users/create', [UserController::class, 'create'])
 Route::post('/users', [UserController::class, 'store'])
     ->name('users.store');
 Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+Route::patch('/users/{user}/status', [UserController::class, 'toggleStatus'])
+    ->name('users.status');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

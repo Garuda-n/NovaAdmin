@@ -64,6 +64,7 @@
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Name</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Phone</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -75,11 +76,28 @@
                                     <td class="px-6 py-4 text-slate-200">{{ $user->name }}</td>
                                     <td class="px-6 py-4 text-slate-200">{{ $user->email }}</td>
                                     <td class="px-6 py-4 text-slate-200">{{ $user->phone }}</td>
+                                    <td class="px-6 py-4 text-slate-200">
+                                        @if ($user->status)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Active</span>
+                                        @else
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Inactive</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 text-slate-200 text-center">
                                         <a href="{{ route('users.edit', $user->id) }}"
                                         class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition">
                                             Edit
                                         </a>
+                                        <form action="{{ route('users.status', $user) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button type="submit"
+                                                class="px-3 py-2 rounded text-white text-sm
+                                                {{ $user->status ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600' }}">
+                                                {{ $user->status ? 'Disable' : 'Enable' }}
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
