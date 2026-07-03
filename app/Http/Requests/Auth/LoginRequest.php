@@ -49,6 +49,12 @@ class LoginRequest extends FormRequest
                 'email' => trans('auth.failed'),
             ]);
         }
+        if (! auth()->user()->status) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been disabled. Please contact the administrator.',
+            ]);
+        }
 
         RateLimiter::clear($this->throttleKey());
     }

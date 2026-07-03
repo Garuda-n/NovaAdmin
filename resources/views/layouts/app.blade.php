@@ -14,8 +14,10 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased m-0 p-0 overflow-hidden">
-        <div class="flex h-screen bg-slate-900">
+    <body
+        x-data="{ sidebarOpen: false }"
+        class="font-sans antialiased m-0 p-0 overflow-hidden">
+        <div class="flex h-screen bg-slate-900 overflow-hidden">
             @include('layouts.sidebar')
             <div class="flex-1">
                 @include('layouts.navigation')

@@ -60,6 +60,10 @@ class UserController extends Controller
     }
     public function toggleStatus(User $user)
     {
+        if (auth()->id() === $user->id && $user->status) {
+            return redirect()->route('users.index')
+                ->with('error', 'You cannot disable your own account.');
+        }
         $user->status = !$user->status;
         $user->save();
         return redirect()->route('users.index')

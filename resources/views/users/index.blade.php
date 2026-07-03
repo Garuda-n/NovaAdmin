@@ -6,7 +6,7 @@
 
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
-                   @if(session('success'))
+                   <!-- @if(session('success'))
                         <div id="toast"
                             class="fixed top-5 right-5 bg-green-500 text-white px-4 py-3 rounded shadow-lg z-50
                                 animate-slide-in">
@@ -40,7 +40,8 @@
                                 opacity: 0;
                             }
                         </style>
-                    @endif
+                    @endif -->
+                <x-toast />
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h1 class="text-3xl font-bold text-white">
