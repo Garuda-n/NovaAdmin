@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class RoleController extends Controller
 {
@@ -22,8 +23,17 @@ class RoleController extends Controller
             'name' => 'required|unique:roles,name'
         ]);
 
-        Role::create([
+        $role = Role::create([
             'name' => $request->name
+        ]);
+        ActivityLog::create([
+            'user_id'     => auth()->id(),
+            'module'      => 'Role',
+            'action'      => 'CREATE',
+            'reference_id' => $role->id,
+            'description' => "Created role: {$role->name}",
+            'ip_address'  => request()->ip(),
+            'user_agent'  => request()->userAgent(),
         ]);
 
         return redirect()
@@ -43,6 +53,15 @@ class RoleController extends Controller
 
         $role->update([
             'name' => $request->name
+        ]);
+        ActivityLog::create([
+            'user_id'      => auth()->id(),
+            'module'       => 'Role',
+            'action'       => 'UPDATE',
+            'reference_id'    => $role->id, // illa reference_id if DB-la innum adhu dhaan
+            'description'  => "Updated role: {$role->name}",
+            'ip_address'   => request()->ip(),
+            'user_agent'   => request()->userAgent(),
         ]);
 
         return redirect()

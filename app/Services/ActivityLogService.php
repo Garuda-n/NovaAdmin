@@ -17,12 +17,11 @@ class ActivityLogService
 
         ActivityLog::create([
             'user_id'       => Auth::id(),
-            'login_log_id'  => session('login_log_id'), // 🔥 IMPORTANT LINE
             'module'        => $module,
             'action'        => $action,
             'reference_id'  => $referenceId,
             'description'   => $description,
-            'meta'          => $meta,
+            'meta'          => empty($meta) ? null : json_encode($meta, JSON_UNESCAPED_UNICODE),
             'ip_address'    => request()->ip(),
             'user_agent'    => request()->userAgent(),
         ]);

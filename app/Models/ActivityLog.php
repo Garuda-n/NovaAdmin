@@ -8,9 +8,11 @@ class ActivityLog extends Model
         'user_id',
         'module',
         'action',
-        'reference_id',
+        'record_id',
         'description',
         'ip_address',
+        'user_agent',
+        'meta',
     ];
     public function user(): BelongsTo
     {
