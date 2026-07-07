@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->nullable()->after('email');
+        Schema::table('login_logs', function (Blueprint $table) {
+            $table->string('session_id')->nullable()->index();
         });
     }
 
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('login_logs', function (Blueprint $table) {
             //
         });
     }

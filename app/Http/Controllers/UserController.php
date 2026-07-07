@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
+use App\Services\ActivityLogService;
 
 class UserController extends Controller
 {
@@ -43,6 +44,12 @@ class UserController extends Controller
         $user->role_id = $request->role_id;
         $user->password = Hash::make($request->password);
         $user->save();
+        ActivityLogService::log(
+            'User',
+            'CREATE',
+            $user->id,
+            'Created user: ' . $user->name
+        );
         return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
     public function update(Request $request, $id)
@@ -51,10 +58,16 @@ class UserController extends Controller
 
         $user->name = $request->name;
         $user->phone = $request->phone;
-        $user->role = $request->role_id;
+        $user->role_id = $request->role_id;
         $user->email = $request->email;
 
         $user->save();
+        ActivityLogService::log(
+            'User',
+            'UPDATE',
+            $user->id,
+            'Updated user: ' . $user->name
+        );
 
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
@@ -66,6 +79,12 @@ class UserController extends Controller
         }
         $user->status = !$user->status;
         $user->save();
+        ActivityLogService::log(
+            'User',
+            $user->status ? 'ACTIVATE' : 'DEACTIVATE',
+            $user->id,
+            ($user->status ? 'Activated user: ' : 'Deactivated user: ') . $user->name
+        );
         return redirect()->route('users.index')
             ->with('success', 'User status updated successfully.');
     }
