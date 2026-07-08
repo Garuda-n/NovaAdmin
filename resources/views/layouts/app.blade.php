@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ $currentCompany?->name ?? config('app.name') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -16,8 +16,8 @@
     </head>
     <body
         x-data="{ sidebarOpen: false }"
-        class="font-sans antialiased m-0 p-0 overflow-hidden">
-        <div class="flex h-screen bg-slate-900 overflow-hidden">
+        class="font-sans antialiased m-0 p-0">
+        <div class="flex min-h-screen bg-slate-900">
             @include('layouts.sidebar')
             <div class="flex-1">
                 @include('layouts.navigation')
@@ -30,7 +30,7 @@
                     </header>
                 @endisset
 
-                <main class="flex-1 bg-slate-900">
+                <main class="flex-1 bg-slate-900 overflow-y-auto">
                     {{ $slot }}
                 </main>
             </div>

@@ -1,51 +1,84 @@
 <?php
 
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
-Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
-Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
     return view('welcome');
 });
-Route::middleware(['auth'])->group(function () {
-    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-    Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
-    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Users
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('users', UserController::class)
+        ->except(['show', 'destroy']);
+
+    Route::patch('/users/{user}/status', [UserController::class, 'toggleStatus'])
+        ->name('users.status');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Roles
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('roles', RoleController::class)
+        ->except(['show', 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Companies
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('companies', CompanyController::class)
+        ->except(['show', 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 });
-Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
-Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
-use App\Http\Controllers\UserController;
 
-Route::get('/users', [UserController::class, 'index'])
-    ->middleware('auth')
-    ->name('users.index');
-Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-    ->middleware('auth')
-    ->name('users.edit');
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::put('/users/{user}', [UserController::class, 'update'])
-    ->middleware('auth')
-    ->name('users.update');
-Route::get('/users/create', [UserController::class, 'create'])
-    ->name('users.create');
-
-Route::post('/users', [UserController::class, 'store'])
-    ->name('users.store');
-Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-Route::patch('/users/{user}/status', [UserController::class, 'toggleStatus'])
-    ->name('users.status');
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
