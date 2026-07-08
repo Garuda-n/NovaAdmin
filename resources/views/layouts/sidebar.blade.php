@@ -13,7 +13,7 @@
                    flex items-center justify-center shadow-lg shrink-0">
 
             <span class="text-white font-extrabold text-xl tracking-wider">
-                N
+                {{ strtoupper(substr($currentCompany?->name ?? 'N', 0, 1)) }}
             </span>
         </div>
         {{-- Project Name --}}
@@ -27,7 +27,7 @@
             x-transition:leave-end="opacity-0 translate-x-2"
             class="ml-3">
             <h1 class="text-lg font-bold text-white leading-none">
-                NovaAdmin
+                {{ $currentCompany?->name ?? 'NovaAdmin' }}
             </h1>
             <p class="text-xs text-slate-400 tracking-widest uppercase">
                 Admin Panel
@@ -141,19 +141,56 @@
         </div>
 
         {{-- Masters --}}
-        <a href="#"
-            class="flex items-center px-6 py-3 hover:bg-slate-800 transition text-slate-200">
-
-                <x-heroicon-o-squares-2x2 class="w-5 h-5 shrink-0" />
-
-                <span
+        <div
+            x-data="{
+                open: {{ request()->routeIs('companies.*') ? 'true' : 'false' }}
+            }">
+            <button
+                @click="open = !open"
+                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+                <div class="flex items-center">
+                    <x-heroicon-o-squares-2x2 class="w-5 h-5 shrink-0" />
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition
+                        class="ml-3 whitespace-nowrap">
+                        Masters
+                    </span>
+                </div>
+                <svg
                     x-show="sidebarOpen"
                     x-transition
-                    class="ml-3 whitespace-nowrap">
-                    Masters
-                </span>
-
-            </a>
+                    class="w-4 h-4 transition-transform duration-300"
+                    :class="{ '-rotate-90': open }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            {{-- Child Menu --}}
+            <div
+                x-show="open && sidebarOpen"
+                x-transition>
+                {{-- Companies --}}
+                <a href="{{ route('companies.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('companies.*')
+                            ? 'bg-slate-800 text-white'
+                            : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-building-office class="w-5 h-5 shrink-0" />
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition>
+                        Companies
+                    </span>
+                </a>
+            </div>
+        </div>
 
         {{-- Transactions --}}
         <a href="#"
