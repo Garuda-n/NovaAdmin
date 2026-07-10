@@ -6,6 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['show', 'destroy']);
     Route::resource('branches', BranchController::class)
         ->except(['show', 'destroy']);
+    Route::resource('uoms', UomController::class);
 
     /*
     |--------------------------------------------------------------------------
