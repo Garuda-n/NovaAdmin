@@ -149,6 +149,15 @@
                     </span>
 
                 </a>
+                <a href="{{ route('financial-years.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('financial-years.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+
+                    <x-heroicon-o-calendar-days class="w-5 h-5" />
+
+                    <span>Financial Year</span>
+
+                </a>
 
             </div>
 
