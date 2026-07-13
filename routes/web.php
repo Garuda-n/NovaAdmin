@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BranchController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UomController;
+use App\Http\Controllers\FinancialYearController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except(['show', 'destroy']);
     Route::resource('branches', BranchController::class)
         ->except(['show', 'destroy']);
+    
+     /*
+    |--------------------------------------------------------------------------
+    | Uoms
+    |--------------------------------------------------------------------------
+    */
     Route::resource('uoms', UomController::class);
 
     /*
@@ -78,6 +85,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+    Route::resource('financial-years', FinancialYearController::class)
+        ->middleware('auth');
 });
 
 /*
