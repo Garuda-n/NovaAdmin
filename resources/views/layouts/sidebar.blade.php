@@ -79,6 +79,66 @@
 
         </a>
 
+        {{-- Catalog Masters --}}
+        <div>
+            <button
+                @click="openMenu = openMenu === 'catalog' ? '' : 'catalog'"
+                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+                <div class="flex items-center">
+                    <x-heroicon-o-squares-2x2 class="w-5 h-5 shrink-0" />
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition
+                        class="ml-3 whitespace-nowrap">
+                        Catalog Masters
+                    </span>
+                </div>
+                <svg
+                    x-show="sidebarOpen"
+                    x-transition
+                    class="w-4 h-4 transition-transform duration-300"
+                    :class="{ '-rotate-90': openMenu === 'catalog' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div
+                x-show="openMenu === 'catalog' && sidebarOpen"
+                x-transition>
+                <a href="{{ route('taxes.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('taxes.*')
+                        ? 'bg-slate-800 text-white'
+                        : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-users class="w-5 h-5 shrink-0" />
+                    <span x-show="sidebarOpen" x-transition>
+                        Taxes
+                    </span>
+                </a>
+                <a href="{{ route('uoms.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('uoms.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-scale class="w-5 h-5" />
+                    <span x-show="sidebarOpen" x-transition>
+                        UOM
+                    </span>
+                </a>
+                <a href="{{ route('financial-years.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('financial-years.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-calendar-days class="w-5 h-5" />
+                    <span>Financial Year</span>
+                </a>
+
+            </div>
+
+        </div>
         {{-- Administration --}}
         <div>
 
@@ -149,13 +209,71 @@
                     </span>
 
                 </a>
-                <a href="{{ route('financial-years.index') }}"
+
+            </div>
+
+        </div>
+
+        <!-- Masters -->
+        <div>
+
+            <button
+                @click="openMenu = openMenu === 'masters' ? '' : 'masters'"
+                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+
+                <div class="flex items-center">
+
+                    <x-heroicon-o-building-library class="w-5 h-5 shrink-0" />
+
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition
+                        class="ml-3 whitespace-nowrap">
+                        Masters
+                    </span>
+
+                </div>
+
+                <svg
+                    x-show="sidebarOpen"
+                    x-transition
+                    class="w-4 h-4 transition-transform duration-300"
+                    :class="{ '-rotate-90': openMenu === 'masters' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7" />
+
+                </svg>
+
+            </button>
+
+            <div
+                x-show="openMenu === 'masters' && sidebarOpen"
+                x-transition>
+
+                <a href="{{ route('companies.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('financial-years.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+                    {{ request()->routeIs('companies.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
 
-                    <x-heroicon-o-calendar-days class="w-5 h-5" />
+                    <x-heroicon-o-building-office class="w-5 h-5" />
 
-                    <span>Financial Year</span>
+                    <span>Companies</span>
+
+                </a>
+
+                <a href="{{ route('branches.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+
+                    <x-heroicon-o-map-pin class="w-5 h-5" />
+
+                    <span>Branches</span>
 
                 </a>
 
@@ -163,187 +281,120 @@
 
         </div>
 
-        {{-- Masters --}}
-<div>
+        <!-- Product Masters -->
+        <div>
 
-    <button
-        @click="openMenu = openMenu === 'masters' ? '' : 'masters'"
-        class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+            <button
+                @click="openMenu = openMenu === 'products' ? '' : 'products'"
+                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
 
-        <div class="flex items-center">
+                <div class="flex items-center">
 
-            <x-heroicon-o-building-library class="w-5 h-5 shrink-0" />
+                    <x-heroicon-o-cube class="w-5 h-5 shrink-0" />
+
+                    <span
+                        x-show="sidebarOpen"
+                        x-transition
+                        class="ml-3 whitespace-nowrap">
+                        Product Masters
+                    </span>
+
+                </div>
+
+                <svg
+                    x-show="sidebarOpen"
+                    x-transition
+                    class="w-4 h-4 transition-transform duration-300"
+                    :class="{ '-rotate-90': openMenu === 'products' }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 19l-7-7 7-7" />
+
+                </svg>
+
+            </button>
+
+            <div
+                x-show="openMenu === 'products' && sidebarOpen"
+                x-transition>
+                <a href="{{ route('categories.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('categories.*')
+                        ? 'bg-slate-800 text-white'
+                        : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-rectangle-group class="w-5 h-5 shrink-0" />
+                    <span x-show="sidebarOpen" x-transition>
+                        Categories
+                    </span>
+                </a>
+
+                {{-- Future --}}
+                {{--
+                <a href="{{ route('products.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 hover:bg-slate-800 text-slate-300">
+
+                    <x-heroicon-o-cube class="w-5 h-5" />
+
+                    <span>Products</span>
+
+                </a>
+                --}}
+
+            </div>
+
+        </div>
+
+        <!-- Transactions -->
+        <a href="#"
+            class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
+
+            <x-heroicon-o-arrows-right-left class="w-5 h-5 shrink-0" />
 
             <span
                 x-show="sidebarOpen"
                 x-transition
-                class="ml-3 whitespace-nowrap">
-                Masters
+                class="ml-3">
+                Transactions
             </span>
 
-        </div>
-
-        <svg
-            x-show="sidebarOpen"
-            x-transition
-            class="w-4 h-4 transition-transform duration-300"
-            :class="{ '-rotate-90': openMenu === 'masters' }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24">
-
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7" />
-
-        </svg>
-
-    </button>
-
-    <div
-        x-show="openMenu === 'masters' && sidebarOpen"
-        x-transition>
-
-        <a href="{{ route('companies.index') }}"
-            class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-            {{ request()->routeIs('companies.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-
-            <x-heroicon-o-building-office class="w-5 h-5" />
-
-            <span>Companies</span>
-
         </a>
 
-        <a href="{{ route('branches.index') }}"
-            class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-            {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+        <!-- Reports -->
+        <a href="#"
+            class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
 
-            <x-heroicon-o-map-pin class="w-5 h-5" />
-
-            <span>Branches</span>
-
-        </a>
-
-    </div>
-
-</div>
-
-{{-- Product Masters --}}
-<div>
-
-    <button
-        @click="openMenu = openMenu === 'products' ? '' : 'products'"
-        class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
-
-        <div class="flex items-center">
-
-            <x-heroicon-o-cube class="w-5 h-5 shrink-0" />
+            <x-heroicon-o-chart-bar class="w-5 h-5 shrink-0" />
 
             <span
                 x-show="sidebarOpen"
                 x-transition
-                class="ml-3 whitespace-nowrap">
-                Product Masters
+                class="ml-3">
+                Reports
             </span>
 
-        </div>
+        </a>
 
-        <svg
-            x-show="sidebarOpen"
-            x-transition
-            class="w-4 h-4 transition-transform duration-300"
-            :class="{ '-rotate-90': openMenu === 'products' }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24">
+        <!-- Settings -->
+        <a href="#"
+            class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
 
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7" />
+            <x-heroicon-o-cog-6-tooth class="w-5 h-5 shrink-0" />
 
-        </svg>
-
-    </button>
-
-    <div
-        x-show="openMenu === 'products' && sidebarOpen"
-        x-transition>
-
-        <a href="{{ route('uoms.index') }}"
-            class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-            {{ request()->routeIs('uoms.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-
-            <x-heroicon-o-scale class="w-5 h-5" />
-
-            <span>UOM</span>
+            <span
+                x-show="sidebarOpen"
+                x-transition
+                class="ml-3">
+                Settings
+            </span>
 
         </a>
 
-        {{-- Future --}}
-        {{--
-        <a href="{{ route('products.index') }}"
-            class="flex items-center gap-3 pl-14 pr-6 py-2 hover:bg-slate-800 text-slate-300">
-
-            <x-heroicon-o-cube class="w-5 h-5" />
-
-            <span>Products</span>
-
-        </a>
-        --}}
-
-    </div>
-
-</div>
-
-{{-- Transactions --}}
-<a href="#"
-    class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
-
-    <x-heroicon-o-arrows-right-left class="w-5 h-5 shrink-0" />
-
-    <span
-        x-show="sidebarOpen"
-        x-transition
-        class="ml-3">
-        Transactions
-    </span>
-
-</a>
-
-{{-- Reports --}}
-<a href="#"
-    class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
-
-    <x-heroicon-o-chart-bar class="w-5 h-5 shrink-0" />
-
-    <span
-        x-show="sidebarOpen"
-        x-transition
-        class="ml-3">
-        Reports
-    </span>
-
-</a>
-
-{{-- Settings --}}
-<a href="#"
-    class="flex items-center px-6 py-3 hover:bg-slate-800 text-slate-200 transition">
-
-    <x-heroicon-o-cog-6-tooth class="w-5 h-5 shrink-0" />
-
-    <span
-        x-show="sidebarOpen"
-        x-transition
-        class="ml-3">
-        Settings
-    </span>
-
-</a>
-
-</nav>
+    </nav>
 
 </aside>

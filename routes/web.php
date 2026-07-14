@@ -8,6 +8,8 @@ use App\Http\Controllers\BranchController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UomController;
 use App\Http\Controllers\FinancialYearController;
+use App\Http\Controllers\TaxController;
+use App\Http\Controllers\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,6 +89,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('profile.destroy');
     Route::resource('financial-years', FinancialYearController::class)
         ->middleware('auth');
+    Route::resource('taxes', TaxController::class);
+    Route::resource('categories', CategoryController::class);
 });
 
 /*
