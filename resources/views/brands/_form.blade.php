@@ -1,75 +1,50 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    {{-- Category Name --}}
+    <!-- Brand Code -->
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Category Name <span class="text-red-500">*</span>
-        </label>
-
-        <input
-            type="text"
-            name="name"
-            value="{{ old('name', $category->name ?? '') }}"
-            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
-            placeholder="Enter Category Name">
-
-        @error('name')
-            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-        @enderror
-    </div>
-
-    {{-- Short Code --}}
-    <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Short Code <span class="text-red-500">*</span>
+            Brand Code <span class="text-red-500">*</span>
         </label>
 
         <input
             type="text"
             name="code"
-            value="{{ old('code', $category->code ?? '') }}"
-            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
-            placeholder="Ex : ELEC">
+            value="{{ old('code', $brand->code ?? '') }}"
+            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Enter Brand Code">
 
         @error('code')
             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
         @enderror
     </div>
 
-    {{-- Tax --}}
+    <!-- Brand Name -->
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Tax
+            Brand Name <span class="text-red-500">*</span>
         </label>
 
-        <select
-            name="tax_id"
-            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white">
+        <input
+            type="text"
+            name="name"
+            value="{{ old('name', $brand->name ?? '') }}"
+            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Enter Brand Name">
 
-            <option value="">-- Select Tax --</option>
-
-            @foreach($taxes as $tax)
-                <option value="{{ $tax->id }}"
-                    {{ old('tax_id', $category->tax_id ?? '') == $tax->id ? 'selected' : '' }}>
-                    {{ $tax->name }} ({{ number_format($tax->percentage,2) }}%)
-                </option>
-            @endforeach
-
-        </select>
-
-        @error('tax_id')
+        @error('name')
             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
         @enderror
     </div>
-    <!-- Category Image -->
+
+    <!-- Brand Logo -->
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Category Image
+            Brand Logo
         </label>
 
         <input
             type="file"
-            name="image"
+            name="logo"
             accept="image/*"
             class="block w-full text-sm text-gray-700 dark:text-gray-300
                 file:mr-4
@@ -81,25 +56,25 @@
                 file:text-white
                 hover:file:bg-indigo-700">
 
-        @if(isset($category) && $category->image_url)
+        @if(isset($brand) && $brand->logo_url)
             <div class="mt-4">
                 <p class="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
-                    Current Image
+                    Current Logo
                 </p>
 
                 <img
-                    src="{{ $category->image_url }}"
-                    alt="Category Image"
+                    src="{{ $brand->logo_url }}"
+                    alt="Brand Logo"
                     class="w-24 h-24 rounded-lg border object-cover">
             </div>
         @endif
 
-        @error('image')
+        @error('logo')
             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
         @enderror
     </div>
 
-    {{-- Status --}}
+    <!-- Status -->
     <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Status <span class="text-red-500">*</span>
@@ -109,13 +84,11 @@
             name="status"
             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white">
 
-            <option value="1"
-                {{ old('status', $category->status ?? 1) == 1 ? 'selected' : '' }}>
+            <option value="1" {{ old('status', $brand->status ?? 1) == 1 ? 'selected' : '' }}>
                 Active
             </option>
 
-            <option value="0"
-                {{ old('status', $category->status ?? 1) == 0 ? 'selected' : '' }}>
+            <option value="0" {{ old('status', $brand->status ?? 1) == 0 ? 'selected' : '' }}>
                 Inactive
             </option>
 
@@ -130,7 +103,7 @@
 
 <div class="flex justify-end gap-3 mt-8">
 
-    <a href="{{ route('categories.index') }}"
+    <a href="{{ route('brands.index') }}"
         class="px-5 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600">
         Cancel
     </a>
@@ -138,9 +111,7 @@
     <button
         type="submit"
         class="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-
-        {{ isset($category) ? 'Update' : 'Save' }}
-
+        Save
     </button>
 
 </div>

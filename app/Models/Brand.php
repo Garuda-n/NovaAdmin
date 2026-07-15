@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class Category extends Model
+class Brand extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'code',
         'name',
-        'tax_id',
-        'image',
+        'logo',
         'status',
         'created_by',
         'updated_by',
@@ -23,17 +23,13 @@ class Category extends Model
         'status' => 'boolean',
     ];
 
-    public function tax()
-    {
-        return $this->belongsTo(Tax::class);
-    }
     /**
-     * Get full image URL.
+     * Get full logo URL.
      */
-    public function getImageUrlAttribute(): ?string
+    public function getLogoUrlAttribute(): ?string
     {
-        return $this->image
-            ? Storage::url($this->image)
+        return $this->logo
+            ? Storage::url($this->logo)
             : null;
     }
 }

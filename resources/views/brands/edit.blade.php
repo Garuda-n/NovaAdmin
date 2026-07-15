@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Edit Category
+            Edit Brand
         </h2>
     </x-slot>
 
@@ -9,14 +9,15 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg">
 
-                <form action="{{ route('categories.update', $category) }}"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="p-6">
+                <form action="{{ route('brands.update', $brand) }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      class="p-6">
+
                     @csrf
                     @method('PUT')
 
-                    @include('categories._form')
+                    @include('brands._form')
 
                 </form>
 

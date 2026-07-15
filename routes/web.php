@@ -10,6 +10,7 @@ use App\Http\Controllers\UomController;
 use App\Http\Controllers\FinancialYearController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BrandController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +92,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('auth');
     Route::resource('taxes', TaxController::class);
     Route::resource('categories', CategoryController::class);
+    Route::resource('brands', BrandController::class);
 });
 
 /*

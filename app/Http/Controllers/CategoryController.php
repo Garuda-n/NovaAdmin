@@ -8,6 +8,7 @@ use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Services\ImageUploadService;
 
 class CategoryController extends Controller
 {
@@ -44,6 +45,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:100|unique:categories,name',
             'code' => 'required|string|max:20|unique:categories,code',
             'tax_id' => 'nullable|exists:taxes,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'status' => 'required|boolean',
         ]);
 
@@ -52,6 +54,12 @@ class CategoryController extends Controller
         try {
 
             $validated['created_by'] = auth()->id();
+            if ($request->hasFile('image')) {
+                $validated['image'] = ImageUploadService::upload(
+                    $request->file('image'),
+                    'categories'
+                );
+            }
 
             $category = Category::create($validated);
 
@@ -117,6 +125,7 @@ class CategoryController extends Controller
                 Rule::unique('categories', 'code')->ignore($category->id),
             ],
             'tax_id' => 'nullable|exists:taxes,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'status' => 'required|boolean',
         ]);
 
@@ -125,6 +134,11 @@ class CategoryController extends Controller
         try {
 
             $validated['updated_by'] = auth()->id();
+            $validated['image'] = ImageUploadService::update(
+                $request->file('image'),
+                $category->image,
+                'categories'
+            );
 
             $category->update($validated);
 

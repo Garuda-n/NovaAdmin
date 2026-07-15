@@ -9,7 +9,10 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg">
 
-                <form action="{{ route('categories.store') }}" method="POST" class="p-6">
+                <form action="{{ route('categories.store') }}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="p-6">
                     @csrf
 
                     @include('categories._form')
