@@ -6,10 +6,12 @@
                 Category Master
             </h2>
 
+            @can('categories.create')
             <a href="{{ route('categories.create') }}"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                 + Add Category
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -28,7 +30,9 @@
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Category</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Tax</th>
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                                @if(Auth::user()->can('categories.edit') || Auth::user()->can('categories.delete'))
                                 <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Action</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -60,8 +64,10 @@
 
                                     </td>
 
+                                    @if(Auth::user()->can('categories.edit') || Auth::user()->can('categories.delete'))
                                     <td class="px-6 py-4 text-left">
 
+                                        @can('categories.edit')
                                         <a href="{{ route('categories.edit',$category) }}"
                                             class="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
 
@@ -70,8 +76,10 @@
                                             Edit
 
                                         </a>
+                                        @endcan
 
                                     </td>
+                                    @endif
 
                                 </tr>
 

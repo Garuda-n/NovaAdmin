@@ -5,10 +5,12 @@
                 Financial Year Master
             </h2>
 
+            @can('financial-years.create')
             <a href="{{ route('financial-years.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
                 Add Financial Year
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -47,9 +49,11 @@
                                 Status
                             </th>
 
+                            @if(Auth::user()->can('financial-years.edit') || Auth::user()->can('financial-years.delete'))
                             <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-700 dark:text-gray-300">
                                 Action
                             </th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -81,6 +85,7 @@
                                             Current
                                         </span>
                                     @else
+                                        @can('financial-years.edit')
                                         <form action="{{ route('financial-years.make-current', $financialYear) }}"
                                             method="POST"
                                             class="inline">
@@ -93,6 +98,9 @@
                                                 Make Current
                                             </button>
                                         </form>
+                                        @else
+                                        -
+                                        @endcan
                                     @endif
                                 </td>
 
@@ -108,14 +116,18 @@
                                     @endif
                                 </td>
 
+                                @if(Auth::user()->can('financial-years.edit') || Auth::user()->can('financial-years.delete'))
                                 <td class="px-6 py-4 text-center">
 
+                                    @can('financial-years.edit')
                                     <a href="{{ route('financial-years.edit', $financialYear) }}"
                                         class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                                         Edit
                                     </a>
+                                    @endcan
 
                                 </td>
+                                @endif
 
                             </tr>
 

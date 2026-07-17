@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,6 +17,7 @@ use Illuminate\Notifications\Notifiable;
     'email',
     'phone',
     'role',
+    'role_id',
     'status',
     'password',
 ])]
@@ -31,6 +33,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function hasPermission(string $slug): bool
+    {
+        return $this->role && $this->role->hasPermission($slug);
+    }
+
     public function loginLogs(): HasMany
     {
         return $this->hasMany(LoginLog::class);

@@ -5,10 +5,12 @@
                 Brand Master
             </h2>
 
+            @can('brands.create')
             <a href="{{ route('brands.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-white hover:bg-indigo-700">
                 + Add Brand
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -41,9 +43,11 @@
                                     Status
                                 </th>
 
+                                @if(Auth::user()->can('brands.edit') || Auth::user()->can('brands.delete'))
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
                                     Action
                                 </th>
+                                @endif
 
                             </tr>
 
@@ -110,10 +114,12 @@
                                     </td>
 
                                     <!-- Action -->
+                                    @if(Auth::user()->can('brands.edit') || Auth::user()->can('brands.delete'))
                                     <td class="px-6 py-4">
 
                                         <div class="flex justify-center">
 
+                                            @can('brands.edit')
                                             <a href="{{ route('brands.edit', $brand) }}"
                                                 class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition"
                                                 title="Edit">
@@ -121,10 +127,12 @@
                                                 <x-heroicon-o-pencil-square class="w-5 h-5" />
 
                                             </a>
+                                            @endcan
 
                                         </div>
 
                                     </td>
+                                    @endif
 
                                 </tr>
 

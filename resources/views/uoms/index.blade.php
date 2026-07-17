@@ -5,10 +5,12 @@
                 UOM Master
             </h2>
 
+            @can('uoms.create')
             <a href="{{ route('uoms.create') }}"
                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
                 Add UOM
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -26,7 +28,9 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-700 dark:text-gray-300">Short Code</th>
                             <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-700 dark:text-gray-300">Has Decimals</th>
                             <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-700 dark:text-gray-300">Status</th>
+                            @if(Auth::user()->can('uoms.edit') || Auth::user()->can('uoms.delete'))
                             <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-700 dark:text-gray-300">Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -72,12 +76,16 @@
                                     @endif
                                 </td>
 
+                                @if(Auth::user()->can('uoms.edit') || Auth::user()->can('uoms.delete'))
                                 <td class="px-6 py-4 text-center">
+                                    @can('uoms.edit')
                                     <a href="{{ route('uoms.edit', $uom) }}"
                                         class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                                         Edit
                                     </a>
+                                    @endcan
                                 </td>
+                                @endif
 
                             </tr>
 

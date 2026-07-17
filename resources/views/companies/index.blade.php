@@ -20,6 +20,7 @@
                             </p>
                         </div>
 
+                        @can('companies.create')
                         <a href="{{ route('companies.create') }}"
                             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-200">
 
@@ -28,6 +29,7 @@
                             <span>Add Company</span>
 
                         </a>
+                        @endcan
 
                     </div>
 
@@ -57,9 +59,11 @@
                                     Status
                                 </th>
 
+                                @if(Auth::user()->can('companies.edit') || Auth::user()->can('companies.delete'))
                                 <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">
                                     Actions
                                 </th>
+                                @endif
 
                             </tr>
 
@@ -105,16 +109,20 @@
 
                                     </td>
 
+                                    @if(Auth::user()->can('companies.edit') || Auth::user()->can('companies.delete'))
                                     <td class="px-6 py-4 text-center">
 
+                                        @can('companies.edit')
                                         <a href="{{ route('companies.edit', $company->id) }}"
                                             class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition">
 
                                             Edit
 
                                         </a>
+                                        @endcan
 
                                     </td>
+                                    @endif
 
                                 </tr>
 

@@ -6,10 +6,12 @@
                 Tax Master
             </h2>
 
+            @can('taxes.create')
             <a href="{{ route('taxes.create') }}"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                 + Add Tax
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -41,16 +43,18 @@
                                     Status
                                 </th>
 
+                                @if(Auth::user()->can('taxes.edit') || Auth::user()->can('taxes.delete'))
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
                                     Action
                                 </th>
+                                @endif
 
                             </tr>
                         </thead>
 
                         <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
 
-                            @forelse($taxes as $tax)
+                             @forelse($taxes as $tax)
 
                                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-700">
 
@@ -80,14 +84,18 @@
 
                                     </td>
 
+                                    @if(Auth::user()->can('taxes.edit') || Auth::user()->can('taxes.delete'))
                                     <td class="px-6 py-4 text-center">
 
+                                        @can('taxes.edit')
                                         <a href="{{ route('taxes.edit',$tax) }}"
                                             class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                                             Edit
                                         </a>
+                                        @endcan
 
                                     </td>
+                                    @endif
 
                                 </tr>
 

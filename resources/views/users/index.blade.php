@@ -51,11 +51,13 @@
                                 Manage all users in your application.
                             </p>
                         </div>
+                        @can('users.create')
                         <a href="{{ route('users.create') }}"
                         class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-200">
                             <span class="text-lg">+</span>
                             <span>Add User</span>
                         </a>
+                        @endcan
                     </div>
 
                     <table class="w-full">
@@ -65,8 +67,11 @@
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Name</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Phone</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Role</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                                @if(Auth::user()->can('users.edit') || Auth::user()->can('users.delete'))
                                 <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -78,13 +83,20 @@
                                     <td class="px-6 py-4 text-slate-200">{{ $user->email }}</td>
                                     <td class="px-6 py-4 text-slate-200">{{ $user->phone }}</td>
                                     <td class="px-6 py-4 text-slate-200">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                            {{ $user->role?->name ?? 'No Role' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-200">
                                         @if ($user->status)
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Active</span>
                                         @else
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Inactive</span>
                                         @endif
                                     </td>
+                                    @if(Auth::user()->can('users.edit') || Auth::user()->can('users.delete'))
                                     <td class="px-6 py-4 text-slate-200 text-center">
+                                        @can('users.edit')
                                         <a href="{{ route('users.edit', $user->id) }}"
                                         class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition">
                                             Edit
@@ -99,7 +111,9 @@
                                                 {{ $user->status ? 'Disable' : 'Enable' }}
                                             </button>
                                         </form>
+                                        @endcan
                                     </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>

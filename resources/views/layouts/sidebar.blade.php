@@ -62,6 +62,7 @@
     <nav class="mt-4 flex-1">
 
         {{-- Dashboard --}}
+        @can('dashboard.view')
         <a href="{{ route('dashboard') }}"
             class="flex items-center px-6 py-3 transition
             {{ request()->routeIs('dashboard')
@@ -78,8 +79,10 @@
             </span>
 
         </a>
+        @endcan
 
         {{-- Catalog Masters --}}
+        @canany(['taxes.view', 'uoms.view', 'financial-years.view', 'counters.view'])
         <div>
             <button
                 @click="openMenu = openMenu === 'catalog' ? '' : 'catalog'"
@@ -111,6 +114,7 @@
             <div
                 x-show="openMenu === 'catalog' && sidebarOpen"
                 x-transition>
+                @can('taxes.view')
                 <a href="{{ route('taxes.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('taxes.*')
@@ -121,6 +125,8 @@
                         Taxes
                     </span>
                 </a>
+                @endcan
+                @can('uoms.view')
                 <a href="{{ route('uoms.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('uoms.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
@@ -129,17 +135,31 @@
                         UOM
                     </span>
                 </a>
+                @endcan
+                @can('financial-years.view')
                 <a href="{{ route('financial-years.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('financial-years.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
                     <x-heroicon-o-calendar-days class="w-5 h-5" />
                     <span>Financial Year</span>
                 </a>
+                @endcan
+                @can('counters.view')
+                <a href="{{ route('counters.index') }}"
+                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                    {{ request()->routeIs('counters.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
+                    <x-heroicon-o-ticket class="w-5 h-5" />
+                    <span>Counters</span>
+                </a>
+                @endcan
 
             </div>
 
         </div>
+        @endcanany
+
         {{-- Administration --}}
+        @canany(['users.view', 'roles.view'])
         <div>
 
             <button
@@ -182,6 +202,7 @@
                 x-show="openMenu === 'administration' && sidebarOpen"
                 x-transition>
 
+                @can('users.view')
                 <a href="{{ route('users.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('users.*')
@@ -195,7 +216,9 @@
                     </span>
 
                 </a>
+                @endcan
 
+                @can('roles.view')
                 <a href="{{ route('roles.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('roles.*')
@@ -209,12 +232,15 @@
                     </span>
 
                 </a>
+                @endcan
 
             </div>
 
         </div>
+        @endcanany
 
         <!-- Masters -->
+        @canany(['companies.view', 'branches.view'])
         <div>
 
             <button
@@ -257,6 +283,7 @@
                 x-show="openMenu === 'masters' && sidebarOpen"
                 x-transition>
 
+                @can('companies.view')
                 <a href="{{ route('companies.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('companies.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
@@ -266,7 +293,9 @@
                     <span>Companies</span>
 
                 </a>
+                @endcan
 
+                @can('branches.view')
                 <a href="{{ route('branches.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
@@ -276,12 +305,15 @@
                     <span>Branches</span>
 
                 </a>
+                @endcan
 
             </div>
 
         </div>
+        @endcanany
 
         <!-- Product Masters -->
+        @canany(['categories.view', 'brands.view'])
         <div>
 
             <button
@@ -323,6 +355,7 @@
             <div
                 x-show="openMenu === 'products' && sidebarOpen"
                 x-transition>
+                @can('categories.view')
                 <a href="{{ route('categories.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('categories.*')
@@ -333,6 +366,8 @@
                         Categories
                     </span>
                 </a>
+                @endcan
+                @can('brands.view')
                 <a href="{{ route('brands.index') }}"
                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                     {{ request()->routeIs('brands.*')
@@ -343,6 +378,7 @@
                         Brands
                     </span>
                 </a>
+                @endcan
 
                 {{-- Future --}}
                 {{--
@@ -359,6 +395,7 @@
             </div>
 
         </div>
+        @endcanany
 
         <!-- Transactions -->
         <a href="#"

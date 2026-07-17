@@ -3,8 +3,11 @@
 namespace App\Providers;
 use App\Models\Company;
 use App\Models\LoginLog;
+use App\Models\Permission;
+use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -44,5 +47,17 @@ class AppServiceProvider extends ServiceProvider
             $view->with('currentCompany', $currentCompany);
 
         });
+
+        // Register Gates from permissions table
+        try {
+            $permissions = Permission::all();
+            foreach ($permissions as $permission) {
+                Gate::define($permission->slug, function (User $user) use ($permission) {
+                    return $user->hasPermission($permission->slug);
+                });
+            }
+        } catch (\Exception $e) {
+            // Table may not exist yet during migrations
+        }
     }
 }

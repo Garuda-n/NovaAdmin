@@ -49,11 +49,13 @@
                                 Manage all roles in your application.
                             </p>
                         </div>
+                        @can('roles.create')
                         <a href="{{ route('roles.create') }}"
                         class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-200">
                             <span class="text-lg">+</span>
                             <span>Add Role</span>
                         </a>
+                        @endcan
                     </div>
 
                     <table class="w-full">
@@ -61,7 +63,9 @@
                             <tr class="bg-slate-800">
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">ID</th>
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Role Name</th>
+                                @if(Auth::user()->can('roles.edit') || Auth::user()->can('roles.delete'))
                                 <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -70,12 +74,16 @@
                                 <tr class="border-t border-slate-700 hover:bg-slate-800 transition">
                                     <td class="px-6 py-4 text-slate-200">{{ $role->id }}</td>
                                     <td class="px-6 py-4 text-slate-200">{{ $role->name }}</td>
+                                    @if(Auth::user()->can('roles.edit') || Auth::user()->can('roles.delete'))
                                     <td class="px-6 py-4 text-slate-200 text-center">
+                                        @can('roles.edit')
                                         <a href="{{ route('roles.edit', $role->id) }}"
                                         class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition">
                                             Edit
                                         </a>
+                                        @endcan
                                     </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr class="border-t border-slate-700">

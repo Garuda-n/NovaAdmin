@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Counter;
 
 class Branch extends Model
 {
@@ -21,5 +22,15 @@ class Branch extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+    public function counters()
+    {
+        return $this->belongsToMany(Counter::class, 'branch_counters')
+            ->withPivot([
+                'status',
+                'created_by',
+                'updated_by'
+            ])
+            ->withTimestamps();
     }
 }
