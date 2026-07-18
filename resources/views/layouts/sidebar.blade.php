@@ -1,16 +1,24 @@
 @php
-    $activeMenu = match (true) {
-        request()->routeIs('users.*'),
-        request()->routeIs('roles.*') => 'administration',
+    $sidebarMenus = \App\Models\Menu::with(['children' => function ($q) {
+        $q->active()->orderBy('order');
+    }])
+    ->active()
+    ->roots()
+    ->orderBy('order')
+    ->get();
 
-        request()->routeIs('companies.*'),
-        request()->routeIs('branches.*') => 'masters',
-
-        request()->routeIs('uoms.*'),
-        request()->routeIs('products.*') => 'product_masters',
-
-        default => '',
-    };
+    // Determine which parent dropdown should be open based on current route
+    $activeMenu = '';
+    foreach ($sidebarMenus as $menu) {
+        if ($menu->children->isNotEmpty()) {
+            foreach ($menu->children as $child) {
+                if ($child->route && request()->routeIs(str_replace('.index', '.*', $child->route))) {
+                    $activeMenu = \Illuminate\Support\Str::slug($menu->name, '_');
+                    break 2;
+                }
+            }
+        }
+    }
 @endphp
 
 <aside
@@ -61,341 +69,188 @@
     {{-- Navigation --}}
     <nav class="mt-4 flex-1">
 
-        {{-- Dashboard --}}
-        @can('dashboard.view')
-        <a href="{{ route('dashboard') }}"
-            class="flex items-center px-6 py-3 transition
-            {{ request()->routeIs('dashboard')
-                ? 'bg-slate-800 border-l-4 border-indigo-500 text-white'
-                : 'hover:bg-slate-800 text-slate-200' }}">
-
-            <x-heroicon-o-home class="w-5 h-5 shrink-0" />
-
-            <span
-                x-show="sidebarOpen"
-                x-transition
-                class="ml-3 whitespace-nowrap">
-                Dashboard
-            </span>
-
-        </a>
-        @endcan
-
-        {{-- Catalog Masters --}}
-        @canany(['taxes.view', 'uoms.view', 'financial-years.view', 'counters.view'])
-        <div>
-            <button
-                @click="openMenu = openMenu === 'catalog' ? '' : 'catalog'"
-                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
-                <div class="flex items-center">
-                    <x-heroicon-o-squares-2x2 class="w-5 h-5 shrink-0" />
-                    <span
-                        x-show="sidebarOpen"
-                        x-transition
-                        class="ml-3 whitespace-nowrap">
-                        Catalog Masters
-                    </span>
-                </div>
-                <svg
-                    x-show="sidebarOpen"
-                    x-transition
-                    class="w-4 h-4 transition-transform duration-300"
-                    :class="{ '-rotate-90': openMenu === 'catalog' }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-            <div
-                x-show="openMenu === 'catalog' && sidebarOpen"
-                x-transition>
-                @can('taxes.view')
-                <a href="{{ route('taxes.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('taxes.*')
-                        ? 'bg-slate-800 text-white'
-                        : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-users class="w-5 h-5 shrink-0" />
-                    <span x-show="sidebarOpen" x-transition>
-                        Taxes
-                    </span>
-                </a>
-                @endcan
-                @can('uoms.view')
-                <a href="{{ route('uoms.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('uoms.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-scale class="w-5 h-5" />
-                    <span x-show="sidebarOpen" x-transition>
-                        UOM
-                    </span>
-                </a>
-                @endcan
-                @can('financial-years.view')
-                <a href="{{ route('financial-years.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('financial-years.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-calendar-days class="w-5 h-5" />
-                    <span>Financial Year</span>
-                </a>
-                @endcan
-                @can('counters.view')
-                <a href="{{ route('counters.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('counters.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-ticket class="w-5 h-5" />
-                    <span>Counters</span>
-                </a>
-                @endcan
-
-            </div>
-
-        </div>
-        @endcanany
-
-        {{-- Administration --}}
-        @canany(['users.view', 'roles.view'])
-        <div>
-
-            <button
-                @click="openMenu = openMenu === 'administration' ? '' : 'administration'"
-                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
-
-                <div class="flex items-center">
-
-                    <x-heroicon-o-building-office-2 class="w-5 h-5 shrink-0" />
-
-                    <span
-                        x-show="sidebarOpen"
-                        x-transition
-                        class="ml-3 whitespace-nowrap">
-                        Administration
-                    </span>
-
-                </div>
-
-                <svg
-                    x-show="sidebarOpen"
-                    x-transition
-                    class="w-4 h-4 transition-transform duration-300"
-                    :class="{ '-rotate-90': openMenu === 'administration' }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7" />
-
-                </svg>
-
-            </button>
-
-            <div
-                x-show="openMenu === 'administration' && sidebarOpen"
-                x-transition>
-
-                @can('users.view')
-                <a href="{{ route('users.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('users.*')
-                        ? 'bg-slate-800 text-white'
-                        : 'hover:bg-slate-800 text-slate-300' }}">
-
-                    <x-heroicon-o-users class="w-5 h-5 shrink-0" />
-
-                    <span x-show="sidebarOpen" x-transition>
-                        Users
-                    </span>
-
-                </a>
-                @endcan
-
-                @can('roles.view')
-                <a href="{{ route('roles.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('roles.*')
-                        ? 'bg-slate-800 text-white'
-                        : 'hover:bg-slate-800 text-slate-300' }}">
-
-                    <x-heroicon-o-shield-check class="w-5 h-5 shrink-0" />
-
-                    <span x-show="sidebarOpen" x-transition>
-                        Roles
-                    </span>
-
-                </a>
-                @endcan
-
-            </div>
-
-        </div>
-        @endcanany
-
-        <!-- Masters -->
-        @canany(['companies.view', 'branches.view'])
-        <div>
-
-            <button
-                @click="openMenu = openMenu === 'masters' ? '' : 'masters'"
-                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
-
-                <div class="flex items-center">
-
-                    <x-heroicon-o-building-library class="w-5 h-5 shrink-0" />
-
-                    <span
-                        x-show="sidebarOpen"
-                        x-transition
-                        class="ml-3 whitespace-nowrap">
-                        Masters
-                    </span>
-
-                </div>
-
-                <svg
-                    x-show="sidebarOpen"
-                    x-transition
-                    class="w-4 h-4 transition-transform duration-300"
-                    :class="{ '-rotate-90': openMenu === 'masters' }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7" />
-
-                </svg>
-
-            </button>
-
-            <div
-                x-show="openMenu === 'masters' && sidebarOpen"
-                x-transition>
-
-                @can('companies.view')
-                <a href="{{ route('companies.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('companies.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-
-                    <x-heroicon-o-building-office class="w-5 h-5" />
-
-                    <span>Companies</span>
-
-                </a>
-                @endcan
-
-                @can('branches.view')
-                <a href="{{ route('branches.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('branches.*') ? 'bg-slate-800 text-white' : 'hover:bg-slate-800 text-slate-300' }}">
-
-                    <x-heroicon-o-map-pin class="w-5 h-5" />
-
-                    <span>Branches</span>
-
-                </a>
-                @endcan
-
-            </div>
-
-        </div>
-        @endcanany
-
-        <!-- Product Masters -->
-        @canany(['categories.view', 'brands.view'])
-        <div>
-
-            <button
-                @click="openMenu = openMenu === 'products' ? '' : 'products'"
-                class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
-
-                <div class="flex items-center">
-
-                    <x-heroicon-o-cube class="w-5 h-5 shrink-0" />
-
-                    <span
-                        x-show="sidebarOpen"
-                        x-transition
-                        class="ml-3 whitespace-nowrap">
-                        Product Masters
-                    </span>
-
-                </div>
-
-                <svg
-                    x-show="sidebarOpen"
-                    x-transition
-                    class="w-4 h-4 transition-transform duration-300"
-                    :class="{ '-rotate-90': openMenu === 'products' }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7" />
-
-                </svg>
-
-            </button>
-
-            <div
-                x-show="openMenu === 'products' && sidebarOpen"
-                x-transition>
-                @can('categories.view')
-                <a href="{{ route('categories.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('categories.*')
-                        ? 'bg-slate-800 text-white'
-                        : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-rectangle-group class="w-5 h-5 shrink-0" />
-                    <span x-show="sidebarOpen" x-transition>
-                        Categories
-                    </span>
-                </a>
-                @endcan
-                @can('brands.view')
-                <a href="{{ route('brands.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
-                    {{ request()->routeIs('brands.*')
-                        ? 'bg-slate-800 text-white'
-                        : 'hover:bg-slate-800 text-slate-300' }}">
-                    <x-heroicon-o-tag class="w-5 h-5 shrink-0" />
-                    <span x-show="sidebarOpen" x-transition>
-                        Brands
-                    </span>
-                </a>
-                @endcan
-
-                {{-- Future --}}
-                {{--
-                <a href="{{ route('products.index') }}"
-                    class="flex items-center gap-3 pl-14 pr-6 py-2 hover:bg-slate-800 text-slate-300">
-
-                    <x-heroicon-o-cube class="w-5 h-5" />
-
-                    <span>Products</span>
-
-                </a>
-                --}}
-
-            </div>
-
-        </div>
-        @endcanany
+        @foreach($sidebarMenus as $menu)
+
+            @php
+                $menuSlug = \Illuminate\Support\Str::slug($menu->name, '_');
+                $isLink = $menu->route && $menu->children->isEmpty();
+                $isDropdown = $menu->children->isNotEmpty();
+            @endphp
+
+            {{-- Single link item (no children) --}}
+            @if($isLink)
+
+                @if($menu->permission_slug)
+                    @can($menu->permission_slug)
+                    <a href="{{ route($menu->route) }}"
+                        class="flex items-center px-6 py-3 transition
+                        {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
+                            ? 'bg-slate-800 border-l-4 border-indigo-500 text-white'
+                            : 'hover:bg-slate-800 text-slate-200' }}">
+
+                        <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+
+                        <span
+                            x-show="sidebarOpen"
+                            x-transition
+                            class="ml-3 whitespace-nowrap">
+                            {{ $menu->name }}
+                        </span>
+
+                    </a>
+                    @endcan
+                @else
+                    <a href="{{ route($menu->route) }}"
+                        class="flex items-center px-6 py-3 transition
+                        {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
+                            ? 'bg-slate-800 border-l-4 border-indigo-500 text-white'
+                            : 'hover:bg-slate-800 text-slate-200' }}">
+
+                        <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+
+                        <span
+                            x-show="sidebarOpen"
+                            x-transition
+                            class="ml-3 whitespace-nowrap">
+                            {{ $menu->name }}
+                        </span>
+
+                    </a>
+                @endif
+
+            {{-- Dropdown group (has children) --}}
+            @elseif($isDropdown)
+
+                @php
+                    $childPermissions = $menu->children
+                        ->pluck('permission_slug')
+                        ->filter()
+                        ->toArray();
+                @endphp
+
+                @if(count($childPermissions) > 0)
+                    @canany($childPermissions)
+                    <div>
+                        <button
+                            @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
+                            class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+                            <div class="flex items-center">
+                                <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                <span
+                                    x-show="sidebarOpen"
+                                    x-transition
+                                    class="ml-3 whitespace-nowrap">
+                                    {{ $menu->name }}
+                                </span>
+                            </div>
+                            <svg
+                                x-show="sidebarOpen"
+                                x-transition
+                                class="w-4 h-4 transition-transform duration-300"
+                                :class="{ '-rotate-90': openMenu === '{{ $menuSlug }}' }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        <div
+                            x-show="openMenu === '{{ $menuSlug }}' && sidebarOpen"
+                            x-transition>
+
+                            @foreach($menu->children as $child)
+                                @if($child->permission_slug)
+                                    @can($child->permission_slug)
+                                    <a href="{{ route($child->route) }}"
+                                        class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                        {{ request()->routeIs(str_replace('.index', '.*', $child->route))
+                                            ? 'bg-slate-800 text-white'
+                                            : 'hover:bg-slate-800 text-slate-300' }}">
+                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                        <span x-show="sidebarOpen" x-transition>
+                                            {{ $child->name }}
+                                        </span>
+                                    </a>
+                                    @endcan
+                                @else
+                                    <a href="{{ route($child->route) }}"
+                                        class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                        {{ request()->routeIs(str_replace('.index', '.*', $child->route))
+                                            ? 'bg-slate-800 text-white'
+                                            : 'hover:bg-slate-800 text-slate-300' }}">
+                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                        <span x-show="sidebarOpen" x-transition>
+                                            {{ $child->name }}
+                                        </span>
+                                    </a>
+                                @endif
+                            @endforeach
+
+                        </div>
+
+                    </div>
+                    @endcanany
+                @else
+                    {{-- No permission-gated children, show unconditionally --}}
+                    <div>
+                        <button
+                            @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
+                            class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
+                            <div class="flex items-center">
+                                <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                <span
+                                    x-show="sidebarOpen"
+                                    x-transition
+                                    class="ml-3 whitespace-nowrap">
+                                    {{ $menu->name }}
+                                </span>
+                            </div>
+                            <svg
+                                x-show="sidebarOpen"
+                                x-transition
+                                class="w-4 h-4 transition-transform duration-300"
+                                :class="{ '-rotate-90': openMenu === '{{ $menuSlug }}' }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        <div
+                            x-show="openMenu === '{{ $menuSlug }}' && sidebarOpen"
+                            x-transition>
+
+                            @foreach($menu->children as $child)
+                                <a href="{{ route($child->route) }}"
+                                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                    {{ request()->routeIs(str_replace('.index', '.*', $child->route))
+                                        ? 'bg-slate-800 text-white'
+                                        : 'hover:bg-slate-800 text-slate-300' }}">
+                                    <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                    <span x-show="sidebarOpen" x-transition>
+                                        {{ $child->name }}
+                                    </span>
+                                </a>
+                            @endforeach
+
+                        </div>
+
+                    </div>
+                @endif
+
+            @endif
+
+        @endforeach
 
         <!-- Transactions -->
         <a href="#"

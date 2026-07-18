@@ -12,6 +12,7 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CounterController;
+use App\Http\Controllers\MenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -272,6 +273,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/counters/{counter}/branch-mapping',
         [CounterController::class, 'saveBranchMapping']
     )->name('counters.branch.mapping')->middleware('permission:counters.edit');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Menus
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('menus', MenuController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:menus.create');
+
+    Route::resource('menus', MenuController::class)
+        ->only(['index'])
+        ->middleware('permission:menus.view');
+
+    Route::resource('menus', MenuController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:menus.edit');
+
+    Route::resource('menus', MenuController::class)
+        ->only(['destroy'])
+        ->middleware('permission:menus.delete');
 });
 
 /*

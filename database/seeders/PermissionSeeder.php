@@ -60,6 +60,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Brands', 'slug' => 'brands.create', 'group' => 'Product Masters'],
             ['name' => 'Edit Brands', 'slug' => 'brands.edit', 'group' => 'Product Masters'],
             ['name' => 'Delete Brands', 'slug' => 'brands.delete', 'group' => 'Product Masters'],
+
+            // Menus
+            ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],
+            ['name' => 'Create Menus', 'slug' => 'menus.create', 'group' => 'Administration'],
+            ['name' => 'Edit Menus', 'slug' => 'menus.edit', 'group' => 'Administration'],
+            ['name' => 'Delete Menus', 'slug' => 'menus.delete', 'group' => 'Administration'],
         ];
 
         foreach ($permissions as $permission) {
