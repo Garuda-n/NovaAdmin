@@ -2,20 +2,20 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl">
 
-                <div class="p-6 text-gray-100">
+                <div class="p-6 text-slate-800 dark:text-gray-100">
 
                     <x-toast />
 
                     <div class="flex items-center justify-between mb-8">
 
                         <div>
-                            <h1 class="text-3xl font-bold text-white">
+                            <h1 class="text-3xl font-bold text-slate-900 dark:text-white">
                                 Companies
                             </h1>
 
-                            <p class="text-slate-400 mt-1">
+                            <p class="text-slate-500 dark:text-slate-400 mt-1">
                                 Manage all companies in your application.
                             </p>
                         </div>
@@ -37,30 +37,30 @@
 
                         <thead>
 
-                            <tr class="bg-slate-800">
+                            <tr class="bg-slate-50 dark:bg-slate-800">
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     ID
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Company Name
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Code
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Phone
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Status
                                 </th>
 
                                 @if(Auth::user()->can('companies.edit') || Auth::user()->can('companies.delete'))
-                                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Actions
                                 </th>
                                 @endif
@@ -73,21 +73,21 @@
 
                             @forelse ($companies as $company)
 
-                                <tr class="border-t border-slate-700 hover:bg-slate-800 transition">
+                                <tr class="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $company->id }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $company->name }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $company->code }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $company->phone ?: '-' }}
                                     </td>
 
@@ -131,7 +131,7 @@
                                 <tr>
 
                                     <td colspan="6"
-                                        class="px-6 py-8 text-center text-slate-400">
+                                        class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
 
                                         No companies found.
 

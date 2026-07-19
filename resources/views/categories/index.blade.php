@@ -24,14 +24,14 @@
 
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
 
-                        <thead class="bg-gray-100 dark:bg-slate-700">
+                        <thead class="bg-slate-50 dark:bg-slate-700">
                             <tr>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Short Code</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Category</th>
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Tax</th>
-                                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Short Code</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Category</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Tax</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Status</th>
                                 @if(Auth::user()->can('categories.edit') || Auth::user()->can('categories.delete'))
-                                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-300 uppercase tracking-wider">Action</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Action</th>
                                 @endif
                             </tr>
                         </thead>
@@ -42,15 +42,15 @@
 
                                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-700">
 
-                                    <td class="px-6 py-4 text-slate-200">{{ $category->code }}</td>
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">{{ $category->code }}</td>
 
-                                    <td class="px-6 py-4 text-slate-200">{{ $category->name }}</td>
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">{{ $category->name }}</td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $category->tax?->name ?? '-' }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-left text-slate-200">
+                                    <td class="px-6 py-4 text-left text-slate-800 dark:text-slate-200">
 
                                         @if($category->status)
                                             <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">

@@ -3,7 +3,7 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-slate-900 rounded-xl border border-slate-700 shadow-xl">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl">
 
                 <div class="p-6">
 
@@ -12,11 +12,11 @@
                     <div class="flex items-center justify-between mb-8">
 
                         <div>
-                            <h1 class="text-3xl font-bold text-white">
+                            <h1 class="text-3xl font-bold text-slate-900 dark:text-white">
                                 Branches
                             </h1>
 
-                            <p class="text-slate-400 mt-1">
+                            <p class="text-slate-500 dark:text-slate-400 mt-1">
                                 Manage company branches.
                             </p>
                         </div>
@@ -38,38 +38,38 @@
 
                         <thead>
 
-                            <tr class="bg-slate-800">
+                            <tr class="bg-slate-50 dark:bg-slate-800">
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     #
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Company
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Branch
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Code
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     GST
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Head Office
                                 </th>
 
-                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Status
                                 </th>
 
                                 @if(Auth::user()->can('branches.edit') || Auth::user()->can('branches.delete'))
-                                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-300 uppercase">
+                                <th class="px-6 py-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     Action
                                 </th>
                                 @endif
@@ -82,25 +82,25 @@
 
                             @forelse($branches as $branch)
 
-                                <tr class="border-t border-slate-700 hover:bg-slate-800 transition">
+                                <tr class="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $loop->iteration }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $branch->company->name }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $branch->name }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $branch->branch_code }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-slate-200">
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $branch->gst_number ?: '-' }}
                                     </td>
 
@@ -114,7 +114,7 @@
 
                                         @else
 
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-slate-200 text-slate-700">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                                                 No
                                             </span>
 

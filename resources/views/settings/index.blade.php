@@ -1,23 +1,23 @@
 <x-app-layout>
 
-    <div class="py-6 bg-[#0f1422] min-h-screen"
+    <div class="py-6 bg-slate-100 dark:bg-[#0f1422] min-h-screen"
          x-data="ajaxSettingFilter({
              filterUrl: '{{ route('settings.filter') }}',
              csrfToken: '{{ csrf_token() }}'
          })">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-[#111827] rounded-2xl border border-[#1f293d] shadow-2xl p-6 sm:p-8">
+            <div class="bg-white rounded-2xl border border-slate-200 dark:bg-[#111827] dark:border-[#1f293d] shadow-xl p-6 sm:p-8">
 
                 <x-toast />
 
                 <!-- Header Section -->
                 <div class="flex items-center justify-between gap-4 mb-6">
                     <div>
-                        <h1 class="text-3xl font-extrabold text-white tracking-tight">
+                        <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                             Settings Master
                         </h1>
-                        <p class="text-slate-400 text-sm mt-1">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
                             Manage general system settings, configuration values, and descriptions.
                         </p>
                     </div>
@@ -32,7 +32,7 @@
                 </div>
 
                 <!-- Single Line Filter Bar -->
-                <div class="bg-[#1c2538] border border-[#27334d] rounded-xl p-4 mb-6">
+                <div class="bg-slate-50 border border-slate-200 dark:bg-[#1c2538] dark:border-[#27334d] rounded-xl p-4 mb-6">
                     <form @submit.prevent="applyFilter()" method="POST" action="{{ route('settings.filter') }}" class="flex flex-row items-center gap-3 w-full flex-nowrap">
                         @csrf
                         
@@ -44,7 +44,7 @@
                                 x-model="search"
                                 @input.debounce.400ms="applyFilter()"
                                 placeholder="Search by setting key, value, or description..."
-                                class="w-full rounded-lg border border-[#2b3752] bg-[#161d2d] text-white placeholder-slate-400/70 py-2 px-4 focus:ring-2 focus:ring-[#5851ea] focus:border-[#5851ea] text-sm transition">
+                                class="w-full rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 dark:border-[#2b3752] dark:bg-[#161d2d] dark:text-white dark:placeholder-slate-400/70 py-2 px-4 focus:ring-2 focus:ring-[#5851ea] focus:border-[#5851ea] text-sm transition">
                         </div>
 
                         <!-- Filter Button -->

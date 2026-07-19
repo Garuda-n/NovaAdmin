@@ -1,54 +1,54 @@
 <!-- Table Card Container -->
-<div class="bg-[#1c2538] border border-[#27334d] rounded-xl overflow-hidden shadow-xl">
+<div class="bg-white border border-slate-200 dark:bg-[#1c2538] dark:border-[#27334d] rounded-xl overflow-hidden shadow-sm">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
 
             <thead>
-                <tr class="bg-[#25314a] border-b border-[#2b3752]">
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <tr class="bg-slate-50 border-b border-slate-200 dark:bg-[#25314a] dark:border-[#2b3752]">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         #
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         SETTING KEY
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         VALUE
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         DESCRIPTION
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-center">
                         ACTION
                     </th>
                 </tr>
             </thead>
 
-            <tbody class="divide-y divide-[#242f48]">
+            <tbody class="divide-y divide-slate-200 dark:divide-[#242f48]">
 
                 @forelse($settings as $st)
-                    <tr class="hover:bg-[#212b40] transition duration-150">
+                    <tr class="hover:bg-slate-50 dark:hover:bg-[#212b40] transition duration-150">
 
                         <!-- ID -->
-                        <td class="py-4 px-6 text-slate-200 text-sm font-semibold">
+                        <td class="py-4 px-6 text-slate-800 dark:text-slate-200 text-sm font-semibold">
                             {{ $loop->iteration }}
                         </td>
 
                         <!-- KEY -->
-                        <td class="py-4 px-6 text-white font-bold text-sm font-mono">
-                            <a href="{{ route('settings.edit', $st) }}" class="hover:text-[#5851ea] transition">
+                        <td class="py-4 px-6 text-slate-900 dark:text-white font-bold text-sm font-mono">
+                            <a href="{{ route('settings.edit', $st) }}" class="hover:text-indigo-600 dark:hover:text-[#5851ea] transition">
                                 {{ $st->key }}
                             </a>
                         </td>
 
                         <!-- VALUE -->
-                        <td class="py-4 px-6 text-slate-200 text-sm font-mono max-w-xs">
-                            <span class="bg-[#121826] px-3 py-1.5 rounded border border-slate-700/60 text-indigo-300 font-semibold inline-block break-all">
+                        <td class="py-4 px-6 text-slate-800 dark:text-slate-200 text-sm font-mono max-w-xs">
+                            <span class="bg-slate-100 border border-slate-300 text-indigo-700 dark:bg-[#121826] dark:border-slate-700/60 dark:text-indigo-300 px-3 py-1.5 rounded font-semibold inline-block break-all">
                                 {{ $st->value !== null && $st->value !== '' ? $st->value : 'null' }}
                             </span>
                         </td>
 
                         <!-- DESCRIPTION -->
-                        <td class="py-4 px-6 text-slate-300 text-sm">
+                        <td class="py-4 px-6 text-slate-700 dark:text-slate-300 text-sm">
                             {{ $st->description ?: '-' }}
                         </td>
 

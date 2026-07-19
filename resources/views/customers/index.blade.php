@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <div class="py-6 bg-[#0f1422] min-h-screen"
+    <div class="py-6 bg-slate-100 dark:bg-[#0f1422] min-h-screen"
          x-data="ajaxCustomerFilter({
              filterUrl: '{{ route('customers.filter') }}',
              csrfToken: '{{ csrf_token() }}'
@@ -12,10 +12,10 @@
             <!-- Header Section -->
             <div class="flex items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-white tracking-tight">
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                         Customer Master
                     </h1>
-                    <p class="text-slate-400 text-sm mt-1">
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
                         Manage B2C and B2B customer accounts.
                     </p>
                 </div>
@@ -30,7 +30,7 @@
             </div>
 
             <!-- Filter Card Container (Zero Reload AJAX POST) -->
-            <div class="bg-[#1c2538] border border-[#27334d] rounded-xl p-4 mb-6">
+            <div class="bg-white border-slate-200 dark:bg-[#1c2538] dark:border-[#27334d] rounded-xl p-4 mb-6 shadow-sm">
                 <form @submit.prevent="applyFilter()" method="POST" action="{{ route('customers.filter') }}" class="flex flex-row items-center gap-3 w-full flex-nowrap">
                     @csrf
                     
@@ -42,7 +42,7 @@
                             x-model="search"
                             @input.debounce.400ms="applyFilter()"
                             placeholder="Search name, code, mobile..."
-                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                     </div>
 
                     <!-- Customer Type Select -->
@@ -51,7 +51,7 @@
                             name="customer_type"
                             x-model="customerType"
                             @change="applyFilter()"
-                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                             <option value="">All Types</option>
                             <option value="B2C">B2C</option>
                             <option value="B2B">B2B</option>
@@ -64,7 +64,7 @@
                             name="branch_id"
                             x-model="branchId"
                             @change="applyFilter()"
-                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                             <option value="">All Branches</option>
                             @foreach($branches as $branch)
                                 <option value="{{ $branch->id }}">
@@ -103,7 +103,7 @@
                  @keydown.escape.window="showModal = false"
                  class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
                 <div @click.outside="showModal = false"
-                     class="relative w-full max-w-4xl bg-[#111827] border border-[#1f293d] rounded-2xl shadow-2xl p-6 sm:p-8 overflow-hidden my-8">
+                     class="relative w-full max-w-4xl bg-white border-slate-200 dark:bg-[#111827] dark:border-[#1f293d] rounded-2xl shadow-2xl p-6 sm:p-8 overflow-hidden my-8">
                     <button @click="showModal = false"
                             class="absolute top-4 right-4 text-slate-400 hover:text-white p-2 text-xl font-bold transition z-10">
                         &times;

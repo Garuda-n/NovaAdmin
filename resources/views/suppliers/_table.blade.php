@@ -1,84 +1,84 @@
 <!-- Data Table -->
-<div class="rounded-xl overflow-hidden border border-[#27334d] bg-[#1c2538]">
+<div class="rounded-xl overflow-hidden border border-slate-200 dark:border-[#27334d] bg-white dark:bg-[#1c2538] shadow-sm">
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
 
             <thead>
-                <tr class="bg-[#25314a] border-b border-[#2b3752]">
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <tr class="bg-slate-50 dark:bg-[#25314a] border-b border-slate-200 dark:border-[#2b3752]">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         ID
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         SUPPLIER NAME
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         TYPE
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         MOBILE / EMAIL
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         GST / PAN
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         LOCATION / BRANCH
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         STATUS
                     </th>
-                    <th class="py-4 px-6 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">
+                    <th class="py-4 px-6 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-center">
                         ACTION
                     </th>
                 </tr>
             </thead>
 
-            <tbody class="divide-y divide-[#242f48]">
+            <tbody class="divide-y divide-slate-200 dark:divide-[#242f48]">
 
                 @forelse($suppliers as $supplier)
-                    <tr class="hover:bg-[#212b40] transition duration-150">
+                    <tr class="hover:bg-slate-50 dark:hover:bg-[#212b40] transition duration-150">
 
                         <!-- ID -->
-                        <td class="py-4 px-6 text-slate-200 text-sm font-semibold">
+                        <td class="py-4 px-6 text-slate-800 dark:text-slate-200 text-sm font-semibold">
                             {{ $supplier->id }}
                         </td>
 
                         <!-- SUPPLIER NAME -->
-                        <td class="py-4 px-6 text-white font-bold text-sm">
+                        <td class="py-4 px-6 text-slate-900 dark:text-white font-bold text-sm">
                             <a href="{{ route('suppliers.show', $supplier) }}"
                                @click.prevent="openSupplierModal({{ $supplier->id }})"
-                               class="hover:text-[#5851ea] transition cursor-pointer">
+                               class="hover:text-indigo-600 dark:hover:text-[#5851ea] transition cursor-pointer">
                                 {{ $supplier->supplier_name }}
                             </a>
                             @if($supplier->supplier_code)
-                                <div class="text-xs text-slate-400 font-mono">{{ $supplier->supplier_code }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ $supplier->supplier_code }}</div>
                             @endif
                         </td>
 
                         <!-- TYPE -->
-                        <td class="py-4 px-6 text-slate-200 font-medium text-sm">
+                        <td class="py-4 px-6 text-slate-800 dark:text-slate-200 font-medium text-sm">
                             {{ $supplier->supplier_type }}
                         </td>
 
                         <!-- MOBILE / EMAIL -->
-                        <td class="py-4 px-6 text-slate-300 text-sm">
-                            <div class="font-medium text-slate-200">{{ $supplier->mobile }}</div>
+                        <td class="py-4 px-6 text-slate-700 dark:text-slate-300 text-sm">
+                            <div class="font-medium text-slate-900 dark:text-slate-200">{{ $supplier->mobile }}</div>
                             @if($supplier->email)
-                                <div class="text-xs text-slate-400">{{ $supplier->email }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">{{ $supplier->email }}</div>
                             @endif
                         </td>
 
                         <!-- GST / PAN -->
-                        <td class="py-4 px-6 text-slate-300 text-sm font-mono">
+                        <td class="py-4 px-6 text-slate-700 dark:text-slate-300 text-sm font-mono">
                             <div>{{ $supplier->gst_number ?: '-' }}</div>
                             @if($supplier->pan_number)
-                                <div class="text-xs text-slate-400">PAN: {{ $supplier->pan_number }}</div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">PAN: {{ $supplier->pan_number }}</div>
                             @endif
                         </td>
 
                         <!-- LOCATION / BRANCH -->
-                        <td class="py-4 px-6 text-slate-300 text-sm">
+                        <td class="py-4 px-6 text-slate-700 dark:text-slate-300 text-sm">
                             <div>{{ $supplier->city->name ?? '-' }}, {{ $supplier->state->name ?? '-' }}</div>
-                            <div class="text-xs text-slate-400">
+                            <div class="text-xs text-slate-500 dark:text-slate-400">
                                 Branch: {{ $supplier->branch ? $supplier->branch->name : 'Global' }}
                             </div>
                         </td>
@@ -86,11 +86,11 @@
                         <!-- STATUS -->
                         <td class="py-4 px-6">
                             @if($supplier->status)
-                                <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-[#103a2e] text-[#34d399]">
+                                <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-[#103a2e] dark:text-[#34d399]">
                                     Active
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-red-950/80 text-red-400 border border-red-800/50">
+                                <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-400 border border-red-200 dark:border-red-800/50">
                                     Inactive
                                 </span>
                             @endif
@@ -102,7 +102,7 @@
                                 <a href="{{ route('suppliers.show', $supplier) }}"
                                    @click.prevent="openSupplierModal({{ $supplier->id }})"
                                    title="View Supplier Details"
-                                   class="p-2 rounded-lg bg-[#28344d] hover:bg-[#32415f] text-white transition cursor-pointer">
+                                   class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-[#28344d] dark:hover:bg-[#32415f] dark:text-white transition cursor-pointer">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
