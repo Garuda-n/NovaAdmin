@@ -133,7 +133,7 @@
                     <div>
                         <button
                             type="button"
-                            @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
+                            @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
                             class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
                             <div class="flex items-center">
                                 <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
@@ -168,6 +168,7 @@
                                 @if($child->permission_slug)
                                     @can($child->permission_slug)
                                     <a href="{{ route($child->route) }}"
+                                        @click="sidebarOpen = true"
                                         class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                                         {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                             ? 'bg-slate-800 text-white'
@@ -180,6 +181,7 @@
                                     @endcan
                                 @else
                                     <a href="{{ route($child->route) }}"
+                                        @click="sidebarOpen = true"
                                         class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                                         {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                             ? 'bg-slate-800 text-white'
@@ -201,7 +203,7 @@
                     <div>
                         <button
                             type="button"
-                            @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
+                            @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
                             class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
                             <div class="flex items-center">
                                 <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
@@ -234,6 +236,7 @@
 
                             @foreach($menu->children as $child)
                                 <a href="{{ route($child->route) }}"
+                                    @click="sidebarOpen = true"
                                     class="flex items-center gap-3 pl-14 pr-6 py-2 transition
                                     {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                         ? 'bg-slate-800 text-white'

@@ -15,15 +15,19 @@ class ActivityLogService
         array $meta = []
     ): void {
 
-        ActivityLog::create([
-            'user_id'       => Auth::id(),
-            'module'        => $module,
-            'action'        => $action,
-            'reference_id'  => $referenceId,
-            'description'   => $description,
-            'meta'          => empty($meta) ? null : json_encode($meta, JSON_UNESCAPED_UNICODE),
-            'ip_address'    => request()->ip(),
-            'user_agent'    => request()->userAgent(),
-        ]);
+        try {
+            ActivityLog::create([
+                'user_id'       => Auth::id(),
+                'module'        => $module,
+                'action'        => $action,
+                'reference_id'  => $referenceId,
+                'description'   => $description,
+                'meta'          => empty($meta) ? null : json_encode($meta, JSON_UNESCAPED_UNICODE),
+                'ip_address'    => request()->ip(),
+                'user_agent'    => request()->userAgent(),
+            ]);
+        } catch (\Throwable $e) {
+            // Log silently
+        }
     }
 }

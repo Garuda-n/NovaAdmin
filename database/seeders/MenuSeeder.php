@@ -66,6 +66,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Users', 'route' => 'users.index', 'icon' => 'users', 'permission_slug' => 'users.view', 'order' => 1],
             ['name' => 'Roles', 'route' => 'roles.index', 'icon' => 'shield-check', 'permission_slug' => 'roles.view', 'order' => 2],
             ['name' => 'Menus', 'route' => 'menus.index', 'icon' => 'bars-3', 'permission_slug' => 'menus.view', 'order' => 3],
+            ['name' => 'Settings', 'route' => 'settings.index', 'icon' => 'cog-6-tooth', 'permission_slug' => 'settings.view', 'order' => 4],
         ];
 
         foreach ($adminChildren as $child) {
@@ -91,6 +92,7 @@ class MenuSeeder extends Seeder
         $mastersChildren = [
             ['name' => 'Companies', 'route' => 'companies.index', 'icon' => 'building-office', 'permission_slug' => 'companies.view', 'order' => 1],
             ['name' => 'Branches', 'route' => 'branches.index', 'icon' => 'map-pin', 'permission_slug' => 'branches.view', 'order' => 2],
+            ['name' => 'Customers', 'route' => 'customers.index', 'icon' => 'user-group', 'permission_slug' => 'customers.view', 'order' => 3],
         ];
 
         foreach ($mastersChildren as $child) {

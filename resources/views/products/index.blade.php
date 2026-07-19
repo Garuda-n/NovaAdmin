@@ -19,7 +19,8 @@
 
             <!-- Filter Bar -->
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-4">
-                <form method="GET" action="{{ route('products.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form method="POST" action="{{ route('products.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    @csrf
                     <!-- Search -->
                     <div>
                         <input

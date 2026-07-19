@@ -22,6 +22,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Roles', 'slug' => 'roles.create', 'group' => 'Administration'],
             ['name' => 'Edit Roles', 'slug' => 'roles.edit', 'group' => 'Administration'],
             ['name' => 'Delete Roles', 'slug' => 'roles.delete', 'group' => 'Administration'],
+            ['name' => 'View Settings', 'slug' => 'settings.view', 'group' => 'Administration'],
+            ['name' => 'Create Settings', 'slug' => 'settings.create', 'group' => 'Administration'],
+            ['name' => 'Edit Settings', 'slug' => 'settings.edit', 'group' => 'Administration'],
+            ['name' => 'Delete Settings', 'slug' => 'settings.delete', 'group' => 'Administration'],
 
             // Masters
             ['name' => 'View Companies', 'slug' => 'companies.view', 'group' => 'Masters'],
@@ -32,6 +36,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Branches', 'slug' => 'branches.create', 'group' => 'Masters'],
             ['name' => 'Edit Branches', 'slug' => 'branches.edit', 'group' => 'Masters'],
             ['name' => 'Delete Branches', 'slug' => 'branches.delete', 'group' => 'Masters'],
+            ['name' => 'View Customers', 'slug' => 'customers.view', 'group' => 'Masters'],
+            ['name' => 'Create Customers', 'slug' => 'customers.create', 'group' => 'Masters'],
+            ['name' => 'Edit Customers', 'slug' => 'customers.edit', 'group' => 'Masters'],
+            ['name' => 'Delete Customers', 'slug' => 'customers.delete', 'group' => 'Masters'],
 
             // Catalog Masters
             ['name' => 'View Taxes', 'slug' => 'taxes.view', 'group' => 'Catalog Masters'],

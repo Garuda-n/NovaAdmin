@@ -41,6 +41,13 @@ class ProductController extends Controller
         }
 
         $products = $query->get();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'html' => view('products._table', compact('products'))->render()
+            ]);
+        }
+
         $categories = Category::where('status', 1)->orderBy('name')->get();
         $brands = Brand::where('status', 1)->orderBy('name')->get();
 

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             MenuSeeder::class,
+            CountryStateCitySeeder::class,
         ]);
 
         User::factory()->create([

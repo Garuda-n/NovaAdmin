@@ -15,6 +15,9 @@ use App\Http\Controllers\CounterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -302,6 +305,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Products
     |--------------------------------------------------------------------------
     */
+    Route::post('products/filter', [ProductController::class, 'index'])
+        ->name('products.filter')
+        ->middleware('permission:products.view');
+
     Route::resource('products', ProductController::class)
         ->only(['create', 'store'])
         ->middleware('permission:products.create');
@@ -338,6 +345,67 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sizes', SizeController::class)
         ->only(['destroy'])
         ->middleware('permission:sizes.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customers
+    |--------------------------------------------------------------------------
+    */
+    Route::post('customers/filter', [CustomerController::class, 'index'])
+        ->name('customers.filter')
+        ->middleware('permission:customers.view');
+
+    Route::resource('customers', CustomerController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:customers.create');
+
+    Route::resource('customers', CustomerController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:customers.view');
+
+    Route::resource('customers', CustomerController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:customers.edit');
+
+    Route::resource('customers', CustomerController::class)
+        ->only(['destroy'])
+        ->middleware('permission:customers.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Location Cascading Endpoints
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/locations/states/{country}', [LocationController::class, 'getStates'])
+        ->name('locations.states');
+
+    Route::get('/locations/cities/{state}', [LocationController::class, 'getCities'])
+        ->name('locations.cities');
+
+    /*
+    |--------------------------------------------------------------------------
+    | General Settings Master
+    |--------------------------------------------------------------------------
+    */
+    Route::post('settings/filter', [SettingController::class, 'index'])
+        ->name('settings.filter')
+        ->middleware('permission:settings.view');
+
+    Route::resource('settings', SettingController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:settings.create');
+
+    Route::resource('settings', SettingController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:settings.view');
+
+    Route::resource('settings', SettingController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:settings.edit');
+
+    Route::resource('settings', SettingController::class)
+        ->only(['destroy'])
+        ->middleware('permission:settings.delete');
 });
 
 /*

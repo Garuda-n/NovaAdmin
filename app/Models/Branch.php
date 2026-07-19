@@ -33,4 +33,9 @@ class Branch extends Model
             ])
             ->withTimestamps();
     }
+
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
 }
