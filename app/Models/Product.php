@@ -68,6 +68,11 @@ class Product extends Model
         return $this->belongsToMany(Size::class, 'product_size');
     }
 
+    public function subProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(SubProduct::class, 'product_sub_product', 'product_id', 'sub_product_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

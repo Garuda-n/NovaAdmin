@@ -80,6 +80,16 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Sizes', 'slug' => 'sizes.create', 'group' => 'Product Masters'],
             ['name' => 'Edit Sizes', 'slug' => 'sizes.edit', 'group' => 'Product Masters'],
             ['name' => 'Delete Sizes', 'slug' => 'sizes.delete', 'group' => 'Product Masters'],
+            ['name' => 'View Sub Products', 'slug' => 'sub-products.view', 'group' => 'Product Masters'],
+            ['name' => 'Create Sub Products', 'slug' => 'sub-products.create', 'group' => 'Product Masters'],
+            ['name' => 'Edit Sub Products', 'slug' => 'sub-products.edit', 'group' => 'Product Masters'],
+            ['name' => 'Delete Sub Products', 'slug' => 'sub-products.delete', 'group' => 'Product Masters'],
+
+            // Inventory
+            ['name' => 'View Stock Inward', 'slug' => 'stock-inwards.view', 'group' => 'Inventory'],
+            ['name' => 'Create Stock Inward', 'slug' => 'stock-inwards.create', 'group' => 'Inventory'],
+            ['name' => 'Edit Stock Inward', 'slug' => 'stock-inwards.edit', 'group' => 'Inventory'],
+            ['name' => 'Delete Stock Inward', 'slug' => 'stock-inwards.delete', 'group' => 'Inventory'],
 
             // Menus
             ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],
@@ -94,5 +104,9 @@ class PermissionSeeder extends Seeder
                 $permission
             );
         }
+
+        \App\Models\Role::all()->each(function ($role) {
+            $role->permissions()->sync(\App\Models\Permission::all());
+        });
     }
 }

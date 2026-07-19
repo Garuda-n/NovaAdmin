@@ -121,12 +121,37 @@ class MenuSeeder extends Seeder
             ['name' => 'Brands', 'route' => 'brands.index', 'icon' => 'tag', 'permission_slug' => 'brands.view', 'order' => 2],
             ['name' => 'Products', 'route' => 'products.index', 'icon' => 'cube', 'permission_slug' => 'products.view', 'order' => 3],
             ['name' => 'Sizes', 'route' => 'sizes.index', 'icon' => 'arrows-right-left', 'permission_slug' => 'sizes.view', 'order' => 4],
+            ['name' => 'Sub Products', 'route' => 'sub-products.index', 'icon' => 'squares-plus', 'permission_slug' => 'sub-products.view', 'order' => 5],
         ];
 
         foreach ($productChildren as $child) {
             Menu::firstOrCreate(
                 ['name' => $child['name'], 'parent_id' => $products->id],
                 array_merge($child, ['parent_id' => $products->id, 'status' => true])
+            );
+        }
+
+        // Inventory (Dropdown parent)
+        $inventory = Menu::firstOrCreate(
+            ['name' => 'Inventory'],
+            [
+                'route' => null,
+                'icon' => 'archive-box',
+                'parent_id' => null,
+                'permission_slug' => null,
+                'order' => 6,
+                'status' => true,
+            ]
+        );
+
+        $inventoryChildren = [
+            ['name' => 'Bulk Inward', 'route' => 'stock-inwards.index', 'icon' => 'arrow-down-tray', 'permission_slug' => 'stock-inwards.view', 'order' => 1],
+        ];
+
+        foreach ($inventoryChildren as $child) {
+            Menu::firstOrCreate(
+                ['name' => $child['name'], 'parent_id' => $inventory->id],
+                array_merge($child, ['parent_id' => $inventory->id, 'status' => true])
             );
         }
     }

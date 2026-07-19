@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Size;
+use App\Models\SubProduct;
 use App\Models\Tax;
 use App\Models\Uom;
 use App\Services\ActivityLogService;
@@ -21,7 +22,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand', 'uom', 'tax', 'sizes'])->latest();
+        $query = Product::with(['category', 'brand', 'uom', 'tax', 'sizes', 'subProducts'])->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -64,8 +65,9 @@ class ProductController extends Controller
         $uoms = Uom::where('status', 1)->orderBy('name')->get();
         $taxes = Tax::where('status', 1)->orderBy('name')->get();
         $sizes = Size::where('status', 1)->orderBy('name')->get();
+        $subProducts = SubProduct::where('status', 1)->orderBy('name')->get();
 
-        return view('products.create', compact('categories', 'brands', 'uoms', 'taxes', 'sizes'));
+        return view('products.create', compact('categories', 'brands', 'uoms', 'taxes', 'sizes', 'subProducts'));
     }
 
     /**
@@ -88,6 +90,8 @@ class ProductController extends Controller
             'size_ids' => 'nullable|array',
             'size_ids.*' => 'exists:sizes,id',
             'has_sub_product' => 'nullable|boolean',
+            'sub_product_ids' => 'nullable|array',
+            'sub_product_ids.*' => 'exists:sub_products,id',
             'calculation_based_on' => ['required', Rule::in(['quantity', 'weight', 'sqft', 'dimension'])],
             'reorder_applicable' => 'nullable|boolean',
             'min_stock_level' => 'nullable|numeric|min:0',
@@ -119,6 +123,12 @@ class ProductController extends Controller
                 $product->sizes()->sync($request->size_ids);
             } else {
                 $product->sizes()->detach();
+            }
+
+            if ($product->has_sub_product && $request->filled('sub_product_ids')) {
+                $product->subProducts()->sync($request->sub_product_ids);
+            } else {
+                $product->subProducts()->detach();
             }
 
             ActivityLogService::log(
@@ -153,9 +163,10 @@ class ProductController extends Controller
         $uoms = Uom::where('status', 1)->orderBy('name')->get();
         $taxes = Tax::where('status', 1)->orderBy('name')->get();
         $sizes = Size::where('status', 1)->orderBy('name')->get();
-        $product->load('sizes');
+        $subProducts = SubProduct::where('status', 1)->orderBy('name')->get();
+        $product->load(['sizes', 'subProducts']);
 
-        return view('products.edit', compact('product', 'categories', 'brands', 'uoms', 'taxes', 'sizes'));
+        return view('products.edit', compact('product', 'categories', 'brands', 'uoms', 'taxes', 'sizes', 'subProducts'));
     }
 
     /**
@@ -178,6 +189,8 @@ class ProductController extends Controller
             'size_ids' => 'nullable|array',
             'size_ids.*' => 'exists:sizes,id',
             'has_sub_product' => 'nullable|boolean',
+            'sub_product_ids' => 'nullable|array',
+            'sub_product_ids.*' => 'exists:sub_products,id',
             'calculation_based_on' => ['required', Rule::in(['quantity', 'weight', 'sqft', 'dimension'])],
             'reorder_applicable' => 'nullable|boolean',
             'min_stock_level' => 'nullable|numeric|min:0',
@@ -210,6 +223,12 @@ class ProductController extends Controller
                 $product->sizes()->sync($request->size_ids);
             } else {
                 $product->sizes()->detach();
+            }
+
+            if ($product->has_sub_product && $request->filled('sub_product_ids')) {
+                $product->subProducts()->sync($request->sub_product_ids);
+            } else {
+                $product->subProducts()->detach();
             }
 
             ActivityLogService::log(

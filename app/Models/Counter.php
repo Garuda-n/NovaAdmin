@@ -14,6 +14,16 @@ class Counter extends Model
         'created_by',
         'updated_by',
     ];
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['counter_name'] ?? null;
+    }
+
+    public function getCodeAttribute(): ?string
+    {
+        return $this->attributes['counter_code'] ?? null;
+    }
     public function branches()
     {
         return $this->belongsToMany(Branch::class, 'branch_counters')

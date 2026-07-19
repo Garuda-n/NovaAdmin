@@ -59,6 +59,11 @@ class Supplier extends Model
         'branch_id' => 'integer',
     ];
 
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['supplier_name'] ?? null;
+    }
+
     /**
      * Relationship: Country
      */

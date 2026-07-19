@@ -15,6 +15,8 @@ use App\Http\Controllers\CounterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
+use App\Http\Controllers\SubProductController;
+use App\Http\Controllers\Inventory\StockInwardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
@@ -346,6 +348,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sizes', SizeController::class)
         ->only(['destroy'])
         ->middleware('permission:sizes.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sub Products
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('sub-products', SubProductController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:sub-products.create');
+
+    Route::resource('sub-products', SubProductController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:sub-products.view');
+
+    Route::resource('sub-products', SubProductController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:sub-products.edit');
+
+    Route::resource('sub-products', SubProductController::class)
+        ->only(['destroy'])
+        ->middleware('permission:sub-products.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inventory Bulk Inward
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('inventory/stock-inwards', StockInwardController::class)
+        ->only(['create', 'store'])
+        ->names('stock-inwards')
+        ->middleware('permission:stock-inwards.create');
+
+    Route::resource('inventory/stock-inwards', StockInwardController::class)
+        ->only(['index', 'show'])
+        ->names('stock-inwards')
+        ->middleware('permission:stock-inwards.view');
+
+    Route::resource('inventory/stock-inwards', StockInwardController::class)
+        ->only(['edit', 'update'])
+        ->names('stock-inwards')
+        ->middleware('permission:stock-inwards.edit');
+
+    Route::resource('inventory/stock-inwards', StockInwardController::class)
+        ->only(['destroy'])
+        ->names('stock-inwards')
+        ->middleware('permission:stock-inwards.delete');
 
     /*
     |--------------------------------------------------------------------------

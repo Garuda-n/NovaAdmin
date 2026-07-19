@@ -51,6 +51,7 @@
                 @endisset
 
                 <main class="flex-1 bg-slate-100 dark:bg-slate-900 overflow-y-auto">
+                    <x-toast />
                     {{ $slot }}
                 </main>
             </div>
