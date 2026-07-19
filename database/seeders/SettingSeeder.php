@@ -35,6 +35,13 @@ class SettingSeeder extends Seeder
                 'description' => 'Mandatory 15-digit GSTIN validation for B2B customers (1 = Enabled, 0 = Optional)',
             ],
             [
+                'key'         => 'supplier_scope',
+                'value'       => 'Global',
+                'group'       => 'suppliers',
+                'type'        => 'string',
+                'description' => 'Supplier Scope Policy: Global (accessible across all branches) or Branch (bound to specific branch)',
+            ],
+            [
                 'key'         => 'default_credit_limit',
                 'value'       => '0.00',
                 'group'       => 'financial',

@@ -93,6 +93,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Companies', 'route' => 'companies.index', 'icon' => 'building-office', 'permission_slug' => 'companies.view', 'order' => 1],
             ['name' => 'Branches', 'route' => 'branches.index', 'icon' => 'map-pin', 'permission_slug' => 'branches.view', 'order' => 2],
             ['name' => 'Customers', 'route' => 'customers.index', 'icon' => 'user-group', 'permission_slug' => 'customers.view', 'order' => 3],
+            ['name' => 'Suppliers', 'route' => 'suppliers.index', 'icon' => 'truck', 'permission_slug' => 'suppliers.view', 'order' => 4],
         ];
 
         foreach ($mastersChildren as $child) {

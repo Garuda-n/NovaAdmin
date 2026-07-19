@@ -18,6 +18,7 @@ use App\Http\Controllers\SizeController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -370,6 +371,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('customers', CustomerController::class)
         ->only(['destroy'])
         ->middleware('permission:customers.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Suppliers
+    |--------------------------------------------------------------------------
+    */
+    Route::post('suppliers/filter', [SupplierController::class, 'index'])
+        ->name('suppliers.filter')
+        ->middleware('permission:suppliers.view');
+
+    Route::resource('suppliers', SupplierController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:suppliers.create');
+
+    Route::resource('suppliers', SupplierController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:suppliers.view');
+
+    Route::resource('suppliers', SupplierController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:suppliers.edit');
+
+    Route::resource('suppliers', SupplierController::class)
+        ->only(['destroy'])
+        ->middleware('permission:suppliers.delete');
 
     /*
     |--------------------------------------------------------------------------

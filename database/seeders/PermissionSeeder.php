@@ -40,6 +40,10 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Customers', 'slug' => 'customers.create', 'group' => 'Masters'],
             ['name' => 'Edit Customers', 'slug' => 'customers.edit', 'group' => 'Masters'],
             ['name' => 'Delete Customers', 'slug' => 'customers.delete', 'group' => 'Masters'],
+            ['name' => 'View Suppliers', 'slug' => 'suppliers.view', 'group' => 'Masters'],
+            ['name' => 'Create Suppliers', 'slug' => 'suppliers.create', 'group' => 'Masters'],
+            ['name' => 'Edit Suppliers', 'slug' => 'suppliers.edit', 'group' => 'Masters'],
+            ['name' => 'Delete Suppliers', 'slug' => 'suppliers.delete', 'group' => 'Masters'],
 
             // Catalog Masters
             ['name' => 'View Taxes', 'slug' => 'taxes.view', 'group' => 'Catalog Masters'],
