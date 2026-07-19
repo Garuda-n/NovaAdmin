@@ -132,6 +132,7 @@
                     @canany($childPermissions)
                     <div>
                         <button
+                            type="button"
                             @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
                             class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
                             <div class="flex items-center">
@@ -199,6 +200,7 @@
                     {{-- No permission-gated children, show unconditionally --}}
                     <div>
                         <button
+                            type="button"
                             @click="openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
                             class="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-800 transition">
                             <div class="flex items-center">

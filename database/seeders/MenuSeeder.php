@@ -116,6 +116,8 @@ class MenuSeeder extends Seeder
         $productChildren = [
             ['name' => 'Categories', 'route' => 'categories.index', 'icon' => 'rectangle-group', 'permission_slug' => 'categories.view', 'order' => 1],
             ['name' => 'Brands', 'route' => 'brands.index', 'icon' => 'tag', 'permission_slug' => 'brands.view', 'order' => 2],
+            ['name' => 'Products', 'route' => 'products.index', 'icon' => 'cube', 'permission_slug' => 'products.view', 'order' => 3],
+            ['name' => 'Sizes', 'route' => 'sizes.index', 'icon' => 'arrows-right-left', 'permission_slug' => 'sizes.view', 'order' => 4],
         ];
 
         foreach ($productChildren as $child) {

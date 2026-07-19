@@ -60,6 +60,14 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Brands', 'slug' => 'brands.create', 'group' => 'Product Masters'],
             ['name' => 'Edit Brands', 'slug' => 'brands.edit', 'group' => 'Product Masters'],
             ['name' => 'Delete Brands', 'slug' => 'brands.delete', 'group' => 'Product Masters'],
+            ['name' => 'View Products', 'slug' => 'products.view', 'group' => 'Product Masters'],
+            ['name' => 'Create Products', 'slug' => 'products.create', 'group' => 'Product Masters'],
+            ['name' => 'Edit Products', 'slug' => 'products.edit', 'group' => 'Product Masters'],
+            ['name' => 'Delete Products', 'slug' => 'products.delete', 'group' => 'Product Masters'],
+            ['name' => 'View Sizes', 'slug' => 'sizes.view', 'group' => 'Product Masters'],
+            ['name' => 'Create Sizes', 'slug' => 'sizes.create', 'group' => 'Product Masters'],
+            ['name' => 'Edit Sizes', 'slug' => 'sizes.edit', 'group' => 'Product Masters'],
+            ['name' => 'Delete Sizes', 'slug' => 'sizes.delete', 'group' => 'Product Masters'],
 
             // Menus
             ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],

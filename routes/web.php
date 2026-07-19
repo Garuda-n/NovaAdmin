@@ -13,6 +13,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CounterController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SizeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -294,6 +296,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('menus', MenuController::class)
         ->only(['destroy'])
         ->middleware('permission:menus.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Products
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('products', ProductController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:products.create');
+
+    Route::resource('products', ProductController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:products.view');
+
+    Route::resource('products', ProductController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:products.edit');
+
+    Route::resource('products', ProductController::class)
+        ->only(['destroy'])
+        ->middleware('permission:products.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sizes
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('sizes', SizeController::class)
+        ->only(['create', 'store'])
+        ->middleware('permission:sizes.create');
+
+    Route::resource('sizes', SizeController::class)
+        ->only(['index', 'show'])
+        ->middleware('permission:sizes.view');
+
+    Route::resource('sizes', SizeController::class)
+        ->only(['edit', 'update'])
+        ->middleware('permission:sizes.edit');
+
+    Route::resource('sizes', SizeController::class)
+        ->only(['destroy'])
+        ->middleware('permission:sizes.delete');
 });
 
 /*
