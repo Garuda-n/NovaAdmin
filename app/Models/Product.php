@@ -12,6 +12,16 @@ class Product extends Model
 {
     use HasFactory;
 
+    // Tracking Types
+    const TRACKING_QUANTITY = 1;
+    const TRACKING_INDIVIDUAL = 2;
+    const TRACKING_BATCH = 3;
+    const TRACKING_SERIAL = 4;
+
+    // Item Generation Modes
+    const ITEM_GEN_INDIVIDUAL = 'individual';
+    const ITEM_GEN_BULK = 'bulk';
+
     protected $fillable = [
         'code',
         'name',
@@ -26,6 +36,8 @@ class Product extends Model
         'has_size',
         'has_sub_product',
         'calculation_based_on',
+        'tracking_type',
+        'item_generation_mode',
         'reorder_applicable',
         'min_stock_level',
         'image',
@@ -39,9 +51,61 @@ class Product extends Model
         'status' => 'boolean',
         'has_size' => 'boolean',
         'has_sub_product' => 'boolean',
+        'tracking_type' => 'integer',
         'reorder_applicable' => 'boolean',
         'min_stock_level' => 'decimal:2',
     ];
+
+    /**
+     * Get all tracking types map.
+     */
+    public static function getTrackingTypes(): array
+    {
+        return [
+            self::TRACKING_QUANTITY => 'Quantity Based',
+            self::TRACKING_INDIVIDUAL => 'Individual Item Based',
+            self::TRACKING_BATCH => 'Batch Based (Future)',
+            self::TRACKING_SERIAL => 'Serial Number Based (Future)',
+        ];
+    }
+
+    /**
+     * Get currently active tracking types for form options.
+     */
+    public static function getAvailableTrackingTypes(): array
+    {
+        return [
+            self::TRACKING_QUANTITY => 'Quantity Based',
+            self::TRACKING_INDIVIDUAL => 'Individual Item Based',
+        ];
+    }
+
+    /**
+     * Accessor for tracking type human label.
+     */
+    public function getTrackingTypeLabelAttribute(): string
+    {
+        return self::getTrackingTypes()[$this->tracking_type] ?? 'Individual Item Based';
+    }
+
+    /**
+     * Get all item generation modes map.
+     */
+    public static function getItemGenerationModes(): array
+    {
+        return [
+            self::ITEM_GEN_INDIVIDUAL => 'Individual',
+            self::ITEM_GEN_BULK => 'Bulk',
+        ];
+    }
+
+    /**
+     * Accessor for item generation mode label.
+     */
+    public function getItemGenerationModeLabelAttribute(): string
+    {
+        return self::getItemGenerationModes()[$this->item_generation_mode] ?? 'Individual';
+    }
 
     public function category(): BelongsTo
     {

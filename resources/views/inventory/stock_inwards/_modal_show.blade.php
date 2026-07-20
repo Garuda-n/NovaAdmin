@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" id="stock-inward-print-area">
 
     <!-- Header & Action Bar -->
     <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700/60">
@@ -19,17 +19,17 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 print:hidden">
+            <button onclick="window.print()" type="button"
+               class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition shadow flex items-center gap-1">
+                <x-heroicon-o-printer class="w-4 h-4" /> Print
+            </button>
             @can('stock-inwards.edit')
             <a href="{{ route('stock-inwards.edit', $stockInward) }}"
                class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition shadow flex items-center gap-1">
                 <x-heroicon-o-pencil-square class="w-4 h-4" /> Edit Invoice
             </a>
             @endcan
-            <button @click="showModal = false"
-                    class="px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 text-xs font-medium transition">
-                Close &times;
-            </button>
         </div>
     </div>
 
@@ -164,6 +164,30 @@
                 </tfoot>
             </table>
         </div>
-    </div>
-
 </div>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #stock-inward-print-area, #stock-inward-print-area * {
+        visibility: visible !important;
+    }
+    #stock-inward-print-area {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        background: white !important;
+        color: black !important;
+        z-index: 99999 !important;
+    }
+    .print\:hidden {
+        display: none !important;
+    }
+}
+</style>

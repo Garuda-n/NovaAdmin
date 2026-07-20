@@ -380,6 +380,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->names('stock-inwards')
         ->middleware('permission:stock-inwards.create');
 
+    Route::post('inventory/stock-inwards/filter', [StockInwardController::class, 'index'])
+        ->name('stock-inwards.filter')
+        ->middleware('permission:stock-inwards.view');
+
     Route::resource('inventory/stock-inwards', StockInwardController::class)
         ->only(['index', 'show'])
         ->names('stock-inwards')

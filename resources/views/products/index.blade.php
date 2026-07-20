@@ -83,6 +83,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">HSN</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">UOM</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tax Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tracking Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Item Gen Mode</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Status</th>
                                 @if(Auth::user()->can('products.edit') || Auth::user()->can('products.delete'))
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Action</th>
@@ -138,6 +140,32 @@
                                         {{ $product->tax_type }}
                                     </td>
 
+                                    <!-- Tracking Type -->
+                                    <td class="px-6 py-4 text-xs">
+                                        @if($product->tracking_type === \App\Models\Product::TRACKING_INDIVIDUAL)
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                                Individual Item
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                Quantity Based
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- Item Generation Mode -->
+                                    <td class="px-6 py-4 text-xs">
+                                        @if($product->item_generation_mode === \App\Models\Product::ITEM_GEN_BULK)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono font-semibold text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                Bulk
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded font-mono font-semibold text-xs bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                                                Individual
+                                            </span>
+                                        @endif
+                                    </td>
+
                                     <!-- Status -->
                                     <td class="px-6 py-4">
                                         @if($product->status)
@@ -181,7 +209,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="12" class="px-6 py-6 text-center text-gray-500 dark:text-gray-400">
                                         No products found.
                                     </td>
                                 </tr>

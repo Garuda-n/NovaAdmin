@@ -39,10 +39,6 @@
                 Edit Customer
             </a>
             @endcan
-            <button @click="showModal = false"
-                    class="px-3 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 text-xs font-medium transition">
-                Close &times;
-            </button>
         </div>
     </div>
 

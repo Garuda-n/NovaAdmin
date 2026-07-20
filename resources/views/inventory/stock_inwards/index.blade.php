@@ -17,158 +17,81 @@
     <div class="py-6" x-data="stockInwardIndex()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
-            <!-- Filter Bar -->
+            <!-- Filter Bar (Zero Reload AJAX POST) -->
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-4">
-                <form method="GET" action="{{ route('stock-inwards.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form @submit.prevent="applyFilter()" method="POST" action="{{ route('stock-inwards.filter') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    @csrf
+
                     <!-- Search -->
                     <div>
                         <input
                             type="text"
                             name="search"
-                            value="{{ request('search') }}"
-                            placeholder="Search Invoice No or Supplier..."
+                            x-model="search"
+                            @input.debounce.400ms="applyFilter()"
+                            placeholder="Search Ref No, Invoice No or Supplier..."
                             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                     </div>
 
                     <!-- Company Filter -->
                     <div>
-                        <select name="company_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                        <select name="company_id" x-model="companyId" @change="applyFilter()" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                             <option value="">All Companies</option>
-                            @foreach($companies as $cat)
-                                <option value="{{ $cat->id }}" {{ request('company_id') == $cat->id ? 'selected' : '' }}>
-                                    {{ $cat->name }}
-                                </option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->id }}">{{ $company->name }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <!-- Branch Filter -->
                     <div>
-                        <select name="branch_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                        <select name="branch_id" x-model="branchId" @change="applyFilter()" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
                             <option value="">All Branches</option>
                             @foreach($branches as $branch)
-                                <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
-                                    {{ $branch->name }}
-                                </option>
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Filter & Clear Buttons -->
-                    <div class="flex gap-2">
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition">
-                            Filter
+                    <!-- Supplier Filter -->
+                    <div>
+                        <select name="supplier_id" x-model="supplierId" @change="applyFilter()" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                            <option value="">All Suppliers</option>
+                            @foreach($suppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->supplier_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="md:col-span-4 flex justify-end gap-2">
+                        <button
+                            type="submit"
+                            :disabled="loading"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2">
+                            <svg x-show="loading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Filter</span>
                         </button>
-                        @if(request()->hasAny(['search', 'company_id', 'branch_id']))
-                            <a href="{{ route('stock-inwards.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition">
-                                Clear
-                            </a>
-                        @endif
+                        <button
+                            type="button"
+                            @click="resetFilter()"
+                            x-show="search || companyId || branchId || supplierId"
+                            class="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">
+                            Reset
+                        </button>
                     </div>
                 </form>
             </div>
 
-            <!-- Data Table Card -->
-            <div class="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
-                        <thead class="bg-gray-100 dark:bg-slate-700">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Invoice No</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Company & Branch</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Supplier</th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Items</th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
-                            @forelse($stockInwards as $inward)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                                    
-                                    <!-- Invoice No -->
-                                    <td class="px-6 py-4 font-mono font-semibold text-indigo-600 dark:text-indigo-400 text-sm">
-                                        <a href="{{ route('stock-inwards.show', $inward) }}"
-                                           @click.prevent="openInwardModal({{ $inward->id }})"
-                                           class="hover:underline cursor-pointer">
-                                            {{ $inward->invoice_no }}
-                                        </a>
-                                    </td>
-
-                                    <!-- Date -->
-                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                        {{ $inward->invoice_date ? $inward->invoice_date->format('d M Y') : '—' }}
-                                    </td>
-
-                                    <!-- Company & Branch -->
-                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                        <div class="font-medium">{{ $inward->company->name ?? '—' }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $inward->branch->name ?? '—' }}{{ $inward->counter ? ' (' . $inward->counter->counter_name . ')' : '' }}</div>
-                                    </td>
-
-                                    <!-- Supplier -->
-                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                        {{ $inward->supplier->supplier_name ?? '—' }}
-                                    </td>
-
-                                    <!-- Items Count -->
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
-                                            {{ $inward->items_count }} {{ Str::plural('item', $inward->items_count) }}
-                                        </span>
-                                    </td>
-
-                                    <!-- Actions -->
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex justify-center gap-2">
-                                            <!-- View Popup Button -->
-                                            <button type="button"
-                                                @click.prevent="openInwardModal({{ $inward->id }})"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition cursor-pointer"
-                                                title="Quick View Invoice">
-                                                <x-heroicon-o-eye class="w-4 h-4" />
-                                            </button>
-
-                                            @can('stock-inwards.edit')
-                                            <a href="{{ route('stock-inwards.edit', $inward) }}"
-                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition"
-                                                title="Edit Invoice">
-                                                <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                            </a>
-                                            @endcan
-
-                                            @can('stock-inwards.delete')
-                                            <form action="{{ route('stock-inwards.destroy', $inward) }}" method="POST"
-                                                  onsubmit="return confirm('Delete this bulk stock inward invoice?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
-                                                    title="Delete Invoice">
-                                                    <x-heroicon-o-trash class="w-4 h-4" />
-                                                </button>
-                                            </form>
-                                            @endcan
-                                        </div>
-                                    </td>
-
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                        No bulk stock inward records found.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                @if($stockInwards->hasPages())
-                    <div class="p-4 border-t border-gray-200 dark:border-slate-700">
-                        {{ $stockInwards->links() }}
-                    </div>
-                @endif
+            <!-- Dynamic Table Container -->
+            <div id="stock-inward-table-container"
+                 x-ref="tableContainer"
+                 :class="{ 'opacity-50 pointer-events-none': loading }"
+                 class="transition-opacity duration-200">
+                @include('inventory.stock_inwards._table', ['stockInwards' => $stockInwards])
             </div>
 
             <!-- Quick View Modal Popup -->
@@ -193,9 +116,68 @@
     <script>
         function stockInwardIndex() {
             return {
+                search: '{{ request('search') }}',
+                companyId: '{{ request('company_id') }}',
+                branchId: '{{ request('branch_id') }}',
+                supplierId: '{{ request('supplier_id') }}',
+                filterUrl: '{{ route('stock-inwards.filter') }}',
+                csrfToken: '{{ csrf_token() }}',
+                loading: false,
+
                 showModal: false,
                 modalHtml: '',
                 modalLoading: false,
+
+                init() {
+                    document.addEventListener('click', (e) => {
+                        const paginationLink = e.target.closest('#stock-inward-table-container .pagination-wrapper a, #stock-inward-table-container nav a');
+                        if (paginationLink && paginationLink.href) {
+                            e.preventDefault();
+                            this.fetchData(paginationLink.href);
+                        }
+                    });
+                },
+
+                applyFilter() {
+                    this.fetchData(this.filterUrl);
+                },
+
+                resetFilter() {
+                    this.search = '';
+                    this.companyId = '';
+                    this.branchId = '';
+                    this.supplierId = '';
+                    this.applyFilter();
+                },
+
+                fetchData(url) {
+                    this.loading = true;
+                    const formData = new FormData();
+                    formData.append('_token', this.csrfToken);
+                    if (this.search) formData.append('search', this.search);
+                    if (this.companyId) formData.append('company_id', this.companyId);
+                    if (this.branchId) formData.append('branch_id', this.branchId);
+                    if (this.supplierId) formData.append('supplier_id', this.supplierId);
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.html) {
+                            this.$refs.tableContainer.innerHTML = data.html;
+                        }
+                    })
+                    .catch(err => console.error('Filter error:', err))
+                    .finally(() => {
+                        this.loading = false;
+                    });
+                },
 
                 openInwardModal(id) {
                     this.modalLoading = true;

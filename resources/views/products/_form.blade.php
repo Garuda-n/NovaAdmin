@@ -338,8 +338,112 @@
         </div>
     </div>
 
-    <!-- Section 4: Inventory & Reordering -->
+    <!-- Section: Inventory Tracking -->
+    <div class="border-b border-gray-200 dark:border-slate-700 pb-6"><br>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+            Inventory Tracking <span class="text-red-500">*</span>
+        </h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Select how inventory workflows should be tracked and allocated for this product.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Option 1: Individual Item Based (Default) -->
+            <label class="relative flex items-start p-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition shadow-sm">
+                <div class="flex items-center h-5">
+                    <input
+                        type="radio"
+                        name="tracking_type"
+                        value="{{ \App\Models\Product::TRACKING_INDIVIDUAL }}"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700"
+                        {{ old('tracking_type', $product->tracking_type ?? \App\Models\Product::TRACKING_INDIVIDUAL) == \App\Models\Product::TRACKING_INDIVIDUAL ? 'checked' : '' }}
+                        required>
+                </div>
+                <div class="ml-3 text-sm">
+                    <span class="font-semibold text-gray-900 dark:text-gray-100 block">Individual Item Based</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                        Bulk inward receives quantity; items are queued for allocation into individual stock units (e.g. Shirts, Sarees, Shoes, Mobiles).
+                    </span>
+                </div>
+            </label>
+
+            <!-- Option 2: Quantity Based -->
+            <label class="relative flex items-start p-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition shadow-sm">
+                <div class="flex items-center h-5">
+                    <input
+                        type="radio"
+                        name="tracking_type"
+                        value="{{ \App\Models\Product::TRACKING_QUANTITY }}"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700"
+                        {{ old('tracking_type', $product->tracking_type ?? \App\Models\Product::TRACKING_INDIVIDUAL) == \App\Models\Product::TRACKING_QUANTITY ? 'checked' : '' }}>
+                </div>
+                <div class="ml-3 text-sm">
+                    <span class="font-semibold text-gray-900 dark:text-gray-100 block">Quantity Based</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                        Bulk inward updates current stock quantity directly. No individual item records created (e.g. Rice, Sugar, Cement, Grocery).
+                    </span>
+                </div>
+            </label>
+        </div>
+        @error('tracking_type')
+            <p class="text-sm text-red-500 mt-2">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <!-- Section: Item Generation Mode -->
     <div class="border-b border-gray-200 dark:border-slate-700 pb-6">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+            Item Generation Mode <span class="text-red-500">*</span>
+        </h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+            Determines how inventory item codes are generated for products that use Individual Item Based tracking.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Option 1: Individual -->
+            <label class="relative flex items-start p-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition shadow-sm">
+                <div class="flex items-center h-5">
+                    <input
+                        type="radio"
+                        name="item_generation_mode"
+                        value="{{ \App\Models\Product::ITEM_GEN_INDIVIDUAL }}"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700"
+                        {{ old('item_generation_mode', $product->item_generation_mode ?? \App\Models\Product::ITEM_GEN_INDIVIDUAL) == \App\Models\Product::ITEM_GEN_INDIVIDUAL ? 'checked' : '' }}
+                        required>
+                </div>
+                <div class="ml-3 text-sm">
+                    <span class="font-semibold text-gray-900 dark:text-gray-100 block">Individual Item Generation</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                        Generates a unique item code for each individual unit received during stock inward allocation.
+                    </span>
+                </div>
+            </label>
+
+            <!-- Option 2: Bulk -->
+            <label class="relative flex items-start p-4 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer transition shadow-sm">
+                <div class="flex items-center h-5">
+                    <input
+                        type="radio"
+                        name="item_generation_mode"
+                        value="{{ \App\Models\Product::ITEM_GEN_BULK }}"
+                        class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700"
+                        {{ old('item_generation_mode', $product->item_generation_mode ?? \App\Models\Product::ITEM_GEN_INDIVIDUAL) == \App\Models\Product::ITEM_GEN_BULK ? 'checked' : '' }}>
+                </div>
+                <div class="ml-3 text-sm">
+                    <span class="font-semibold text-gray-900 dark:text-gray-100 block">Bulk Item Generation</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                        Generates batch or bulk item codes for grouped inventory allocations.
+                    </span>
+                </div>
+            </label>
+        </div>
+        @error('item_generation_mode')
+            <p class="text-sm text-red-500 mt-2">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <!-- Section 4: Inventory & Reordering -->
+    <div class="border-b border-gray-200 dark:border-slate-700 pb-6"><br>
         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
             Stock & Reorder
         </h3>

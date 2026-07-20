@@ -26,9 +26,10 @@ class StockInwardController extends Controller
             ->latest();
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = ltrim($request->search, '#');
             $query->where(function ($q) use ($search) {
-                $q->where('invoice_no', 'like', "%{$search}%")
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhere('invoice_no', 'like', "%{$search}%")
                   ->orWhereHas('supplier', function ($sq) use ($search) {
                       $sq->where('supplier_name', 'like', "%{$search}%");
                   });
@@ -48,6 +49,12 @@ class StockInwardController extends Controller
         }
 
         $stockInwards = $query->paginate(15)->withQueryString();
+
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'html' => view('inventory.stock_inwards._table', compact('stockInwards'))->render()
+            ]);
+        }
 
         $companies = Company::where('status', 1)->orderBy('name')->get();
         $branches = Branch::where('status', 1)->orderBy('name')->get();
