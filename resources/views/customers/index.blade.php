@@ -1,5 +1,5 @@
 <x-app-layout>
-
+    <script src="{{ asset('js/masters/customer_index.js') }}"></script>
     <div class="py-6 bg-slate-100 dark:bg-[#0f1422] min-h-screen"
          x-data="ajaxCustomerFilter({
              filterUrl: '{{ route('customers.filter') }}',
@@ -114,7 +114,5 @@
 
         </div>
     </div>
-
-    <script src="{{ asset('js/masters/customer_index.js') }}" defer></script>
 
 </x-app-layout>

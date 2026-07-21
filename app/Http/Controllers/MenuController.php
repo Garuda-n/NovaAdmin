@@ -18,7 +18,8 @@ class MenuController extends Controller
         $menus = Menu::with('children')
             ->roots()
             ->orderBy('order')
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
         return view('menus.index', compact('menus'));
     }

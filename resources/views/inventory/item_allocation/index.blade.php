@@ -8,8 +8,9 @@
         </div>
     </x-slot>
 
+    <script src="{{ asset('js/inventory/allocation_filter.js') }}"></script>
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="itemAllocationFilter()">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="itemAllocationFilter({ search: '{{ request('search') }}', branch_id: '{{ request('branch_id') }}', supplier_id: '{{ request('supplier_id') }}', category_id: '{{ request('category_id') }}', filterUrl: '{{ route('item-allocation.filter') }}', csrfToken: '{{ csrf_token() }}' })">
 
             <x-toast />
 
@@ -77,11 +78,6 @@
                 @include('inventory.item_allocation._table')
             </div>
 
-        </div>
-    </div>
-
     <!-- Include Allocation Modal Partial -->
     @include('inventory.stock_inwards._allocation_modal')
-
-    <script src="{{ asset('js/inventory/allocation_filter.js') }}" defer></script>
 </x-app-layout>

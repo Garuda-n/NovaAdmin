@@ -91,6 +91,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'Edit Stock Inward', 'slug' => 'stock-inwards.edit', 'group' => 'Inventory'],
             ['name' => 'Delete Stock Inward', 'slug' => 'stock-inwards.delete', 'group' => 'Inventory'],
 
+            // Stock Report
+            ['name' => 'View Available Stock', 'slug' => 'available-stock.view', 'group' => 'Stock Report'],
+
             // Menus
             ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],
             ['name' => 'Create Menus', 'slug' => 'menus.create', 'group' => 'Administration'],

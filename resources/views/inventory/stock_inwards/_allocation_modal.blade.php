@@ -1,3 +1,4 @@
+<script src="{{ asset('js/inventory/allocation.js') }}"></script>
 <!-- Individual Item Allocation Modal -->
 <div id="allocation-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300">
     <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transform transition-all">
@@ -144,5 +145,3 @@
         </div>
     </div>
 </div>
-
-<script src="{{ asset('js/inventory/allocation.js') }}" defer></script>

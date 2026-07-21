@@ -3,7 +3,7 @@
         ['product_id' => '', 'sub_product_id' => '', 'qty' => 1, 'weight' => '', 'purchase_price' => '', 'selling_price' => '', 'mrp' => '', 'remarks' => '']
     ]);
 @endphp
-
+<script src="{{ asset('js/inventory/stock_inward_form.js') }}"></script>
 <div x-data="stockInwardForm({{ json_encode($oldItems) }}, {{ json_encode($products) }})" class="space-y-6">
 
     <!-- Header Section Card -->
@@ -334,5 +334,3 @@
     </div>
 
 </div>
-
-<script src="{{ asset('js/inventory/stock_inward_form.js') }}" defer></script>

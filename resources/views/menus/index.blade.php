@@ -28,6 +28,10 @@
                             <tr>
 
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+                                    S.No
+                                </th>
+
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
                                     Order
                                 </th>
 
@@ -67,6 +71,10 @@
 
                                 {{-- Parent row --}}
                                 <tr class="bg-slate-50 dark:bg-slate-700/60 hover:bg-gray-100 dark:hover:bg-slate-600 transition">
+
+                                    <td class="px-6 py-4 text-gray-800 dark:text-gray-200 font-semibold">
+                                        {{ ($menus->currentPage() - 1) * $menus->perPage() + $loop->iteration }}
+                                    </td>
 
                                     <td class="px-6 py-4 text-gray-800 dark:text-gray-200 font-semibold">
                                         {{ $menu->order }}
@@ -139,6 +147,10 @@
                                 @foreach($menu->children->sortBy('order') as $child)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition">
 
+                                    <td class="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs font-medium">
+                                        {{ ($menus->currentPage() - 1) * $menus->perPage() + $loop->parent->iteration }}.{{ $loop->iteration }}
+                                    </td>
+
                                     <td class="px-6 py-3 pl-12 text-gray-600 dark:text-gray-400">
                                         {{ $child->order }}
                                     </td>
@@ -210,7 +222,7 @@
                             @empty
 
                                 <tr>
-                                    <td colspan="7"
+                                    <td colspan="8"
                                         class="px-6 py-6 text-center text-gray-500 dark:text-gray-400">
                                         No menus found.
                                     </td>
@@ -223,6 +235,12 @@
                     </table>
 
                 </div>
+
+                @if($menus->hasPages())
+                <div class="px-6 py-4 border-t border-gray-200 dark:border-slate-700">
+                    {{ $menus->links() }}
+                </div>
+                @endif
 
             </div>
 

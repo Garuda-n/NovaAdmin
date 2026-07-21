@@ -155,5 +155,29 @@ class MenuSeeder extends Seeder
                 array_merge($child, ['parent_id' => $inventory->id, 'status' => true])
             );
         }
+
+        // Stock Report (Dropdown parent)
+        $stockReport = Menu::firstOrCreate(
+            ['name' => 'Stock Report'],
+            [
+                'route' => null,
+                'icon' => 'chart-bar',
+                'parent_id' => null,
+                'permission_slug' => null,
+                'order' => 7,
+                'status' => true,
+            ]
+        );
+
+        $stockReportChildren = [
+            ['name' => 'Available Stocks Item wise', 'route' => 'available-stock.index', 'icon' => 'cube', 'permission_slug' => 'available-stock.view', 'order' => 1],
+        ];
+
+        foreach ($stockReportChildren as $child) {
+            Menu::firstOrCreate(
+                ['name' => $child['name'], 'parent_id' => $stockReport->id],
+                array_merge($child, ['parent_id' => $stockReport->id, 'status' => true])
+            );
+        }
     }
 }

@@ -14,6 +14,7 @@
         </div>
     </x-slot>
 
+    <script src="{{ asset('js/inventory/stock_inward_index.js') }}"></script>
     <div class="py-6" x-data="stockInwardIndex()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
@@ -113,5 +114,6 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/inventory/stock_inward_index.js') }}" defer></script>
+    <!-- Include Allocation Modal Partial -->
+    @include('inventory.stock_inwards._allocation_modal')
 </x-app-layout>

@@ -90,7 +90,7 @@ class ItemAllocationController extends Controller
             $item->pending_qty = max(0, (float) $item->qty - $item->allocated_qty);
         }
 
-        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if ($request->ajax() || $request->wantsJson() || $request->isMethod('post') || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'html' => view('inventory.item_allocation._table', compact('items'))->render()
             ]);

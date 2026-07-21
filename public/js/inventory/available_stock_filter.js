@@ -1,20 +1,23 @@
 /**
- * NovaAdmin - Item Allocation Filter Module
+ * NovaAdmin - Available Stock Filter Module
  */
-function itemAllocationFilter(config = {}) {
+function availableStockFilter(config = {}) {
     return {
-        search: config.search || '',
         branch_id: config.branch_id || '',
-        supplier_id: config.supplier_id || '',
+        counter_id: config.counter_id || '',
         category_id: config.category_id || '',
-        filterUrl: config.filterUrl || '/inventory/item-allocation/filter',
+        product_id: config.product_id || '',
+        sub_product_id: config.sub_product_id || '',
+        size_id: config.size_id || '',
+        item_code: config.item_code || '',
+        filterUrl: config.filterUrl || '/inventory/available-stock/filter',
         csrfToken: config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
         loading: false,
 
         init() {
             // Intercept pagination clicks inside table container
             document.addEventListener('click', (e) => {
-                const paginationLink = e.target.closest('#allocation-table-container .pagination-wrapper a, #allocation-table-container nav a');
+                const paginationLink = e.target.closest('#available-stock-table-container .pagination-wrapper a, #available-stock-table-container nav a');
                 if (paginationLink && paginationLink.href) {
                     e.preventDefault();
                     this.fetchData(paginationLink.href);
@@ -27,10 +30,13 @@ function itemAllocationFilter(config = {}) {
         },
 
         resetFilter() {
-            this.search = '';
             this.branch_id = '';
-            this.supplier_id = '';
+            this.counter_id = '';
             this.category_id = '';
+            this.product_id = '';
+            this.sub_product_id = '';
+            this.size_id = '';
+            this.item_code = '';
             this.applyFilter();
         },
 
@@ -38,10 +44,13 @@ function itemAllocationFilter(config = {}) {
             this.loading = true;
             const formData = new FormData();
             formData.append('_token', this.csrfToken);
-            if (this.search) formData.append('search', this.search);
             if (this.branch_id) formData.append('branch_id', this.branch_id);
-            if (this.supplier_id) formData.append('supplier_id', this.supplier_id);
+            if (this.counter_id) formData.append('counter_id', this.counter_id);
             if (this.category_id) formData.append('category_id', this.category_id);
+            if (this.product_id) formData.append('product_id', this.product_id);
+            if (this.sub_product_id) formData.append('sub_product_id', this.sub_product_id);
+            if (this.size_id) formData.append('size_id', this.size_id);
+            if (this.item_code) formData.append('item_code', this.item_code);
 
             fetch(url, {
                 method: 'POST',
@@ -54,14 +63,14 @@ function itemAllocationFilter(config = {}) {
             .then(res => res.json())
             .then(result => {
                 if (result.html) {
-                    const tableContainer = document.getElementById('allocation-table-container');
+                    const tableContainer = document.getElementById('available-stock-table-container');
                     if (tableContainer) {
                         tableContainer.innerHTML = result.html;
                     }
                 }
             })
             .catch(error => {
-                console.error('Filter error:', error);
+                console.error('Available stock filter error:', error);
             })
             .finally(() => {
                 this.loading = false;

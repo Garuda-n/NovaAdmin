@@ -50,7 +50,7 @@ class StockInwardController extends Controller
 
         $stockInwards = $query->paginate(15)->withQueryString();
 
-        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        if ($request->ajax() || $request->wantsJson() || $request->isMethod('post') || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'html' => view('inventory.stock_inwards._table', compact('stockInwards'))->render()
             ]);
@@ -195,7 +195,7 @@ class StockInwardController extends Controller
         $counters = \App\Models\Counter::where('status', 1)->orderBy('counter_name')->get();
         $sizes = \App\Models\Size::where('status', 1)->orderBy('name')->get();
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([
                 'html' => view('inventory.stock_inwards._modal_show', compact('stockInward', 'counters', 'sizes'))->render(),
             ]);

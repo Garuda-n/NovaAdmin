@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\SizeController;
 use App\Http\Controllers\SubProductController;
 use App\Http\Controllers\Inventory\StockInwardController;
 use App\Http\Controllers\Inventory\ItemAllocationController;
+use App\Http\Controllers\Inventory\AvailableStockController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
@@ -46,9 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Dashboard
     |--------------------------------------------------------------------------
     */
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard')->middleware('permission:dashboard.view');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard')
+        ->middleware('permission:dashboard.view');
 
     /*
     |--------------------------------------------------------------------------
@@ -380,9 +382,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('item-allocation.index')
         ->middleware('permission:stock-inwards.view');
 
-    Route::post('inventory/item-allocation/filter', [ItemAllocationController::class, 'index'])
+    Route::match(['get', 'post'], 'inventory/item-allocation/filter', [ItemAllocationController::class, 'index'])
         ->name('item-allocation.filter')
         ->middleware('permission:stock-inwards.view');
+
+    Route::get('inventory/available-stock', [AvailableStockController::class, 'index'])
+        ->name('available-stock.index')
+        ->middleware('permission:available-stock.view');
+
+    Route::match(['get', 'post'], 'inventory/available-stock/filter', [AvailableStockController::class, 'index'])
+        ->name('available-stock.filter')
+        ->middleware('permission:available-stock.view');
 
     Route::get('inventory/stock-inwards/items/{stockInwardItem}/pending-info', [ItemAllocationController::class, 'pendingInfo'])
         ->name('stock-inwards.items.pending-info')

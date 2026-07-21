@@ -37,15 +37,8 @@
                             <div class="space-y-6">
                                 @foreach($permissions as $group => $groupPermissions)
                                     <div class="bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
-                                        <div class="flex items-center justify-between mb-3">
+                                        <div class="mb-3">
                                             <h3 class="text-slate-900 dark:text-white font-semibold text-base">{{ $group }}</h3>
-                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition">
-                                                <input type="checkbox"
-                                                    class="select-all-group rounded border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-700 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0"
-                                                    data-group="{{ $group }}"
-                                                    onchange="toggleGroup(this, '{{ $group }}')">
-                                                <span>Select All</span>
-                                            </label>
                                         </div>
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             @foreach($groupPermissions as $permission)

@@ -30,7 +30,12 @@ class RoleController extends Controller
         ]);
 
         if ($request->has('permissions')) {
-            $role->permissions()->sync($request->permissions);
+            $validPermissionIds = Permission::whereIn('id', $request->permissions)
+                ->where('slug', 'not like', '%.delete')
+                ->where('slug', 'not like', '%delete%')
+                ->pluck('id')
+                ->toArray();
+            $role->permissions()->sync($validPermissionIds);
         }
 
         ActivityLog::create([
@@ -65,7 +70,14 @@ class RoleController extends Controller
             'name' => $request->name
         ]);
 
-        $role->permissions()->sync($request->permissions ?? []);
+        $permissionsInput = $request->permissions ?? [];
+        $validPermissionIds = Permission::whereIn('id', $permissionsInput)
+            ->where('slug', 'not like', '%.delete')
+            ->where('slug', 'not like', '%delete%')
+            ->pluck('id')
+            ->toArray();
+
+        $role->permissions()->sync($validPermissionIds);
 
         ActivityLog::create([
             'user_id'      => auth()->id(),
