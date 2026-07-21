@@ -101,14 +101,13 @@
                 <thead class="bg-slate-100 dark:bg-slate-800">
                     <tr>
                         <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">#</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Category</th>
                         <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Product</th>
                         <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Sub Product</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Qty</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Weight</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Purchase Price</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Selling Price</th>
-                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">MRP</th>
-                        <th class="px-3 py-2.5 text-left text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Remarks</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Received Qty</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Allocated Qty</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Pending Qty</th>
+                        <th class="px-3 py-2.5 text-center text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 print:hidden">Allocation Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900/40">
@@ -116,6 +115,9 @@
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
                             <td class="px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                                 {{ $index + 1 }}
+                            </td>
+                            <td class="px-3 py-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                                {{ $item->product->category->name ?? '—' }}
                             </td>
                             <td class="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
                                 {{ $item->product->code ?? '' }} - {{ $item->product->name ?? '—' }}
@@ -129,42 +131,56 @@
                                     <span class="text-slate-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-3 py-2 text-xs text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                                {{ number_format($item->qty, 3) }}
+                            <td class="px-3 py-2 text-xs text-right font-mono font-bold text-slate-800 dark:text-slate-200">
+                                {{ number_format($item->qty, 0) }}
                             </td>
-                            <td class="px-3 py-2 text-xs text-right font-mono text-slate-700 dark:text-slate-300">
-                                {{ $item->weight !== null ? number_format($item->weight, 3) : '—' }}
+                            <td id="item-allocated-qty-{{ $item->id }}" class="px-3 py-2 text-xs text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                {{ number_format($item->allocated_qty ?? 0, 0) }}
                             </td>
-                            <td class="px-3 py-2 text-xs text-right font-mono text-slate-700 dark:text-slate-300">
-                                {{ $item->purchase_price !== null ? '₹' . number_format($item->purchase_price, 2) : '—' }}
+                            <td id="item-pending-qty-{{ $item->id }}" class="px-3 py-2 text-xs text-right font-mono font-bold text-amber-600 dark:text-amber-400">
+                                {{ number_format($item->pending_qty ?? $item->qty, 0) }}
                             </td>
-                            <td class="px-3 py-2 text-xs text-right font-mono text-slate-700 dark:text-slate-300">
-                                {{ $item->selling_price !== null ? '₹' . number_format($item->selling_price, 2) : '—' }}
-                            </td>
-                            <td class="px-3 py-2 text-xs text-right font-mono text-slate-700 dark:text-slate-300">
-                                {{ $item->mrp !== null ? '₹' . number_format($item->mrp, 2) : '—' }}
-                            </td>
-                            <td class="px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
-                                {{ $item->remarks ?? '—' }}
+                            <td id="item-action-cell-{{ $item->id }}" class="px-3 py-2 text-center text-xs print:hidden">
+                                @if($item->product && $item->product->tracking_type === \App\Models\Product::TRACKING_INDIVIDUAL)
+                                    @if(($item->pending_qty ?? $item->qty) > 0)
+                                        <button type="button" onclick="openAllocationModal({{ $item->id }})"
+                                            class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition inline-flex items-center gap-1">
+                                            <x-heroicon-o-cube-transparent class="w-3.5 h-3.5" /> Allocate
+                                        </button>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                                            Allocation Completed
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Bulk Tracking</span>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
                 <tfoot class="bg-slate-100 dark:bg-slate-800 font-semibold text-xs text-slate-800 dark:text-slate-200">
                     <tr>
-                        <td colspan="3" class="px-3 py-2.5 text-right font-bold">Total Summary:</td>
+                        <td colspan="4" class="px-3 py-2.5 text-right font-bold">Total Summary:</td>
                         <td class="px-3 py-2.5 text-right font-mono text-indigo-600 dark:text-indigo-400 font-bold">
-                            {{ number_format($stockInward->items->sum('qty'), 3) }}
+                            {{ number_format($stockInward->items->sum('qty'), 0) }}
                         </td>
-                        <td class="px-3 py-2.5 text-right font-mono font-bold">
-                            {{ number_format($stockInward->items->sum('weight'), 3) }}
+                        <td class="px-3 py-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                            {{ number_format($stockInward->items->sum('allocated_qty'), 0) }}
                         </td>
-                        <td colspan="4"></td>
+                        <td class="px-3 py-2.5 text-right font-mono text-amber-600 dark:text-amber-400 font-bold">
+                            {{ number_format($stockInward->items->sum('pending_qty'), 0) }}
+                        </td>
+                        <td class="print:hidden"></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
+    </div>
 </div>
+
+<!-- Include Allocation Modal Partial -->
+@include('inventory.stock_inwards._allocation_modal')
 
 <style>
 @media print {

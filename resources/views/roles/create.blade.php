@@ -83,10 +83,5 @@
         </div>
     </div>
 
-    <script>
-        function toggleGroup(selectAllCheckbox, group) {
-            const checkboxes = document.querySelectorAll(`.permission-checkbox[data-group="${group}"]`);
-            checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
-        }
-    </script>
+    <script src="{{ asset('js/roles/permission_toggle.js') }}" defer></script>
 </x-app-layout>

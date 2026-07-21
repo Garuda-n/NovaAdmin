@@ -170,15 +170,38 @@ class StockInwardController extends Controller
      */
     public function show(StockInward $stockInward, Request $request)
     {
-        $stockInward->load(['company', 'branch', 'counter', 'supplier', 'items.product', 'items.subProduct', 'creator']);
+        $stockInward->load([
+            'company',
+            'branch',
+            'counter',
+            'supplier',
+            'items.product.category',
+            'items.product.sizes',
+            'items.subProduct',
+            'creator'
+        ]);
+
+        $itemIds = $stockInward->items->pluck('id');
+        $allocatedCounts = \App\Models\StockItem::whereIn('stock_inward_item_id', $itemIds)
+            ->selectRaw('stock_inward_item_id, count(*) as total')
+            ->groupBy('stock_inward_item_id')
+            ->pluck('total', 'stock_inward_item_id');
+
+        foreach ($stockInward->items as $item) {
+            $item->allocated_qty = (int) ($allocatedCounts[$item->id] ?? 0);
+            $item->pending_qty = max(0, (float) $item->qty - $item->allocated_qty);
+        }
+
+        $counters = \App\Models\Counter::where('status', 1)->orderBy('counter_name')->get();
+        $sizes = \App\Models\Size::where('status', 1)->orderBy('name')->get();
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'html' => view('inventory.stock_inwards._modal_show', compact('stockInward'))->render(),
+                'html' => view('inventory.stock_inwards._modal_show', compact('stockInward', 'counters', 'sizes'))->render(),
             ]);
         }
 
-        return view('inventory.stock_inwards.show', compact('stockInward'));
+        return view('inventory.stock_inwards.show', compact('stockInward', 'counters', 'sizes'));
     }
 
     /**

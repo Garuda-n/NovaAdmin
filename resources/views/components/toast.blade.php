@@ -13,15 +13,7 @@
         {{ $type === 'success' ? 'bg-green-500' : 'bg-red-500' }} animate-slide-in">
         {{ $message }}
     </div>
-    <script>
-        setTimeout(() => {
-            const toast = document.getElementById('toast');
-            if (toast) {
-                toast.classList.add('opacity-0');
-                setTimeout(() => toast.remove(), 500);
-            }
-        }, 2500);
-    </script>
+    <script src="{{ asset('js/common/toast.js') }}" defer></script>
     <style>
         @keyframes slide-in {
             from {

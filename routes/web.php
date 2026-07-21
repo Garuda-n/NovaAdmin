@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\SubProductController;
 use App\Http\Controllers\Inventory\StockInwardController;
+use App\Http\Controllers\Inventory\ItemAllocationController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
@@ -372,9 +373,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Inventory Bulk Inward
+    | Inventory Bulk Inward & Item Allocation
     |--------------------------------------------------------------------------
     */
+    Route::get('inventory/item-allocation', [ItemAllocationController::class, 'index'])
+        ->name('item-allocation.index')
+        ->middleware('permission:stock-inwards.view');
+
+    Route::post('inventory/item-allocation/filter', [ItemAllocationController::class, 'index'])
+        ->name('item-allocation.filter')
+        ->middleware('permission:stock-inwards.view');
+
+    Route::get('inventory/stock-inwards/items/{stockInwardItem}/pending-info', [ItemAllocationController::class, 'pendingInfo'])
+        ->name('stock-inwards.items.pending-info')
+        ->middleware('permission:stock-inwards.view');
+
+    Route::post('inventory/stock-inwards/allocate', [ItemAllocationController::class, 'store'])
+        ->name('stock-inwards.allocate')
+        ->middleware('permission:stock-inwards.edit');
     Route::resource('inventory/stock-inwards', StockInwardController::class)
         ->only(['create', 'store'])
         ->names('stock-inwards')

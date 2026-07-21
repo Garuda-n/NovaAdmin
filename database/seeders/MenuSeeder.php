@@ -146,6 +146,7 @@ class MenuSeeder extends Seeder
 
         $inventoryChildren = [
             ['name' => 'Bulk Inward', 'route' => 'stock-inwards.index', 'icon' => 'arrow-down-tray', 'permission_slug' => 'stock-inwards.view', 'order' => 1],
+            ['name' => 'Item Allocation', 'route' => 'item-allocation.index', 'icon' => 'cube-transparent', 'permission_slug' => 'stock-inwards.view', 'order' => 2],
         ];
 
         foreach ($inventoryChildren as $child) {
