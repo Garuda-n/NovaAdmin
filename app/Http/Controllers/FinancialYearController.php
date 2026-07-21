@@ -11,7 +11,7 @@ class FinancialYearController extends Controller
 {
     public function index()
     {
-        $financialYears = FinancialYear::latest()->get();
+        $financialYears = FinancialYear::latest()->paginate(15)->withQueryString();
         return view('financial-years.index', compact('financialYears'));
     }
     public function store(Request $request)

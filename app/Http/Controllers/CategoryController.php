@@ -19,7 +19,8 @@ class CategoryController extends Controller
     {
         $categories = Category::with('tax')
             ->latest()
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('categories.index', compact('categories'));
     }

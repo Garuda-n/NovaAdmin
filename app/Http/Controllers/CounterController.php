@@ -15,7 +15,7 @@ class CounterController extends Controller
      */
     public function index()
     {
-        $counters = Counter::with('branches')->latest()->get();
+        $counters = Counter::with('branches')->latest()->paginate(15)->withQueryString();
         $branches = Branch::where('status', 1)->get();
         return view('counters.index', compact('counters', 'branches'));
     }

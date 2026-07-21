@@ -15,7 +15,7 @@ class TaxController extends Controller
      */
     public function index()
     {
-        $taxes = Tax::latest()->get();
+        $taxes = Tax::latest()->paginate(15)->withQueryString();
 
         return view('taxes.index', compact('taxes'));
     }

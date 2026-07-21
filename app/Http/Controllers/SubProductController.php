@@ -15,7 +15,7 @@ class SubProductController extends Controller
      */
     public function index()
     {
-        $subProducts = SubProduct::latest()->get();
+        $subProducts = SubProduct::latest()->paginate(15)->withQueryString();
         return view('sub_products.index', compact('subProducts'));
     }
 

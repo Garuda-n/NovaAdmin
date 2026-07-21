@@ -15,8 +15,8 @@ class UomController extends Controller
      */
     public function index()
     {
-       $uoms = Uom::latest()->get();
-       return view('uoms.index', compact('uoms'));
+        $uoms = Uom::latest()->paginate(15)->withQueryString();
+        return view('uoms.index', compact('uoms'));
     }
 
     /**

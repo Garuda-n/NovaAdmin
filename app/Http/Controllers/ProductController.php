@@ -41,7 +41,7 @@ class ProductController extends Controller
             $query->where('brand_id', $request->brand_id);
         }
 
-        $products = $query->get();
+        $products = $query->paginate(15)->withQueryString();
 
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([

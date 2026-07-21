@@ -14,7 +14,8 @@ class BranchController extends Controller
     {
         $branches = Branch::with('company')
             ->latest()
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('branches.index', compact('branches'));
     }
