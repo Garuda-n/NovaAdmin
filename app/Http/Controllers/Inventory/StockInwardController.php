@@ -205,6 +205,49 @@ class StockInwardController extends Controller
     }
 
     /**
+     * Display dedicated print view for the specified resource.
+     */
+    public function print(StockInward $stockInward)
+    {
+        $stockInward->load([
+            'company',
+            'branch',
+            'counter',
+            'supplier',
+            'items.product.category',
+            'items.subProduct',
+            'creator'
+        ]);
+
+        $itemIds = $stockInward->items->pluck('id');
+        $allocatedCounts = \App\Models\StockItem::whereIn('stock_inward_item_id', $itemIds)
+            ->selectRaw('stock_inward_item_id, count(*) as total')
+            ->groupBy('stock_inward_item_id')
+            ->pluck('total', 'stock_inward_item_id');
+
+        $totalReceivedQty = 0;
+        $totalAllocatedQty = 0;
+        $totalPendingQty = 0;
+
+        foreach ($stockInward->items as $item) {
+            $item->allocated_qty = (int) ($allocatedCounts[$item->id] ?? 0);
+            $item->pending_qty = max(0, (float) $item->qty - $item->allocated_qty);
+
+            $totalReceivedQty += (float) $item->qty;
+            $totalAllocatedQty += (int) $item->allocated_qty;
+            $totalPendingQty += (float) $item->pending_qty;
+        }
+
+        $summary = [
+            'total_received_qty' => $totalReceivedQty,
+            'total_allocated_qty' => $totalAllocatedQty,
+            'total_pending_qty' => $totalPendingQty,
+        ];
+
+        return view('inventory.stock_inwards.print', compact('stockInward', 'summary'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(StockInward $stockInward)

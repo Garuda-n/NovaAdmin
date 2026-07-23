@@ -236,3 +236,16 @@ test('renders locked badge and hides edit/delete buttons in index and show views
     $showResponse->assertSee('Locked (Allocation Started)');
     $showResponse->assertSee('Bulk Inward cannot be edited because item allocation has already started.');
 });
+
+test('loads dedicated print view for bulk stock inward', function () {
+    $user = setupInwardTestUser();
+    $data = createInwardTestData();
+    $stockInward = $data['stockInward'];
+
+    $response = $this->actingAs($user)->get(route('stock-inwards.print', $stockInward));
+    $response->assertStatus(200);
+    $response->assertSee('Print Preview — Bulk Stock Inward');
+    $response->assertSee('Total Received Quantity:');
+    $response->assertSee('Prepared By');
+    $response->assertSee('Authorized Signatory');
+});

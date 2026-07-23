@@ -4,10 +4,10 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Bulk Stock Inward Details — {{ $stockInward->invoice_no }}
             </h2>
-            <div class="flex gap-2 print:hidden">
-                <button onclick="window.print()" type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
+            <div class="flex gap-2">
+                <a href="{{ route('stock-inwards.print', $stockInward) }}" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
                     <x-heroicon-o-printer class="w-4 h-4" /> Print
-                </button>
+                </a>
                 <a href="{{ route('stock-inwards.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition">
                     ← Back to List
                 </a>
@@ -191,30 +191,4 @@
 
     <!-- Include Allocation Modal Partial -->
     @include('inventory.stock_inwards._allocation_modal')
-
-<style>
-@media print {
-    body * {
-        visibility: hidden !important;
-    }
-    #stock-inward-print-area, #stock-inward-print-area * {
-        visibility: visible !important;
-    }
-    #stock-inward-print-area {
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 20px !important;
-        background: white !important;
-        color: black !important;
-        z-index: 99999 !important;
-    }
-    .print\:hidden {
-        display: none !important;
-    }
-}
-</style>
 </x-app-layout>

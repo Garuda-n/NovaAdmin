@@ -19,11 +19,11 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-3 print:hidden">
-            <button onclick="window.print()" type="button"
+        <div class="flex items-center gap-3">
+            <a href="{{ route('stock-inwards.print', $stockInward) }}" target="_blank"
                class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition shadow flex items-center gap-1">
                 <x-heroicon-o-printer class="w-4 h-4" /> Print
-            </button>
+            </a>
             @if($stockInward->hasAllocatedItems())
             <span class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-700 flex items-center gap-1" title="Bulk Inward cannot be edited because item allocation has already started.">
                 <x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Locked
@@ -195,31 +195,6 @@
     </div>
 </div>
 
+
 <!-- Include Allocation Modal Partial -->
 @include('inventory.stock_inwards._allocation_modal')
-
-<style>
-@media print {
-    body * {
-        visibility: hidden !important;
-    }
-    #stock-inward-print-area, #stock-inward-print-area * {
-        visibility: visible !important;
-    }
-    #stock-inward-print-area {
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 20px !important;
-        background: white !important;
-        color: black !important;
-        z-index: 99999 !important;
-    }
-    .print\:hidden {
-        display: none !important;
-    }
-}
-</style>

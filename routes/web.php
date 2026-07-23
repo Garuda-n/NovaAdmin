@@ -378,7 +378,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Inventory Bulk Inward & Item Allocation
     |--------------------------------------------------------------------------
     */
-    Route::get('inventory/item-allocation', [ItemAllocationController::class, 'index'])
+    Route::match(['get', 'post'], 'inventory/item-allocation', [ItemAllocationController::class, 'index'])
         ->name('item-allocation.index')
         ->middleware('permission:stock-inwards.view');
 
@@ -386,7 +386,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('item-allocation.filter')
         ->middleware('permission:stock-inwards.view');
 
-    Route::get('inventory/available-stock', [AvailableStockController::class, 'index'])
+    Route::match(['get', 'post'], 'inventory/available-stock', [AvailableStockController::class, 'index'])
         ->name('available-stock.index')
         ->middleware('permission:available-stock.view');
 
@@ -408,6 +408,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('inventory/stock-inwards/filter', [StockInwardController::class, 'index'])
         ->name('stock-inwards.filter')
+        ->middleware('permission:stock-inwards.view');
+
+    Route::get('inventory/stock-inwards/{stockInward}/print', [StockInwardController::class, 'print'])
+        ->name('stock-inwards.print')
         ->middleware('permission:stock-inwards.view');
 
     Route::resource('inventory/stock-inwards', StockInwardController::class)
