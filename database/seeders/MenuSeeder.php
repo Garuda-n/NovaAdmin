@@ -179,5 +179,29 @@ class MenuSeeder extends Seeder
                 array_merge($child, ['parent_id' => $stockReport->id, 'status' => true])
             );
         }
+
+        // Sales (Dropdown parent)
+        $sales = Menu::firstOrCreate(
+            ['name' => 'Sales'],
+            [
+                'route' => null,
+                'icon' => 'document-text',
+                'parent_id' => null,
+                'permission_slug' => null,
+                'order' => 8,
+                'status' => true,
+            ]
+        );
+
+        $salesChildren = [
+            ['name' => 'Quotations', 'route' => 'quotations.index', 'icon' => 'document-text', 'permission_slug' => 'quotation.view', 'order' => 1],
+        ];
+
+        foreach ($salesChildren as $child) {
+            Menu::firstOrCreate(
+                ['name' => $child['name'], 'parent_id' => $sales->id],
+                array_merge($child, ['parent_id' => $sales->id, 'status' => true])
+            );
+        }
     }
 }

@@ -24,6 +24,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\QuotationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -514,6 +515,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('settings', SettingController::class)
         ->only(['destroy'])
         ->middleware('permission:settings.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Quotations Module
+    |--------------------------------------------------------------------------
+    */
+    Route::post('quotations/filter', [QuotationController::class, 'index'])
+        ->name('quotations.filter')
+        ->middleware('permission:quotation.view');
+
+    Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'pdf'])
+        ->name('quotations.pdf')
+        ->middleware('permission:quotation.print');
+
+    Route::get('quotations', [QuotationController::class, 'index'])
+        ->name('quotations.index')
+        ->middleware('permission:quotation.view');
+
+    Route::get('quotations/create', [QuotationController::class, 'create'])
+        ->name('quotations.create')
+        ->middleware('permission:quotation.create');
+
+    Route::post('quotations', [QuotationController::class, 'store'])
+        ->name('quotations.store')
+        ->middleware('permission:quotation.create');
+
+    Route::get('quotations/{quotation}', [QuotationController::class, 'show'])
+        ->name('quotations.show')
+        ->middleware('permission:quotation.view');
+
+    Route::get('quotations/{quotation}/edit', [QuotationController::class, 'edit'])
+        ->name('quotations.edit')
+        ->middleware('permission:quotation.edit');
+
+    Route::match(['put', 'patch'], 'quotations/{quotation}', [QuotationController::class, 'update'])
+        ->name('quotations.update')
+        ->middleware('permission:quotation.edit');
 });
 
 /*

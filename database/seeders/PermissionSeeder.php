@@ -94,6 +94,12 @@ class PermissionSeeder extends Seeder
             // Stock Report
             ['name' => 'View Available Stock', 'slug' => 'available-stock.view', 'group' => 'Stock Report'],
 
+            // Sales
+            ['name' => 'View Quotations', 'slug' => 'quotation.view', 'group' => 'Sales'],
+            ['name' => 'Create Quotations', 'slug' => 'quotation.create', 'group' => 'Sales'],
+            ['name' => 'Edit Quotations', 'slug' => 'quotation.edit', 'group' => 'Sales'],
+            ['name' => 'Print Quotations', 'slug' => 'quotation.print', 'group' => 'Sales'],
+
             // Menus
             ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],
             ['name' => 'Create Menus', 'slug' => 'menus.create', 'group' => 'Administration'],
