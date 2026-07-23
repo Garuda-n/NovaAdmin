@@ -22,7 +22,7 @@ class StockInwardController extends Controller
     public function index(Request $request)
     {
         $query = StockInward::with(['company', 'branch', 'counter', 'supplier'])
-            ->withCount('items')
+            ->withCount(['items', 'stockItems'])
             ->latest();
 
         if ($request->filled('search')) {
@@ -209,6 +209,12 @@ class StockInwardController extends Controller
      */
     public function edit(StockInward $stockInward)
     {
+        if ($stockInward->hasAllocatedItems()) {
+            return redirect()
+                ->route('stock-inwards.index')
+                ->with('error', 'Bulk Inward cannot be edited because item allocation has already started.');
+        }
+
         $stockInward->load(['items']);
 
         $companies = Company::where('status', 1)->orderBy('name')->get();
@@ -234,6 +240,18 @@ class StockInwardController extends Controller
      */
     public function update(Request $request, StockInward $stockInward)
     {
+        if ($stockInward->hasAllocatedItems()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Bulk Inward cannot be edited because item allocation has already started.'
+                ], 422);
+            }
+
+            return redirect()
+                ->route('stock-inwards.index')
+                ->with('error', 'Bulk Inward cannot be edited because item allocation has already started.');
+        }
+
         $validated = $request->validate([
             'company_id' => 'required|exists:companies,id',
             'branch_id' => 'required|exists:branches,id',
@@ -317,6 +335,18 @@ class StockInwardController extends Controller
      */
     public function destroy(StockInward $stockInward)
     {
+        if ($stockInward->hasAllocatedItems()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'message' => 'Bulk Inward cannot be deleted because item allocation has already started.'
+                ], 422);
+            }
+
+            return redirect()
+                ->route('stock-inwards.index')
+                ->with('error', 'Bulk Inward cannot be deleted because item allocation has already started.');
+        }
+
         DB::beginTransaction();
 
         try {

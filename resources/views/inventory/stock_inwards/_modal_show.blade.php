@@ -24,14 +24,30 @@
                class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition shadow flex items-center gap-1">
                 <x-heroicon-o-printer class="w-4 h-4" /> Print
             </button>
+            @if($stockInward->hasAllocatedItems())
+            <span class="px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-700 flex items-center gap-1" title="Bulk Inward cannot be edited because item allocation has already started.">
+                <x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Locked
+            </span>
+            @else
             @can('stock-inwards.edit')
             <a href="{{ route('stock-inwards.edit', $stockInward) }}"
                class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition shadow flex items-center gap-1">
                 <x-heroicon-o-pencil-square class="w-4 h-4" /> Edit Invoice
             </a>
             @endcan
+            @endif
         </div>
     </div>
+
+    @if($stockInward->hasAllocatedItems())
+    <div class="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 p-3 rounded-r-lg shadow-sm flex items-center gap-3">
+        <x-heroicon-o-lock-closed class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+        <div>
+            <h4 class="font-bold text-amber-900 dark:text-amber-200 text-xs">Status: Allocation Started (🔒 Locked)</h4>
+            <p class="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">Bulk Inward cannot be edited because item allocation has already started.</p>
+        </div>
+    </div>
+    @endif
 
     <!-- Header Details Card -->
     <div class="bg-slate-50 border border-slate-200 dark:bg-[#1c2538] dark:border-[#27334d] rounded-xl p-5 space-y-4">

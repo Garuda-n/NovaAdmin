@@ -11,17 +11,34 @@
                 <a href="{{ route('stock-inwards.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded-lg transition">
                     ← Back to List
                 </a>
-                @can('stock-inwards.edit')
-                <a href="{{ route('stock-inwards.edit', $stockInward) }}" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
-                    <x-heroicon-o-pencil-square class="w-4 h-4" /> Edit
-                </a>
-                @endcan
+                @if($stockInward->hasAllocatedItems())
+                    <span class="px-4 py-2 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 text-sm font-semibold rounded-lg border border-amber-300 dark:border-amber-700 flex items-center gap-1.5" title="Bulk Inward cannot be edited because item allocation has already started.">
+                        <x-heroicon-o-lock-closed class="w-4 h-4" /> Locked (Allocation Started)
+                    </span>
+                @else
+                    @can('stock-inwards.edit')
+                    <a href="{{ route('stock-inwards.edit', $stockInward) }}" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold rounded-lg transition flex items-center gap-1">
+                        <x-heroicon-o-pencil-square class="w-4 h-4" /> Edit
+                    </a>
+                    @endcan
+                @endif
             </div>
         </div>
     </x-slot>
 
     <div class="py-6" id="stock-inward-print-area">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            @if($stockInward->hasAllocatedItems())
+            <!-- Locked Alert Banner -->
+            <div class="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm flex items-center gap-3">
+                <x-heroicon-o-lock-closed class="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
+                <div>
+                    <h4 class="font-bold text-amber-900 dark:text-amber-200 text-sm">Status: Allocation Started (🔒 Locked)</h4>
+                    <p class="text-xs text-amber-800 dark:text-amber-300 mt-0.5">Bulk Inward cannot be edited because item allocation has already started.</p>
+                </div>
+            </div>
+            @endif
 
             <!-- Header Info Card -->
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-6 border border-gray-200 dark:border-slate-700">

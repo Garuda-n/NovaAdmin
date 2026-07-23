@@ -55,7 +55,7 @@
 
                         <!-- Actions -->
                         <td class="px-6 py-4 text-center">
-                            <div class="flex justify-center gap-2">
+                            <div class="flex justify-center items-center gap-2">
                                 <!-- View Popup Button -->
                                 <button type="button"
                                     @click.prevent="openInwardModal({{ $inward->id }})"
@@ -64,26 +64,32 @@
                                     <x-heroicon-o-eye class="w-4 h-4" />
                                 </button>
 
-                                @can('stock-inwards.edit')
-                                <a href="{{ route('stock-inwards.edit', $inward) }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition"
-                                    title="Edit Invoice">
-                                    <x-heroicon-o-pencil-square class="w-4 h-4" />
-                                </a>
-                                @endcan
+                                @if($inward->hasAllocatedItems())
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60" title="Bulk Inward cannot be edited because item allocation has already started.">
+                                        <x-heroicon-o-lock-closed class="w-3.5 h-3.5" /> Locked
+                                    </span>
+                                @else
+                                    @can('stock-inwards.edit')
+                                    <a href="{{ route('stock-inwards.edit', $inward) }}"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white transition"
+                                        title="Edit Invoice">
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" />
+                                    </a>
+                                    @endcan
 
-                                @can('stock-inwards.delete')
-                                <form action="{{ route('stock-inwards.destroy', $inward) }}" method="POST"
-                                      onsubmit="return confirm('Delete this bulk stock inward invoice?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
-                                        title="Delete Invoice">
-                                        <x-heroicon-o-trash class="w-4 h-4" />
-                                    </button>
-                                </form>
-                                @endcan
+                                    @can('stock-inwards.delete')
+                                    <form action="{{ route('stock-inwards.destroy', $inward) }}" method="POST"
+                                          onsubmit="return confirm('Delete this bulk stock inward invoice?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-500 hover:bg-red-600 text-white transition"
+                                            title="Delete Invoice">
+                                            <x-heroicon-o-trash class="w-4 h-4" />
+                                        </button>
+                                    </form>
+                                    @endcan
+                                @endif
                             </div>
                         </td>
 

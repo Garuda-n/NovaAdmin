@@ -54,6 +54,25 @@ class StockInward extends Model
         return $this->hasMany(StockInwardItem::class, 'stock_inward_id');
     }
 
+    public function stockItems(): HasMany
+    {
+        return $this->hasMany(StockItem::class, 'stock_inward_id');
+    }
+
+    public function hasAllocatedItems(): bool
+    {
+        if (array_key_exists('stock_items_count', $this->attributes)) {
+            return (int) $this->attributes['stock_items_count'] > 0;
+        }
+
+        return $this->stockItems()->exists();
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->hasAllocatedItems();
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
