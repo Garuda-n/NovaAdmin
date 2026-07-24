@@ -23,13 +23,13 @@
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-3">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
             <!-- KPI Metric Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <!-- Available Stock Card -->
-                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Allocated Stock</p>
                         <h3 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">{{ number_format($totalAvailableStock) }}</h3>

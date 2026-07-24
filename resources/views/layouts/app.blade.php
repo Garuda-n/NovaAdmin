@@ -34,12 +34,12 @@
         class="font-sans antialiased m-0 p-0">
         <div class="flex min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
             @include('layouts.sidebar')
-            <div class="flex-1">
+            <div class="flex-1 min-w-0 flex flex-col">
                 @include('layouts.navigation')
 
                 @isset($header)
                     <header class="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="max-w-7xl mx-auto py-2.5 px-4 sm:px-6">
                             {{ $header }}
                         </div>
                     </header>

@@ -541,9 +541,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('quotations.store')
         ->middleware('permission:quotation.create');
 
-    Route::get('quotations/{quotation}', [QuotationController::class, 'show'])
-        ->name('quotations.show')
-        ->middleware('permission:quotation.view');
+    // Route::get('quotations/{quotation}', [QuotationController::class, 'show'])
+    //     ->name('quotations.show')
+    //     ->middleware('permission:quotation.view');
 
     Route::get('quotations/{quotation}/edit', [QuotationController::class, 'edit'])
         ->name('quotations.edit')

@@ -14,12 +14,12 @@
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+    <div class="py-3">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-3">
 
             <!-- Filter Bar -->
-            <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-4">
-                <form method="POST" action="{{ route('products.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-3">
+                <form method="POST" action="{{ route('products.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     @csrf
                     <!-- Search -->
                     <div>
@@ -28,12 +28,12 @@
                             name="search"
                             value="{{ request('search') }}"
                             placeholder="Search name, code, HSN..."
-                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                            class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-xs py-1.5 px-2.5">
                     </div>
 
                     <!-- Category Filter -->
                     <div>
-                        <select name="category_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                        <select name="category_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-xs py-1.5 px-2.5">
                             <option value="">All Categories</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
@@ -45,7 +45,7 @@
 
                     <!-- Brand Filter -->
                     <div>
-                        <select name="brand_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm">
+                        <select name="brand_id" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-xs py-1.5 px-2.5">
                             <option value="">All Brands</option>
                             @foreach($brands as $brand)
                                 <option value="{{ $brand->id }}" {{ request('brand_id') == $brand->id ? 'selected' : '' }}>
@@ -57,11 +57,11 @@
 
                     <!-- Buttons -->
                     <div class="flex gap-2">
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm">
+                        <button type="submit" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium">
                             Filter
                         </button>
                         @if(request()->hasAny(['search', 'category_id', 'brand_id']))
-                            <a href="{{ route('products.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm">
+                            <a href="{{ route('products.index') }}" class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-xs font-medium">
                                 Clear
                             </a>
                         @endif
@@ -72,22 +72,22 @@
             <!-- Table Card -->
             <div class="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700 text-xs">
                         <thead class="bg-gray-100 dark:bg-slate-700">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Image</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Code</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Product Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Brand</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">HSN</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">UOM</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tax Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tracking Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Item Gen Mode</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Status</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Image</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Code</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Product Name</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Category</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Brand</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">HSN</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">UOM</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tax Type</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Tracking Type</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Item Gen Mode</th>
+                                <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Status</th>
                                 @if(Auth::user()->can('products.edit') || Auth::user()->can('products.delete'))
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Action</th>
+                                <th class="px-3 py-2 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">Action</th>
                                 @endif
                             </tr>
                         </thead>

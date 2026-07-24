@@ -25,18 +25,18 @@
     x-data="{ openMenu: '{{ $activeMenu }}' }"
     @mouseenter="sidebarOpen = true"
     @mouseleave="sidebarOpen = false"
-    :class="sidebarOpen ? 'w-64' : 'w-20'"
+    :class="sidebarOpen ? 'w-56' : 'w-16'"
     class="min-h-screen bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out overflow-hidden flex flex-col border-r border-slate-800 shadow-xl">
 
     {{-- Logo --}}
-    <div class="h-16 flex items-center justify-center border-b border-slate-800">
+    <div class="h-12 flex items-center justify-center border-b border-slate-800">
 
         <div class="flex items-center">
 
             <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-lg shrink-0">
+                class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-md shrink-0">
 
-                <span class="text-white font-extrabold text-xl tracking-wider">
+                <span class="text-white font-bold text-base tracking-wider">
                     {{ strtoupper(substr($currentCompany?->name ?? 'N', 0, 1)) }}
                 </span>
 
@@ -50,13 +50,13 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 translate-x-0"
                 x-transition:leave-end="opacity-0 translate-x-2"
-                class="ml-3">
+                class="ml-2.5">
 
-                <h1 class="text-lg font-bold text-white leading-none">
+                <h1 class="text-sm font-bold text-white leading-none">
                     {{ $currentCompany?->name ?? 'NovaAdmin' }}
                 </h1>
 
-                <p class="text-xs text-slate-400 tracking-widest uppercase">
+                <p class="text-[10px] text-slate-400 tracking-wider uppercase mt-0.5">
                     Admin Panel
                 </p>
 
@@ -67,7 +67,7 @@
     </div>
 
     {{-- Navigation --}}
-    <nav class="mt-4 flex-1">
+    <nav class="mt-2 flex-1 space-y-0.5">
 
         @foreach($sidebarMenus as $menu)
 
@@ -83,7 +83,7 @@
                 @if($menu->permission_slug)
                     @can($menu->permission_slug)
                     <a href="{{ route($menu->route) }}"
-                        class="flex items-center px-6 py-3 transition
+                        class="flex items-center px-3.5 py-2 text-xs transition
                         {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
                             ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
                             : 'text-slate-300 hover:bg-slate-800/60 hover:text-white' }}">
@@ -93,7 +93,7 @@
                         <span
                             x-show="sidebarOpen"
                             x-transition
-                            class="ml-3 whitespace-nowrap">
+                            class="ml-2.5 whitespace-nowrap">
                             {{ $menu->name }}
                         </span>
 
@@ -101,7 +101,7 @@
                     @endcan
                 @else
                     <a href="{{ route($menu->route) }}"
-                        class="flex items-center px-6 py-3 transition
+                        class="flex items-center px-3.5 py-2 text-xs transition
                         {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
                             ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
                             : 'text-slate-300 hover:bg-slate-800/60 hover:text-white' }}">
@@ -111,7 +111,7 @@
                         <span
                             x-show="sidebarOpen"
                             x-transition
-                            class="ml-3 whitespace-nowrap">
+                            class="ml-2.5 whitespace-nowrap">
                             {{ $menu->name }}
                         </span>
 
@@ -134,13 +134,13 @@
                         <button
                             type="button"
                             @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
-                            class="w-full flex items-center justify-between px-6 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
+                            class="w-full flex items-center justify-between px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
                             <div class="flex items-center">
                                 <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
                                 <span
                                     x-show="sidebarOpen"
                                     x-transition
-                                    class="ml-3 whitespace-nowrap">
+                                    class="ml-2.5 whitespace-nowrap">
                                     {{ $menu->name }}
                                 </span>
                             </div>
@@ -169,11 +169,11 @@
                                     @can($child->permission_slug)
                                     <a href="{{ route($child->route) }}"
                                         @click="sidebarOpen = true"
-                                        class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                        class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
                                         {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                             ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
                                             : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
                                         <span x-show="sidebarOpen" x-transition>
                                             {{ $child->name }}
                                         </span>
@@ -182,11 +182,11 @@
                                 @else
                                     <a href="{{ route($child->route) }}"
                                         @click="sidebarOpen = true"
-                                        class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                        class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
                                         {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                             ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
                                             : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
                                         <span x-show="sidebarOpen" x-transition>
                                             {{ $child->name }}
                                         </span>
@@ -204,13 +204,13 @@
                         <button
                             type="button"
                             @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
-                            class="w-full flex items-center justify-between px-6 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
+                            class="w-full flex items-center justify-between px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
                             <div class="flex items-center">
                                 <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
                                 <span
                                     x-show="sidebarOpen"
                                     x-transition
-                                    class="ml-3 whitespace-nowrap">
+                                    class="ml-2.5 whitespace-nowrap">
                                     {{ $menu->name }}
                                 </span>
                             </div>
@@ -237,11 +237,11 @@
                             @foreach($menu->children as $child)
                                 <a href="{{ route($child->route) }}"
                                     @click="sidebarOpen = true"
-                                    class="flex items-center gap-3 pl-14 pr-6 py-2 transition
+                                    class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
                                     {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                         ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
                                         : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                    <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+                                    <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
                                     <span x-show="sidebarOpen" x-transition>
                                         {{ $child->name }}
                                     </span>
@@ -259,14 +259,14 @@
 
         <!-- Transactions -->
         <a href="#"
-            class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
+            class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
 
             <x-heroicon-o-arrows-right-left class="w-5 h-5 shrink-0" />
 
             <span
                 x-show="sidebarOpen"
                 x-transition
-                class="ml-3">
+                class="ml-2.5">
                 Transactions
             </span>
 
@@ -274,14 +274,14 @@
 
         <!-- Reports -->
         <a href="#"
-            class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
+            class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
 
             <x-heroicon-o-chart-bar class="w-5 h-5 shrink-0" />
 
             <span
                 x-show="sidebarOpen"
                 x-transition
-                class="ml-3">
+                class="ml-2.5">
                 Reports
             </span>
 
@@ -289,14 +289,14 @@
 
         <!-- Settings -->
         <a href="#"
-            class="flex items-center px-6 py-3 text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
+            class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
 
             <x-heroicon-o-cog-6-tooth class="w-5 h-5 shrink-0" />
 
             <span
                 x-show="sidebarOpen"
                 x-transition
-                class="ml-3">
+                class="ml-2.5">
                 Settings
             </span>
 
