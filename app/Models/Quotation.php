@@ -114,4 +114,56 @@ class Quotation extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    /**
+     * Get effective reference date for quotation validity checks (V2 ready).
+     */
+    public function getEffectiveCurrentDate(): string
+    {
+        return date('Y-m-d');
+    }
+
+    /**
+     * Check if quotation has expired (business_date < today and not converted).
+     */
+    public function isExpired(): bool
+    {
+        if ($this->status == self::STATUS_CONVERTED) {
+            return false;
+        }
+
+        if (!$this->business_date) {
+            return false;
+        }
+
+        return $this->business_date->format('Y-m-d') < $this->getEffectiveCurrentDate();
+    }
+
+    /**
+     * Check if quotation is valid for sales conversion or editing.
+     */
+    public function isConvertible(): bool
+    {
+        if ($this->status == self::STATUS_CONVERTED) {
+            return false;
+        }
+
+        return !$this->isExpired();
+    }
+
+    /**
+     * UI Display Status Accessor ('Converted', 'Expired', 'Created').
+     */
+    public function getDisplayStatusAttribute(): string
+    {
+        if ($this->status == self::STATUS_CONVERTED) {
+            return 'Converted';
+        }
+
+        if ($this->isExpired()) {
+            return 'Expired';
+        }
+
+        return 'Created';
+    }
 }

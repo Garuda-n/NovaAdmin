@@ -97,6 +97,12 @@ class QuotationController extends Controller
      */
     public function edit(Quotation $quotation)
     {
+        if ($quotation->isExpired()) {
+            return redirect()
+                ->route('quotations.index')
+                ->with('error', 'Quotation has expired. Please create a new quotation.');
+        }
+
         $formData = $this->quotationService->getEditFormData($quotation);
 
         return view('quotations.edit', $formData);
@@ -107,6 +113,11 @@ class QuotationController extends Controller
      */
     public function update(Request $request, Quotation $quotation)
     {
+        if ($quotation->isExpired()) {
+            return redirect()
+                ->route('quotations.index')
+                ->with('error', 'Quotation has expired. Please create a new quotation.');
+        }
         $validated = $request->validate([
             'branch_id'          => 'required|exists:branches,id',
             'counter_id'         => 'required|exists:counters,id',

@@ -23,11 +23,8 @@
                         @can('companies.create')
                         <a href="{{ route('companies.create') }}"
                             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition duration-200">
-
                             <span class="text-lg">+</span>
-
                             <span>Add Company</span>
-
                         </a>
                         @endcan
 

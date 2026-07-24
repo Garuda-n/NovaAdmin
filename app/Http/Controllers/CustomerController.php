@@ -91,7 +91,16 @@ class CustomerController extends Controller
      */
     public function store(CustomerRequest $request)
     {
-        $this->customerService->createCustomer($request->validated(), 'Admin');
+        $customer = $this->customerService->createCustomer($request->validated(), 'Admin');
+
+        if ($request->expectsJson() || $request->ajax()) {
+            $customer->load(['country', 'state', 'city', 'branch']);
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Customer created successfully.',
+                'customer' => $customer
+            ], 201);
+        }
 
         return redirect()
             ->route('customers.index')

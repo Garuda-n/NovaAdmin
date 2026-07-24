@@ -155,6 +155,40 @@ $(document).ready(function () {
         }
     }
 
+    /**
+     * Callback for dynamic customer creation slide
+     */
+    window.handleQuotationCustomerCreated = function (customer) {
+        if (!customer) return;
+
+        const displayText = (customer.customer_name + (customer.mobile ? '-' + customer.mobile : '')).toUpperCase();
+        const searchContent = (customer.customer_name + ' ' + (customer.mobile || '') + ' ' + (customer.customer_code || '') + ' ' + (customer.gst_number || '')).toLowerCase();
+
+        let $option = $customerResultsList.find(`.customer-option[data-id="${customer.id}"]`);
+        if (!$option.length) {
+            $option = $('<div>', {
+                class: 'customer-option px-3 py-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-semibold text-sm cursor-pointer border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition',
+                'data-id': customer.id,
+                'data-display': displayText,
+                'data-name': customer.customer_name,
+                'data-mobile': customer.mobile || '',
+                'data-search': searchContent,
+                'data-type': customer.customer_type || 'B2C'
+            }).text(displayText);
+
+            $customerResultsList.prepend($option);
+        } else {
+            $option.attr('data-display', displayText)
+                   .attr('data-name', customer.customer_name)
+                   .attr('data-mobile', customer.mobile || '')
+                   .attr('data-search', searchContent)
+                   .attr('data-type', customer.customer_type || 'B2C')
+                   .text(displayText);
+        }
+
+        selectCustomer($option);
+    };
+
     // Clear customer selection
     $clearCustomerBtn.on('click', function (e) {
         e.stopPropagation();

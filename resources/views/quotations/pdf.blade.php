@@ -299,8 +299,8 @@
                 </div>
                 <div>
                     <div class="label">Status</div>
-                    <div class="value" style="color: {{ $quotation->status == 2 ? '#2563eb' : '#16a34a' }};">
-                        {{ $quotation->status == 2 ? 'Converted' : 'Created' }}
+                    <div class="value" style="color: {{ $quotation->status == 2 ? '#2563eb' : ($quotation->isExpired() ? '#dc2626' : '#16a34a') }};">
+                        {{ $quotation->display_status }}
                     </div>
                 </div>
             </div>
@@ -331,6 +331,9 @@
                         <td class="text-right">{{ number_format($detail->tax_percent, 2) }}%</td>
                         <td class="text-right">₹{{ number_format($detail->tax_amount, 2) }}</td>
                         <td class="text-right" style="font-weight: 600;">₹{{ number_format($detail->line_total, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8">Item Code: {{ $detail->product->code ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -15,6 +15,10 @@
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                                 Converted
                             </span>
+                        @elseif($quotation->isExpired())
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                                Expired
+                            </span>
                         @else
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                                 Created
@@ -27,7 +31,7 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    @if($quotation->status != 2)
+                    @if($quotation->status != 2 && !$quotation->isExpired())
                         @can('quotation.edit')
                         <a href="{{ route('quotations.edit', $quotation) }}"
                            class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg transition">

@@ -45,6 +45,10 @@
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                                 Converted
                             </span>
+                        @elseif($quotation->isExpired())
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
+                                Expired
+                            </span>
                         @else
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                                 Created
@@ -55,8 +59,8 @@
                         {{ $quotation->creator->name ?? '-' }}
                     </td>
                     <td class="px-3 py-2 text-right whitespace-nowrap space-x-1.5">
-                        <!-- Edit Button (Hidden when status = Converted) -->
-                        @if($quotation->status != 2)
+                        <!-- Edit Button (Hidden when status = Converted or Expired) -->
+                        @if($quotation->status != 2 && !$quotation->isExpired())
                             @can('quotation.edit')
                             <a href="{{ route('quotations.edit', $quotation) }}"
                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 border border-amber-200 dark:border-amber-800 transition">

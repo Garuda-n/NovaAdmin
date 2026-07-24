@@ -24,12 +24,6 @@ class CompanyController extends Controller
      */
     public function create()
     {
-        if (Company::exists()) {
-            return redirect()
-                ->route('companies.index')
-                ->with('warning', 'Only one company can be created.');
-        }
-
         return view('companies.create');
     }
 

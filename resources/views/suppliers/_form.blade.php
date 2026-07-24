@@ -226,13 +226,6 @@
                     <template x-for="st in statesList" :key="st.id">
                         <option :value="st.id" :selected="st.id == stateId" x-text="st.name"></option>
                     </template>
-                    @if(isset($states))
-                        @foreach($states as $state)
-                            <option value="{{ $state->id }}" {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
-                                {{ $state->name }}
-                            </option>
-                        @endforeach
-                    @endif
                 </select>
                 @error('state_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
@@ -253,13 +246,6 @@
                     <template x-for="ct in citiesList" :key="ct.id">
                         <option :value="ct.id" :selected="ct.id == cityId" x-text="ct.name"></option>
                     </template>
-                    @if(isset($cities))
-                        @foreach($cities as $city)
-                            <option value="{{ $city->id }}" {{ old('city_id', $supplier->city_id ?? '') == $city->id ? 'selected' : '' }}>
-                                {{ $city->name }}
-                            </option>
-                        @endforeach
-                    @endif
                 </select>
                 @error('city_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>

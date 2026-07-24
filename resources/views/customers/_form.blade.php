@@ -25,9 +25,10 @@
                     x-model="type"
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     required>
-                    <option value="B2C">B2C (Individual / Retail)</option>
-                    <option value="B2B">B2B (Business / Corporate)</option>
+                    <option value="B2C">B2C (Individual)</option>
+                    <option value="B2B">B2B (Business)</option>
                 </select>
+                <p data-error-field="customer_type" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('customer_type')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -36,7 +37,7 @@
             <!-- Customer Name -->
             <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Customer / Company Name <span class="text-red-500">*</span>
+                    Name <span class="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
@@ -45,6 +46,7 @@
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="e.g. John Doe / Acme Corp"
                     required>
+                <p data-error-field="customer_name" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('customer_name')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -64,6 +66,7 @@
                     placeholder="e.g. 24AAAAA0000A1Z5">
                 <p x-show="type === 'B2C'" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Optional for B2C customers</p>
                 <p x-show="type === 'B2B'" class="text-xs text-amber-600 dark:text-amber-400 mt-1">Mandatory 15-digit GSTIN for B2B</p>
+                <p data-error-field="gst_number" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('gst_number')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -81,6 +84,7 @@
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="e.g. 9876543210"
                     required>
+                <p data-error-field="mobile" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('mobile')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -97,6 +101,7 @@
                     value="{{ old('alternate_mobile', $customer->alternate_mobile ?? '') }}"
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="e.g. 9876543211">
+                <p data-error-field="alternate_mobile" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('alternate_mobile')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -113,6 +118,7 @@
                     value="{{ old('email', $customer->email ?? '') }}"
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="e.g. customer@example.com">
+                <p data-error-field="email" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('email')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -147,6 +153,7 @@
                         </option>
                     @endforeach
                 </select>
+                <p data-error-field="country_id" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('country_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -167,14 +174,8 @@
                     <template x-for="st in statesList" :key="st.id">
                         <option :value="st.id" :selected="st.id == stateId" x-text="st.name"></option>
                     </template>
-                    @if(isset($states))
-                        @foreach($states as $state)
-                            <option value="{{ $state->id }}" {{ old('state_id', $customer->state_id ?? '') == $state->id ? 'selected' : '' }}>
-                                {{ $state->name }}
-                            </option>
-                        @endforeach
-                    @endif
                 </select>
+                <p data-error-field="state_id" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('state_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -194,14 +195,8 @@
                     <template x-for="ct in citiesList" :key="ct.id">
                         <option :value="ct.id" :selected="ct.id == cityId" x-text="ct.name"></option>
                     </template>
-                    @if(isset($cities))
-                        @foreach($cities as $city)
-                            <option value="{{ $city->id }}" {{ old('city_id', $customer->city_id ?? '') == $city->id ? 'selected' : '' }}>
-                                {{ $city->name }}
-                            </option>
-                        @endforeach
-                    @endif
                 </select>
+                <p data-error-field="city_id" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('city_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -219,6 +214,7 @@
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="e.g. 380001"
                     required>
+                <p data-error-field="pincode" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('pincode')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -236,6 +232,7 @@
                 rows="2"
                 class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 placeholder="Street address, building, suite, etc.">{{ old('address', $customer->address ?? '') }}</textarea>
+            <p data-error-field="address" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
             @error('address')
                 <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
             @enderror
@@ -266,6 +263,7 @@
                         </option>
                     @endforeach
                 </select>
+                <p data-error-field="branch_id" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('branch_id')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -283,6 +281,7 @@
                     value="{{ old('credit_limit', $customer->credit_limit ?? 0) }}"
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="0.00">
+                <p data-error-field="credit_limit" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('credit_limit')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -299,6 +298,7 @@
                     value="{{ old('credit_days', $customer->credit_days ?? 0) }}"
                     class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="0">
+                <p data-error-field="credit_days" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('credit_days')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -316,6 +316,7 @@
                     <option value="1" {{ old('status', $customer->status ?? 1) == 1 ? 'selected' : '' }}>Active</option>
                     <option value="0" {{ old('status', $customer->status ?? 1) == 0 ? 'selected' : '' }}>Inactive</option>
                 </select>
+                <p data-error-field="status" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
                 @error('status')
                     <p class="text-sm text-red-500 dark:text-red-400 mt-1">{{ $message }}</p>
                 @enderror

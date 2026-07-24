@@ -237,10 +237,16 @@ class QuotationService
     public function update(Quotation $quotation, array $data): Quotation
     {
         return DB::transaction(function () use ($quotation, $data) {
-            // STEP 2: Reject editing if quotation is Converted
+            // STEP 2: Reject editing if quotation is Converted or Expired
             if ($quotation->status == Quotation::STATUS_CONVERTED) {
                 throw ValidationException::withMessages([
                     'status' => 'Converted quotations are locked and cannot be edited.',
+                ]);
+            }
+
+            if ($quotation->isExpired()) {
+                throw ValidationException::withMessages([
+                    'quotation' => 'Quotation has expired. Please create a new quotation.',
                 ]);
             }
 
