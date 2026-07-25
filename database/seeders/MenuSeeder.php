@@ -195,6 +195,8 @@ class MenuSeeder extends Seeder
 
         $salesChildren = [
             ['name' => 'Quotations', 'route' => 'quotations.index', 'icon' => 'document-text', 'permission_slug' => 'quotation.view', 'order' => 1],
+            ['name' => 'Sales Invoices', 'route' => 'sales.index', 'icon' => 'shopping-cart', 'permission_slug' => 'sales.view', 'order' => 2],
+            ['name' => 'Customer Receivables', 'route' => 'receivables.index', 'icon' => 'banknotes', 'permission_slug' => 'receivable.view', 'order' => 3],
         ];
 
         foreach ($salesChildren as $child) {

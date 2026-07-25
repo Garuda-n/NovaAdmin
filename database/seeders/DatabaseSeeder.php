@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             MenuSeeder::class,
             CountryStateCitySeeder::class,
+            PaymentModeSeeder::class,
         ]);
 
         User::factory()->create([

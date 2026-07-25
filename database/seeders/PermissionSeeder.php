@@ -99,6 +99,19 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Quotations', 'slug' => 'quotation.create', 'group' => 'Sales'],
             ['name' => 'Edit Quotations', 'slug' => 'quotation.edit', 'group' => 'Sales'],
             ['name' => 'Print Quotations', 'slug' => 'quotation.print', 'group' => 'Sales'],
+            ['name' => 'View Sales Invoices', 'slug' => 'sales.view', 'group' => 'Sales'],
+            ['name' => 'Create Sales Invoices', 'slug' => 'sales.create', 'group' => 'Sales'],
+            ['name' => 'Convert Quotation to Sale', 'slug' => 'sales.convert', 'group' => 'Sales'],
+            ['name' => 'Cancel Sales Invoices', 'slug' => 'sales.cancel', 'group' => 'Sales'],
+            ['name' => 'Print Sales Invoices', 'slug' => 'sales.print', 'group' => 'Sales'],
+
+            // Receivables
+            ['name' => 'View Receivables', 'slug' => 'receivable.view', 'group' => 'Receivables'],
+            ['name' => 'Create Receivables', 'slug' => 'receivable.create', 'group' => 'Receivables'],
+            ['name' => 'Allocate Payments to Receivables', 'slug' => 'receivable.allocate', 'group' => 'Receivables'],
+
+            // Sales Reports
+            ['name' => 'View Sales Reports', 'slug' => 'sales.report', 'group' => 'Sales Reports'],
 
             // Menus
             ['name' => 'View Menus', 'slug' => 'menus.view', 'group' => 'Administration'],

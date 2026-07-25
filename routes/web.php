@@ -25,6 +25,8 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ReceivableController;
 
 /*
 |--------------------------------------------------------------------------
@@ -552,6 +554,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['put', 'patch'], 'quotations/{quotation}', [QuotationController::class, 'update'])
         ->name('quotations.update')
         ->middleware('permission:quotation.edit');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Module
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('sales')->name('sales.')->group(function () {
+        Route::get('/', [SalesController::class, 'index'])->name('index')->middleware('permission:sales.view');
+        Route::get('/quotation/{quotation}/create', [SalesController::class, 'createFromQuotation'])->name('createFromQuotation')->middleware('permission:sales.create');
+        Route::post('/quotation/{quotation}/convert', [SalesController::class, 'convert'])->name('convert')->middleware('permission:sales.create');
+        Route::get('/{sale}', [SalesController::class, 'show'])->name('show')->middleware('permission:sales.view');
+        Route::get('/{sale}/print', [SalesController::class, 'print'])->name('print')->middleware('permission:sales.print');
+        Route::get('/{sale}/invoice/print', [SalesController::class, 'print'])->name('invoice.print')->middleware('permission:sales.print');
+        Route::get('/{sale}/invoice/pdf', [SalesController::class, 'downloadPdf'])->name('invoice.pdf')->middleware('permission:sales.print');
+        Route::post('/{sale}/cancel', [SalesController::class, 'cancel'])->name('cancel')->middleware('permission:sales.cancel');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Receivables Module
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('receivables')->name('receivables.')->group(function () {
+        Route::get('/', [ReceivableController::class, 'index'])->name('index')->middleware('permission:receivable.view');
+    });
 });
 
 /*

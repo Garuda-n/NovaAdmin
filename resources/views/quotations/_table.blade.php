@@ -59,8 +59,13 @@
                         {{ $quotation->creator->name ?? '-' }}
                     </td>
                     <td class="px-3 py-2 text-right whitespace-nowrap space-x-1.5">
-                        <!-- Edit Button (Hidden when status = Converted or Expired) -->
+                        <!-- Convert to Sale Invoice Button -->
                         @if($quotation->status != 2 && !$quotation->isExpired())
+                            <a href="{{ route('sales.createFromQuotation', $quotation) }}"
+                               class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 transition"
+                               title="Convert to Sales Invoice">
+                                Convert
+                            </a>
                             @can('quotation.edit')
                             <a href="{{ route('quotations.edit', $quotation) }}"
                                class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50 border border-amber-200 dark:border-amber-800 transition">
