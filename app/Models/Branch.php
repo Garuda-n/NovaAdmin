@@ -15,6 +15,10 @@ class Branch extends Model
         'phone',
         'email',
         'address',
+        'country_id',
+        'state_id',
+        'city_id',
+        'pincode',
         'is_head_office',
         'status',
     ];
@@ -22,6 +26,21 @@ class Branch extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
     public function counters()
     {

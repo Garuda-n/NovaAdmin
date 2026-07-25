@@ -57,6 +57,10 @@
                                 </th>
 
                                 <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
+                                    Location
+                                </th>
+
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">
                                     GST
                                 </th>
 
@@ -98,6 +102,10 @@
 
                                     <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
                                         {{ $branch->branch_code }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
+                                        {{ $branch->city ? $branch->city->name . ($branch->state ? ', ' . $branch->state->name : '') : ($branch->state ? $branch->state->name : '-') }}
                                     </td>
 
                                     <td class="px-6 py-4 text-slate-800 dark:text-slate-200">
@@ -161,7 +169,7 @@
 
                                 <tr>
 
-                                    <td colspan="8"
+                                    <td colspan="9"
                                         class="px-6 py-10 text-center text-slate-400">
 
                                         No branches found.

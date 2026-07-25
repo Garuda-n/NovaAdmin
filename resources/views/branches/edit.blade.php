@@ -1,154 +1,61 @@
 <x-app-layout>
 
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Edit Branch
-        </h2>
-    </x-slot>
-
     <div class="py-6">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-6">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl">
 
-                <form method="POST" action="{{ route('branches.update', $branch->id) }}">
-                    @csrf
-                    @method('PUT')
+                <div class="p-6">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="hidden" name="company_id" value="{{ $branch->company_id }}">
-
-                        <!-- Branch Name -->
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Branch Name
-                            </label>
-
-                            <input type="text"
-                                name="name"
-                                value="{{ old('name', $branch->name) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white"
-                                required>
-
-                            @error('name')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
+                            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+                                Edit Branch
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                                Update existing branch details.
+                            </p>
                         </div>
-
-
-                        <!-- Branch Code -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Branch Code
-                            </label>
-
-                            <input type="text"
-                                name="branch_code"
-                                value="{{ old('branch_code', $branch->branch_code) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white"
-                                required>
-
-                            @error('branch_code')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-
-                        <!-- Phone -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Phone
-                            </label>
-
-                            <input type="text"
-                                name="phone"
-                                value="{{ old('phone', $branch->phone) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white">
-
-                            @error('phone')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-
-                        <!-- Email -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Email
-                            </label>
-
-                            <input type="email"
-                                name="email"
-                                value="{{ old('email', $branch->email) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white">
-
-                            @error('email')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-
-                        <!-- Address -->
-                        <div class="md:col-span-2">
-
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Address
-                            </label>
-
-                            <textarea
-                                name="address"
-                                rows="3"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white">{{ old('address', $branch->address) }}</textarea>
-
-                            @error('address')
-                                <span class="text-red-500 text-sm">{{ $message }}</span>
-                            @enderror
-
-                        </div>
-
-
-                        <!-- Status -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Status
-                            </label>
-
-                            <select name="status"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:bg-slate-700 dark:text-white">
-
-                                <option value="1"
-                                    {{ $branch->status == 1 ? 'selected' : '' }}>
-                                    Active
-                                </option>
-
-                                <option value="0"
-                                    {{ $branch->status == 0 ? 'selected' : '' }}>
-                                    Inactive
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="mt-6 flex justify-end gap-3">
 
                         <a href="{{ route('branches.index') }}"
-                           class="px-4 py-2 bg-gray-500 text-white rounded-md">
-                            Cancel
+                           class="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 text-sm font-medium transition">
+                            ← Back to List
                         </a>
-
-
-                        <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            Update Branch
-                        </button>
-
                     </div>
 
-                </form>
+                    @if ($errors->any())
+                        <div class="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 text-sm">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('branches.update', $branch->id) }}">
+                        @csrf
+                        @method('PUT')
+
+                        @include('branches._form', ['branch' => $branch])
+
+                        <!-- Buttons -->
+                        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                            <a href="{{ route('branches.index') }}"
+                               class="px-5 py-2.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 font-medium">
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="px-6 py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium transition shadow-lg">
+                                Update Branch
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
 
             </div>
 
