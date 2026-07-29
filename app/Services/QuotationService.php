@@ -203,8 +203,11 @@ class QuotationService
                 'updated_by'    => null,
             ]);
 
-            // 3. Generate quotation number using primary id (quotation_no = id)
-            $quotation->quotation_no = $quotation->id;
+            // 3. Generate quotation number based on Business Date (starts from 1, increments daily)
+            $maxNo = Quotation::where('business_date', $businessDate)
+                ->lockForUpdate()
+                ->max('quotation_no') ?? 0;
+            $quotation->quotation_no = $maxNo + 1;
             $quotation->save();
 
             // 4. Save product line items

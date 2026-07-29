@@ -53,11 +53,16 @@
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-2">
-                            <a href="{{ route('sales.show', $sale->id) }}" class="p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium transition" title="View Details">
-                                View
+                            <a href="{{ route('sales.show', $sale->id) }}" 
+                               class="inline-flex items-center p-1.5 text-xs font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 transition" 
+                               title="View Details">
+                                <x-heroicon-o-eye class="w-3.5 h-3.5" />
                             </a>
-                            <a href="{{ route('sales.print', $sale->id) }}" target="_blank" class="p-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 rounded-lg text-xs font-medium transition" title="Print Invoice">
-                                Print
+                            <a href="{{ route('sales.print', $sale->id) }}" 
+                               target="_blank" 
+                               class="inline-flex items-center p-1.5 text-xs font-medium rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 transition" 
+                               title="Print Invoice">
+                                <x-heroicon-o-printer class="w-3.5 h-3.5" />
                             </a>
                         </div>
                     </td>

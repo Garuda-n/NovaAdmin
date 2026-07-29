@@ -45,8 +45,8 @@ class InventoryService
                     ]);
                 }
 
-                // Status 2 represents SOLD
-                if ($stockItem->status === 2) {
+                // Status 5 represents SOLD
+                if ($stockItem->status === \App\Enums\StockItemStatus::SOLD->value) {
                     throw ValidationException::withMessages([
                         'items' => ["Allocated item code {$stockItem->item_code} has already been sold."],
                     ]);
@@ -98,15 +98,15 @@ class InventoryService
 
         $stockItem = StockItem::findOrFail($salesDetail->allocated_item_id);
 
-        if ($stockItem->status === 2) {
+        if ($stockItem->status === \App\Enums\StockItemStatus::SOLD->value) {
             throw ValidationException::withMessages([
                 'allocated_item_id' => ["Allocated item {$stockItem->item_code} is already marked as SOLD."],
             ]);
         }
 
-        // Mark allocated inventory item as SOLD (Status = 2)
+        // Mark allocated inventory item as SOLD (Status = 5)
         $stockItem->update([
-            'status' => 2,
+            'status' => \App\Enums\StockItemStatus::SOLD->value,
             'allocated_by' => Auth::id() ?? $sale->created_by,
             'allocated_at' => now(),
         ]);
@@ -167,7 +167,7 @@ class InventoryService
                 $stockItem = StockItem::find($detail->allocated_item_id);
                 if ($stockItem) {
                     // Restore item status to Available (Status = 1)
-                    $stockItem->update(['status' => 1]);
+                    $stockItem->update(['status' => \App\Enums\StockItemStatus::AVAILABLE->value]);
                 }
 
                 StockMovement::create([
@@ -208,10 +208,126 @@ class InventoryService
      */
     public function getAvailableStockQuantity(int $productId, int $branchId): float
     {
+        $product = Product::find($productId);
+        if ($product && $product->tracking_type == 2) {
+            return (float) StockItem::where('product_id', $productId)
+                ->where('branch_id', $branchId)
+                ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
+                ->count();
+        }
+
         $netStock = StockMovement::where('product_id', $productId)
             ->where('branch_id', $branchId)
             ->sum('quantity');
 
         return (float) max(0, $netStock);
+    }
+
+    /**
+     * Search available inventory stock (individual & bulk tracking).
+     *
+     * @param string $search
+     * @param int|null $branchId
+     * @param int $limit
+     * @return array
+     */
+    public function search(string $search, ?int $branchId = null, int $limit = 20): array
+    {
+        $search = trim($search);
+        if (strlen($search) < 2) {
+            return [];
+        }
+
+        if (!$branchId && Auth::check()) {
+            $branchId = Auth::user()->branch_id;
+        }
+        if (!$branchId) {
+            $branchId = \App\Models\Branch::where('status', true)->value('id');
+        }
+        if (!$branchId) {
+            return [];
+        }
+
+        $results = [];
+
+        // 1. Search Individual Item Tracking
+        $individualItems = StockItem::with(['product.uom', 'product.tax', 'stockInwardItem', 'branch'])
+            ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
+            ->where('branch_id', $branchId)
+            ->whereHas('product', function ($q) {
+                $q->where('status', true)
+                  ->where('tracking_type', Product::TRACKING_INDIVIDUAL);
+            })
+            ->where(function ($q) use ($search) {
+                $q->where('item_code', 'like', "%{$search}%")
+                  ->orWhereHas('product', function ($pq) use ($search) {
+                      $pq->where('code', 'like', "%{$search}%")
+                         ->orWhere('name', 'like', "%{$search}%");
+                  });
+            })
+            ->limit($limit)
+            ->get();
+
+        foreach ($individualItems as $item) {
+            $rate = $item->stockInwardItem ? $item->stockInwardItem->selling_price : 0.00;
+            $results[] = [
+                'product_id'     => $item->product_id,
+                'product_name'   => $item->product->name,
+                'product_code'   => $item->product->code,
+                'stock_item_id'  => $item->id,
+                'item_code'      => $item->item_code,
+                'available_qty'  => 1.00,
+                'rate'           => (float) $rate,
+                'tax_percent'    => $item->product->tax ? (float) $item->product->tax->percentage : 0.00,
+                'uom_id'         => $item->product->uom_id,
+                'uom_name'       => $item->product->uom ? $item->product->uom->name : '',
+                'tracking_type'  => Product::TRACKING_INDIVIDUAL,
+                'branch_id'      => $item->branch_id,
+                'branch_name'    => $item->branch ? $item->branch->name : '',
+            ];
+        }
+        // 2. Search Bulk Quantity Tracking
+        $bulkProducts = Product::with(['uom', 'tax'])
+            ->where('status', true)
+            ->where('tracking_type', Product::TRACKING_QUANTITY)
+            ->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%");
+            })
+            ->limit($limit)
+            ->get();
+        foreach ($bulkProducts as $product) {
+            $availableQty = $this->getAvailableStockQuantity($product->id, $branchId);
+            if ($availableQty > 0) {
+                $latestInwardItem = \App\Models\StockInwardItem::where('product_id', $product->id)
+                    ->whereHas('stockInward', function ($q) use ($branchId) {
+                        $q->where('branch_id', $branchId);
+                    })
+                    ->latest('id')
+                    ->first();
+                if (!$latestInwardItem) {
+                    $latestInwardItem = \App\Models\StockInwardItem::where('product_id', $product->id)
+                        ->latest('id')
+                        ->first();
+                }
+                $rate = $latestInwardItem ? $latestInwardItem->selling_price : 0.00;
+                $results[] = [
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'product_code'   => $product->code,
+                    'stock_item_id'  => null,
+                    'item_code'      => null,
+                    'available_qty'  => $availableQty,
+                    'rate'           => (float) $rate,
+                    'tax_percent'    => $product->tax ? (float) $product->tax->percentage : 0.00,
+                    'uom_id'         => $product->uom_id,
+                    'uom_name'       => $product->uom ? $product->uom->name : '',
+                    'tracking_type'  => Product::TRACKING_QUANTITY,
+                    'branch_id'      => $branchId,
+                    'branch_name'    => '',
+                ];
+            }
+        }
+        return array_slice($results, 0, $limit);
     }
 }

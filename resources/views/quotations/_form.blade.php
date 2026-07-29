@@ -9,8 +9,7 @@
     }
 @endphp
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="{{ asset('js/quotations/quotation_form.js') }}"></script>
+<script src="{{ asset('js/quotations/quotation_form.js') }}?v={{ time() }}"></script>
 
 <div id="quotation-form-container" data-is-converted="{{ $isConverted ? 'true' : 'false' }}" class="space-y-6">
 
@@ -250,24 +249,18 @@
                                 
                                 <!-- Product Searchable Select -->
                                 <td class="px-3 py-2">
-                                    <select
+                                    <x-inventory-search
                                         name="items[{{ $index }}][product_id]"
-                                        class="product-select w-full rounded border-gray-300 dark:border-slate-600 dark:bg-slate-800 text-slate-900 dark:text-white text-xs py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
-                                        required
-                                        {{ $isConverted ? 'disabled' : '' }}>
-                                        <option value="">— Select Product —</option>
-                                        @foreach($products as $prod)
-                                            <option
-                                                value="{{ $prod->id }}"
-                                                data-uom-id="{{ $prod->uom_id ?? '' }}"
-                                                data-uom-name="{{ $prod->uom->name ?? '' }}"
-                                                data-tax-percent="{{ isset($prod->tax) ? $prod->tax->percentage : 0 }}"
-                                                data-name="{{ $prod->name }}"
-                                                {{ $item->product_id == $prod->id ? 'selected' : '' }}>
-                                                {{ $prod->name }} {{ $prod->code ? '('.$prod->code.')' : '' }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                        value="{{ $item->product_id }}"
+                                        textValue="{{ $item->product_name }}"
+                                        placeholder="Search inventory..."
+                                        disabled="{{ $isConverted }}"
+                                        required="true"
+                                        stockItemId=""
+                                        stockItemName=""
+                                        trackingType="{{ $item->product->tracking_type }}"
+                                        availableQty="{{ $item->product->available_qty }}"
+                                    />
                                     <input type="hidden" name="items[{{ $index }}][product_name]" class="product-name-input" value="{{ $item->product_name }}">
                                 </td>
 
@@ -360,23 +353,18 @@
                             
                             <!-- Product Searchable Select -->
                             <td class="px-3 py-2">
-                                <select
+                                <x-inventory-search
                                     name="items[0][product_id]"
-                                    class="product-select w-full rounded border-gray-300 dark:border-slate-600 dark:bg-slate-800 text-slate-900 dark:text-white text-xs py-1.5 focus:ring-indigo-500 focus:border-indigo-500"
-                                    required
-                                    {{ $isConverted ? 'disabled' : '' }}>
-                                    <option value="">— Select Product —</option>
-                                    @foreach($products as $prod)
-                                        <option
-                                            value="{{ $prod->id }}"
-                                            data-uom-id="{{ $prod->uom_id ?? '' }}"
-                                            data-uom-name="{{ $prod->uom->name ?? '' }}"
-                                            data-tax-percent="{{ isset($prod->tax) ? $prod->tax->percentage : 0 }}"
-                                            data-name="{{ $prod->name }}">
-                                            {{ $prod->name }} {{ $prod->code ? '('.$prod->code.')' : '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                    value=""
+                                    textValue=""
+                                    placeholder="Search inventory..."
+                                    disabled="{{ $isConverted }}"
+                                    required="true"
+                                    stockItemId=""
+                                    stockItemName=""
+                                    trackingType=""
+                                    availableQty=""
+                                />
                                 <input type="hidden" name="items[0][product_name]" class="product-name-input">
                             </td>
 

@@ -1,7 +1,11 @@
 /**
  * NovaAdmin - Quotation Form Client-Side Entry Experience & Customer Search (jQuery)
  */
-$(document).ready(function () {
+(function () {
+    if (typeof window.jQuery === 'undefined' && typeof window.$ === 'undefined') return;
+    const $ = window.jQuery || window.$;
+
+    $(document).ready(function () {
     const $itemsBody = $('#quotation-items-body');
     const isConverted = $('#quotation-form-container').data('is-converted') == true;
 
@@ -274,7 +278,7 @@ $(document).ready(function () {
      * Live calculation for a single row matching server-side PricingService
      */
     function calculateRow($row) {
-        const productId = $row.find('.product-select').val();
+        const productId = $row.find('.product-id-input').val();
 
         if (!productId) {
             $row.find('.tax-amount-input').val('0.00');
@@ -351,12 +355,14 @@ $(document).ready(function () {
 
         // Reset inputs in new row
         $newRow.find('input').val('');
-        $newRow.find('.product-select').val('');
-        $newRow.find('.qty-input').val('1');
+        $newRow.find('.qty-input').val('1').prop('readonly', false).removeClass('bg-slate-100 dark:bg-slate-900 cursor-not-allowed');
         $newRow.find('.rate-input').val('0.00');
         $newRow.find('.tax-percent-input').val('0.00');
         $newRow.find('.tax-amount-input').val('0.00');
         $newRow.find('.line-total-input').val('0.00');
+        $newRow.find('.inventory-search-clear').addClass('hidden');
+        $newRow.find('.inventory-item-info').empty();
+        $newRow.find('.qty-warning-container').addClass('hidden');
 
         $itemsBody.append($newRow);
 
@@ -381,7 +387,6 @@ $(document).ready(function () {
 
     // Initialize initial calculations & row states on page load
     $itemsBody.find('.quotation-row').each(function () {
-        loadProductDetails($(this));
         calculateRow($(this));
     });
     updateRemoveButtonsState();
@@ -394,7 +399,7 @@ $(document).ready(function () {
     // Click: + Add Product Button
     $(document).on('click', '#btn-add-product', function () {
         const $newRow = addRow();
-        $newRow.find('.product-select').focus();
+        $newRow.find('.inventory-search-input').focus();
     });
 
     // Click: Remove Row Button
@@ -403,18 +408,7 @@ $(document).ready(function () {
         removeRow($row);
     });
 
-    // Change: Product Select
-    $(document).on('change', '.product-select', function () {
-        const $row = $(this).closest('.quotation-row');
-        loadProductDetails($row);
-        calculateRow($row);
-        calculateSummary();
-
-        // Auto focus Qty when Product selected & recalculate immediately
-        if ($(this).val()) {
-            $row.find('.qty-input').focus().select();
-        }
-    });
+    // Change: Product Select (Deprecated for autocomplete component)
 
     // Input / Change: Qty & Rate Live Calculation
     $(document).on('input change', '.qty-input, .rate-input', function () {
@@ -446,11 +440,12 @@ $(document).ready(function () {
             const $nextRow = $row.next('.quotation-row');
 
             if ($nextRow.length) {
-                $nextRow.find('.product-select').focus();
+                $nextRow.find('.inventory-search-input').focus();
             } else {
                 const $newRow = addRow();
-                $newRow.find('.product-select').focus();
+                $newRow.find('.inventory-search-input').focus();
             }
         }
     });
-});
+    });
+})();

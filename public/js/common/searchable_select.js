@@ -2,6 +2,10 @@
  * NovaAdmin - Global Searchable Select Initializer (Select2)
  */
 (function ($) {
+    if (!$) {
+        console.warn('jQuery is not loaded. Searchable select initialization skipped.');
+        return;
+    }
     'use strict';
 
     window.initSearchableSelects = function (container) {
@@ -89,4 +93,4 @@
 
         observer.observe(document.body, { childList: true, subtree: true });
     });
-})(jQuery);
+})(typeof jQuery !== 'undefined' ? jQuery : (typeof $ !== 'undefined' ? $ : null));

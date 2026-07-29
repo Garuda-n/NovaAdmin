@@ -156,4 +156,21 @@ class Product extends Model
             ? Storage::url($this->image)
             : null;
     }
+
+    /**
+     * Get available stock quantity for the current branch.
+     */
+    public function getAvailableQtyAttribute(): float
+    {
+        $branchId = request('branch_id') ?: (auth()->check() ? auth()->user()->branch_id : null);
+        if (!$branchId) {
+            $branchId = \App\Models\Branch::where('status', true)->value('id');
+        }
+        if (!$branchId) {
+            return 0.00;
+        }
+
+        $inventoryService = app(\App\Services\Inventory\InventoryService::class);
+        return $inventoryService->getAvailableStockQuantity($this->id, $branchId);
+    }
 }

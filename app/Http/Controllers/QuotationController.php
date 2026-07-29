@@ -54,15 +54,18 @@ class QuotationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'branch_id'          => 'required|exists:branches,id',
-            'counter_id'         => 'required|exists:counters,id',
-            'customer_id'        => 'required|exists:customers,id',
-            'customer_type'      => 'required|in:B2B,B2C',
-            'remarks'            => 'nullable|string',
-            'items'              => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.qty'        => 'required|numeric|gt:0',
-            'items.*.rate'       => 'required|numeric|min:0',
+            'branch_id'             => 'required|exists:branches,id',
+            'counter_id'            => 'required|exists:counters,id',
+            'customer_id'           => 'required|exists:customers,id',
+            'customer_type'         => 'required|in:B2B,B2C',
+            'remarks'               => 'nullable|string',
+            'items'                 => 'required|array|min:1',
+            'items.*.product_id'    => 'required|exists:products,id',
+            'items.*.qty'           => 'required|numeric|gt:0',
+            'items.*.rate'          => 'required|numeric|min:0',
+            'items.*.stock_item_id' => 'nullable|exists:stock_items,id',
+            'items.*.tracking_type' => 'nullable|integer',
+            'items.*.available_qty' => 'nullable|numeric',
         ]);
 
         // Validate GST number for B2B customers
@@ -119,15 +122,18 @@ class QuotationController extends Controller
                 ->with('error', 'Quotation has expired. Please create a new quotation.');
         }
         $validated = $request->validate([
-            'branch_id'          => 'required|exists:branches,id',
-            'counter_id'         => 'required|exists:counters,id',
-            'customer_id'        => 'required|exists:customers,id',
-            'customer_type'      => 'required|in:B2B,B2C',
-            'remarks'            => 'nullable|string',
-            'items'              => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.qty'        => 'required|numeric|gt:0',
-            'items.*.rate'       => 'required|numeric|min:0',
+            'branch_id'             => 'required|exists:branches,id',
+            'counter_id'            => 'required|exists:counters,id',
+            'customer_id'           => 'required|exists:customers,id',
+            'customer_type'         => 'required|in:B2B,B2C',
+            'remarks'               => 'nullable|string',
+            'items'                 => 'required|array|min:1',
+            'items.*.product_id'    => 'required|exists:products,id',
+            'items.*.qty'           => 'required|numeric|gt:0',
+            'items.*.rate'          => 'required|numeric|min:0',
+            'items.*.stock_item_id' => 'nullable|exists:stock_items,id',
+            'items.*.tracking_type' => 'nullable|integer',
+            'items.*.available_qty' => 'nullable|numeric',
         ]);
 
         // Validate GST number for B2B customers

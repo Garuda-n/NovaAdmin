@@ -120,15 +120,36 @@ class SalesService
             }
         }
 
+        $branchId = $quotation->branch_id;
         $itemsPreview = [];
+        $allocatedIds = [];
         foreach ($quotation->details as $detail) {
+            $productId = $detail->product_id;
+            $product = $detail->product;
+            $allocatedItemId = null;
+            $itemType = SalesDetail::ITEM_UNALLOCATED;
+
+            // If product has individual tracking (tracking_type == 2)
+            if ($product && $product->tracking_type == 2) {
+                $itemType = SalesDetail::ITEM_ALLOCATED;
+                $allocatedItemId = \App\Models\StockItem::where('product_id', $productId)
+                    ->where('branch_id', $branchId)
+                    ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
+                    ->whereNotIn('id', $allocatedIds)
+                    ->value('id');
+                
+                if ($allocatedItemId) {
+                    $allocatedIds[] = $allocatedItemId;
+                }
+            }
+
             $itemsPreview[] = [
-                'product_id' => $detail->product_id,
+                'product_id' => $productId,
                 'uom_id' => $detail->uom_id,
-                'allocated_item_id' => null,
-                'product_code' => $detail->product->product_code ?? 'PROD',
-                'product_name' => $detail->product_name ?? $detail->product->name,
-                'item_type' => SalesDetail::ITEM_UNALLOCATED,
+                'allocated_item_id' => $allocatedItemId,
+                'product_code' => $product->product_code ?? 'PROD',
+                'product_name' => $detail->product_name ?? $product->name,
+                'item_type' => $itemType,
                 'quantity' => (float) $detail->qty,
                 'rate' => (float) $detail->rate,
                 'discount_type' => 2,
@@ -188,6 +209,7 @@ class SalesService
             }
 
             $userId = Auth::id() ?? $quotation->created_by;
+            $branchId = $quotation->branch_id;
             $gstType = (int) ($data['gst_type'] ?? Sale::GST_CGST_SGST);
             $saleType = (int) ($data['sale_type'] ?? Sale::TYPE_CASH);
             $invoiceDiscount = (float) ($data['invoice_discount'] ?? 0.00);
@@ -196,14 +218,39 @@ class SalesService
             // Prepare line items from quotation or submitted data
             $rawItems = $data['items'] ?? [];
             if (empty($rawItems)) {
+                $allocatedIds = [];
                 foreach ($quotation->details as $detail) {
+                    $productId = $detail->product_id;
+                    $product = $detail->product;
+                    $allocatedItemId = null;
+                    $itemType = SalesDetail::ITEM_UNALLOCATED;
+
+                    // If product has individual tracking (tracking_type == 2)
+                    if ($product && $product->tracking_type == 2) {
+                        $itemType = SalesDetail::ITEM_ALLOCATED;
+                        $availableItem = \App\Models\StockItem::where('product_id', $productId)
+                            ->where('branch_id', $branchId)
+                            ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
+                            ->whereNotIn('id', $allocatedIds)
+                            ->first();
+
+                        if (!$availableItem) {
+                            throw ValidationException::withMessages([
+                                'items' => ["No available stock items (serial numbers) found for individually tracked product '{$product->name}' in this branch."],
+                            ]);
+                        }
+
+                        $allocatedItemId = $availableItem->id;
+                        $allocatedIds[] = $allocatedItemId;
+                    }
+
                     $rawItems[] = [
-                        'product_id' => $detail->product_id,
+                        'product_id' => $productId,
                         'uom_id' => $detail->uom_id,
-                        'allocated_item_id' => null,
-                        'product_code' => $detail->product->product_code ?? 'PROD',
-                        'product_name' => $detail->product_name ?? $detail->product->name,
-                        'item_type' => SalesDetail::ITEM_UNALLOCATED,
+                        'allocated_item_id' => $allocatedItemId,
+                        'product_code' => $product->product_code ?? 'PROD',
+                        'product_name' => $detail->product_name ?? $product->name,
+                        'item_type' => $itemType,
                         'quantity' => (float) $detail->qty,
                         'rate' => (float) $detail->rate,
                         'discount_type' => 2,
