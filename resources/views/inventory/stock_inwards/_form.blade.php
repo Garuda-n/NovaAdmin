@@ -1,10 +1,10 @@
 @php
     $oldItems = old('items', isset($stockInward) ? $stockInward->items->toArray() : [
-        ['product_id' => '', 'sub_product_id' => '', 'qty' => 1, 'weight' => '', 'purchase_price' => '', 'selling_price' => '', 'mrp' => '', 'remarks' => '']
+        ['category_id' => '', 'product_id' => '', 'sub_product_id' => '', 'qty' => 1, 'weight' => '', 'purchase_price' => '', 'selling_price' => '', 'mrp' => '', 'remarks' => '']
     ]);
 @endphp
 <script src="{{ asset('js/inventory/stock_inward_form.js') }}"></script>
-<div x-data="stockInwardForm({{ json_encode($oldItems) }}, {{ json_encode($products) }})" class="space-y-6">
+<div x-data="stockInwardForm({{ json_encode($oldItems) }}, {{ json_encode($products) }})" x-init="initCategoryFromProduct()" class="space-y-6">
 
     <!-- Header Section Card -->
     <div class="bg-white dark:bg-slate-800 shadow rounded-lg p-6 border border-gray-200 dark:border-slate-700">
@@ -23,10 +23,9 @@
                 <select
                     name="company_id"
                     class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
-                    required>
-                    <option value="">— Select Company —</option>
+                    required readonly>
                     @foreach($companies as $company)
-                        <option value="{{ $company->id }}" {{ old('company_id', $stockInward->company_id ?? '') == $company->id ? 'selected' : '' }}>
+                        <option value="{{ $company->id }}" {{ old('company_id', $stockInward->company_id ?? ($defaultCompanyId ?? '')) == $company->id ? 'selected' : '' }}>
                             {{ $company->name }}
                         </option>
                     @endforeach
@@ -175,13 +174,14 @@
             <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead class="bg-gray-50 dark:bg-slate-700/60">
                     <tr>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[180px]">Category <span class="text-red-500">*</span></th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[200px]">Product <span class="text-red-500">*</span></th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[160px]">Sub Product</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-24">Qty <span class="text-red-500">*</span></th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-28">Weight</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-28">Purchase Price</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-28">Selling Price</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-28">MRP</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[100px]">Qty <span class="text-red-500">*</span></th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[120px]">Weight</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[130px]">Purchase Price</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[130px]">Selling Price</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[120px]">MRP</th>
                         <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 min-w-[140px]">Remarks</th>
                         <th class="px-3 py-3 text-center text-xs font-semibold uppercase text-gray-600 dark:text-gray-300 w-12">Action</th>
                     </tr>
@@ -190,20 +190,33 @@
                     <template x-for="(row, index) in items" :key="index">
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition">
                             
-                            <!-- Product -->
+                            <!-- Category -->
+                            <td class="px-2 py-2">
+                                <select
+                                    x-model="row.category_id"
+                                    @change="onCategoryChange(row)"
+                                    class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    required>
+                                    <option value="">— Select Category —</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+
+                            <!-- Product (filtered by category) -->
                             <td class="px-2 py-2">
                                 <select
                                     :name="'items['+index+'][product_id]'"
                                     x-model="row.product_id"
                                     @change="onProductChange(row)"
-                                    class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    :disabled="!row.category_id"
+                                    class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 dark:disabled:bg-slate-800/60 disabled:opacity-50 disabled:cursor-not-allowed"
                                     required>
-                                    <option value="">— Select Product —</option>
-                                    @foreach($products as $prod)
-                                        <option value="{{ $prod->id }}">
-                                            {{ $prod->code }} - {{ $prod->name }}
-                                        </option>
-                                    @endforeach
+                                    <option value="" x-text="row.category_id ? '— Select Product —' : '— Select Category First —'"></option>
+                                    <template x-for="prod in getProductsByCategory(row.category_id)" :key="prod.id">
+                                        <option :value="prod.id" x-text="prod.code + ' - ' + prod.name" :selected="row.product_id == prod.id"></option>
+                                    </template>
                                 </select>
                             </td>
 

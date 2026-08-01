@@ -4,9 +4,13 @@
 function stockInwardForm(initialItems, availableProducts) {
     return {
         items: initialItems && initialItems.length > 0 ? initialItems : [
-            { product_id: '', sub_product_id: '', qty: 1, weight: '', purchase_price: '', selling_price: '', mrp: '', remarks: '' }
+            { category_id: '', product_id: '', sub_product_id: '', qty: 1, weight: '', purchase_price: '', selling_price: '', mrp: '', remarks: '' }
         ],
         products: availableProducts || [],
+        getProductsByCategory(categoryId) {
+            if (!categoryId) return [];
+            return this.products.filter(p => p.category_id == categoryId);
+        },
         getSubProducts(productId) {
             if (!productId) return [];
             const prod = this.products.find(p => p.id == productId);
@@ -15,6 +19,10 @@ function stockInwardForm(initialItems, availableProducts) {
         },
         hasSubProducts(productId) {
             return this.getSubProducts(productId).length > 0;
+        },
+        onCategoryChange(row) {
+            row.product_id = '';
+            row.sub_product_id = '';
         },
         onProductChange(row) {
             const subProds = this.getSubProducts(row.product_id);
@@ -28,6 +36,7 @@ function stockInwardForm(initialItems, availableProducts) {
         },
         addRow() {
             this.items.push({
+                category_id: '',
                 product_id: '',
                 sub_product_id: '',
                 qty: 1,
@@ -42,6 +51,16 @@ function stockInwardForm(initialItems, availableProducts) {
             if (this.items.length > 1) {
                 this.items.splice(index, 1);
             }
+        },
+        initCategoryFromProduct() {
+            this.items.forEach(row => {
+                if (row.product_id && !row.category_id) {
+                    const prod = this.products.find(p => p.id == row.product_id);
+                    if (prod) {
+                        row.category_id = String(prod.category_id);
+                    }
+                }
+            });
         }
     };
 }

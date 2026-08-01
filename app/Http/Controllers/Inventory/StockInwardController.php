@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Category;
 use App\Models\Company;
 use App\Models\Counter;
 use App\Models\Product;
@@ -72,16 +73,20 @@ class StockInwardController extends Controller
         $branches = Branch::where('status', 1)->orderBy('name')->get();
         $counters = Counter::where('status', 1)->orderBy('counter_name')->get();
         $suppliers = Supplier::where('status', 1)->orderBy('supplier_name')->get();
+        $categories = Category::where('status', 1)->orderBy('name')->get();
         $products = Product::with('subProducts')->where('status', 1)->orderBy('name')->get();
         $subProducts = SubProduct::where('status', 1)->orderBy('name')->get();
+        $defaultCompanyId = $companies->first()?->id;
 
         return view('inventory.stock_inwards.create', compact(
             'companies',
             'branches',
             'counters',
             'suppliers',
+            'categories',
             'products',
-            'subProducts'
+            'subProducts',
+            'defaultCompanyId'
         ));
     }
 
@@ -264,6 +269,7 @@ class StockInwardController extends Controller
         $branches = Branch::where('status', 1)->orderBy('name')->get();
         $counters = Counter::where('status', 1)->orderBy('counter_name')->get();
         $suppliers = Supplier::where('status', 1)->orderBy('supplier_name')->get();
+        $categories = Category::where('status', 1)->orderBy('name')->get();
         $products = Product::with('subProducts')->where('status', 1)->orderBy('name')->get();
         $subProducts = SubProduct::where('status', 1)->orderBy('name')->get();
 
@@ -273,6 +279,7 @@ class StockInwardController extends Controller
             'branches',
             'counters',
             'suppliers',
+            'categories',
             'products',
             'subProducts'
         ));

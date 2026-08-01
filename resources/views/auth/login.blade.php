@@ -1,75 +1,75 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- Card Header --}}
+    <div class="login-card-header">
+        <h1>Welcome back</h1>
+        <p>Enter your credentials to access your account</p>
+    </div>
 
-    <!-- Toast -->
+    {{-- Session Status --}}
+    @if (session('status'))
+        <div class="login-session-status">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    {{-- Toast --}}
     <x-toast />
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input
+        {{-- Email --}}
+        <div class="login-field">
+            <label for="email">{{ __('Email Address') }}</label>
+            <input
                 id="email"
-                class="block mt-1 w-full"
                 type="email"
                 name="email"
-                :value="old('email')"
+                value="{{ old('email') }}"
                 required
                 autofocus
                 autocomplete="username"
+                placeholder="you@company.com"
             />
-            {{-- Toast handles errors, so this is no longer needed --}}
-            {{-- <x-input-error :messages="$errors->get('email')" class="mt-2" /> --}}
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input
+        {{-- Password --}}
+        <div class="login-field">
+            <label for="password">{{ __('Password') }}</label>
+            <input
                 id="password"
-                class="block mt-1 w-full"
                 type="password"
                 name="password"
                 required
                 autocomplete="current-password"
+                placeholder="••••••••"
             />
-
-            {{-- Uncomment this only if you want password field validation below the input --}}
-            {{-- <x-input-error :messages="$errors->get('password')" class="mt-2" /> --}}
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input
-                    id="remember_me"
-                    type="checkbox"
-                    class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
-                    name="remember"
-                >
-
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                    {{ __('Remember me') }}
-                </span>
+        {{-- Remember / Forgot --}}
+        <div class="login-meta-row">
+            <label for="remember_me">
+                <input id="remember_me" type="checkbox" name="remember">
+                <span>{{ __('Remember me') }}</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a
-                    class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
-                    href="{{ route('password.request') }}"
-                >
-                    {{ __('Forgot your password?') }}
+                <a class="login-forgot-link" href="{{ route('password.request') }}">
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        {{-- Submit --}}
+        <button type="submit" class="login-submit-btn">
+            {{ __('Sign In') }}
+        </button>
     </form>
+
+    {{-- Footer --}}
+    @if (Route::has('register'))
+        <div class="login-footer">
+            Don't have an account? <a href="{{ route('register') }}">Create one</a>
+        </div>
+    @endif
 </x-guest-layout>
