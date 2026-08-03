@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Quotation;
 use App\Services\QuotationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -46,6 +47,19 @@ class QuotationController extends Controller
         $formData = $this->quotationService->getCreateFormData();
 
         return view('quotations.create', $formData);
+    }
+
+    /**
+     * Search customers via AJAX for quotation form dropdown.
+     */
+    public function searchCustomers(Request $request): JsonResponse
+    {
+        $customers = $this->quotationService->searchCustomers($request->input('q'));
+
+        return response()->json([
+            'success' => true,
+            'customers' => $customers,
+        ]);
     }
 
     /**

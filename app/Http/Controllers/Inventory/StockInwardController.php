@@ -148,6 +148,9 @@ class StockInwardController extends Controller
 
             $stockInward->items()->createMany($itemsData);
 
+            // Record stock movements via central InventoryService
+            app(\App\Services\Inventory\InventoryService::class)->recordInward($stockInward);
+
             ActivityLogService::log(
                 'StockInward',
                 'CREATED',
@@ -358,6 +361,12 @@ class StockInwardController extends Controller
 
             $stockInward->items()->createMany($itemsData);
 
+            // Re-record stock movements
+            \App\Models\StockMovement::where('reference_type', StockInward::class)
+                ->where('reference_id', $stockInward->id)
+                ->delete();
+            app(\App\Services\Inventory\InventoryService::class)->recordInward($stockInward);
+
             ActivityLogService::log(
                 'StockInward',
                 'UPDATED',
@@ -401,6 +410,11 @@ class StockInwardController extends Controller
 
         try {
             $invoiceNo = $stockInward->invoice_no;
+
+            // Delete associated stock movements
+            \App\Models\StockMovement::where('reference_type', StockInward::class)
+                ->where('reference_id', $stockInward->id)
+                ->delete();
 
             $stockInward->delete();
 

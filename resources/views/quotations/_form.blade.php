@@ -107,7 +107,7 @@
                     $selectedCustomer = null;
                     $oldCustId = old('customer_id');
                     if ($oldCustId) {
-                        $selectedCustomer = $customers->firstWhere('id', $oldCustId);
+                        $selectedCustomer = \App\Models\Customer::find($oldCustId);
                     } elseif (isset($quotation) && $quotation->customer) {
                         $selectedCustomer = $quotation->customer;
                     }
@@ -119,6 +119,7 @@
                         <input
                             type="text"
                             id="customer-search-input"
+                            data-search-url="{{ route('quotations.search-customers') }}"
                             class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 pr-8"
                             placeholder="Type customer name or mobile..."
                             autocomplete="off"
@@ -143,21 +144,11 @@
 
                 <!-- Search Results Dropdown List -->
                 <div id="customer-results-list" class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
-                    @foreach($customers as $cust)
-                        @php
-                            $displayText = strtoupper($cust->customer_name) . ($cust->mobile ? '-' . $cust->mobile : '');
-                            $searchContent = strtolower($cust->customer_name . ' ' . ($cust->mobile ?? '') . ' ' . ($cust->customer_code ?? '') . ' ' . ($cust->gst_number ?? ''));
-                        @endphp
-                        <div class="customer-option px-3 py-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-semibold text-sm cursor-pointer border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition"
-                             data-id="{{ $cust->id }}"
-                             data-display="{{ $displayText }}"
-                             data-name="{{ $cust->customer_name }}"
-                             data-mobile="{{ $cust->mobile ?? '' }}"
-                             data-search="{{ $searchContent }}"
-                             data-type="{{ $cust->customer_type }}">
-                            {{ $displayText }}
-                        </div>
-                    @endforeach
+                    <div id="customer-search-spinner" class="p-3 text-center text-xs text-indigo-500 dark:text-indigo-400 hidden items-center justify-center gap-2">
+                        <svg class="animate-spin h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span>Searching customers...</span>
+                    </div>
+                    <div id="customer-options-container"></div>
                     <div id="no-customer-found" class="p-3 text-center text-xs text-slate-500 dark:text-slate-400 hidden">
                         No matching customers found.
                     </div>

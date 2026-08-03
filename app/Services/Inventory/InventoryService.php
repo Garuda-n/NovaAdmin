@@ -2,16 +2,101 @@
 
 namespace App\Services\Inventory;
 
+use App\Enums\InventoryTransactionType;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SalesDetail;
+use App\Models\StockInward;
 use App\Models\StockItem;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
+    /**
+     * Central gateway: Create a stock movement record.
+     * ALL stock increases/decreases MUST go through this method.
+     *
+     * @param array $data
+     * @return StockMovement
+     */
+    public function recordMovement(array $data): StockMovement
+    {
+        $movementDate = $data['movement_date'] ?? now()->toDateString();
+        $businessDate = $data['business_date'] ?? $this->resolveBusinessDate($movementDate);
+
+        return StockMovement::create([
+            'company_id'       => $data['company_id'],
+            'branch_id'        => $data['branch_id'],
+            'counter_id'       => $data['counter_id'] ?? null,
+            'product_id'       => $data['product_id'],
+            'stock_item_id'    => $data['stock_item_id'] ?? null,
+            'movement_type'    => $data['movement_type'],
+            'transaction_type' => $data['transaction_type'] ?? null,
+            'quantity'         => $data['quantity'],
+            'unit_cost'        => $data['unit_cost'] ?? null,
+            'reference_type'   => $data['reference_type'] ?? null,
+            'reference_id'     => $data['reference_id'] ?? null,
+            'movement_date'    => $movementDate,
+            'business_date'    => $businessDate,
+            'remarks'          => $data['remarks'] ?? null,
+            'created_by'       => $data['created_by'] ?? (Auth::id() ?? 1),
+        ]);
+    }
+
+    /**
+     * Resolve current active business date from day_closings table if open, or fallback date.
+     *
+     * @param string|null $fallbackDate
+     * @return string
+     */
+    public function resolveBusinessDate(?string $fallbackDate = null): string
+    {
+        if (Schema::hasTable('day_closings')) {
+            $closingDate = DB::table('day_closings')->where('status', 'open')->value('business_date');
+            if ($closingDate) {
+                return $closingDate;
+            }
+        }
+
+        return $fallbackDate ?? now()->toDateString();
+    }
+
+    /**
+     * Record stock inward movements for a completed Bulk Stock Inward.
+     *
+     * @param StockInward $stockInward
+     * @return void
+     */
+    public function recordInward(StockInward $stockInward): void
+    {
+        $stockInward->loadMissing('items');
+
+        foreach ($stockInward->items as $item) {
+            $invoiceDateStr = $stockInward->invoice_date ? $stockInward->invoice_date->format('Y-m-d') : now()->toDateString();
+            $this->recordMovement([
+                'company_id'       => $stockInward->company_id,
+                'branch_id'        => $stockInward->branch_id,
+                'counter_id'       => $stockInward->counter_id,
+                'product_id'       => $item->product_id,
+                'stock_item_id'    => null,
+                'movement_type'    => StockMovement::TYPE_PURCHASE,
+                'transaction_type' => InventoryTransactionType::ALLOCATION->value,
+                'quantity'         => (float) $item->qty,
+                'unit_cost'        => $item->purchase_price,
+                'reference_type'   => StockInward::class,
+                'reference_id'     => $stockInward->id,
+                'movement_date'    => $invoiceDateStr,
+                'business_date'    => $this->resolveBusinessDate($invoiceDateStr),
+                'remarks'          => "Bulk Inward Invoice '{$stockInward->invoice_no}'",
+                'created_by'       => Auth::id() ?? $stockInward->created_by,
+            ]);
+        }
+    }
+
     /**
      * Validate stock availability before completing a sale transaction.
      *
@@ -111,18 +196,27 @@ class InventoryService
             'allocated_at' => now(),
         ]);
 
-        // Create negative stock movement entry for sale
-        StockMovement::create([
-            'company_id' => $sale->company_id,
-            'branch_id' => $sale->branch_id,
-            'product_id' => $salesDetail->product_id,
-            'stock_item_id' => $stockItem->id,
-            'movement_type' => StockMovement::TYPE_SALE,
-            'quantity' => -1.00,
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'movement_date' => $sale->invoice_date,
-            'created_by' => Auth::id() ?? $sale->created_by,
+        $stockItem->loadMissing('stockInwardItem');
+        $unitCost = $stockItem->stockInwardItem ? $stockItem->stockInwardItem->purchase_price : null;
+        $invoiceDateStr = $sale->invoice_date ? $sale->invoice_date->format('Y-m-d') : now()->toDateString();
+
+        // Create negative stock movement entry for sale via recordMovement
+        $this->recordMovement([
+            'company_id'       => $sale->company_id,
+            'branch_id'        => $sale->branch_id,
+            'counter_id'       => $sale->counter_id,
+            'product_id'       => $salesDetail->product_id,
+            'stock_item_id'    => $stockItem->id,
+            'movement_type'    => StockMovement::TYPE_SALE,
+            'transaction_type' => InventoryTransactionType::SALES->value,
+            'quantity'         => -1.00,
+            'unit_cost'        => $unitCost,
+            'reference_type'   => Sale::class,
+            'reference_id'     => $sale->id,
+            'movement_date'    => $invoiceDateStr,
+            'business_date'    => $this->resolveBusinessDate($invoiceDateStr),
+            'remarks'          => "Sales Invoice #{$sale->invoice_no_display}",
+            'created_by'       => Auth::id() ?? $sale->created_by,
         ]);
     }
 
@@ -136,19 +230,25 @@ class InventoryService
     public function processUnallocatedItem(SalesDetail $salesDetail, Sale $sale): void
     {
         $quantity = (float) $salesDetail->quantity;
+        $invoiceDateStr = $sale->invoice_date ? $sale->invoice_date->format('Y-m-d') : now()->toDateString();
 
-        // Create negative stock movement entry for sale quantity
-        StockMovement::create([
-            'company_id' => $sale->company_id,
-            'branch_id' => $sale->branch_id,
-            'product_id' => $salesDetail->product_id,
-            'stock_item_id' => null,
-            'movement_type' => StockMovement::TYPE_SALE,
-            'quantity' => -abs($quantity),
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'movement_date' => $sale->invoice_date,
-            'created_by' => Auth::id() ?? $sale->created_by,
+        // Create negative stock movement entry for sale quantity via recordMovement
+        $this->recordMovement([
+            'company_id'       => $sale->company_id,
+            'branch_id'        => $sale->branch_id,
+            'counter_id'       => $sale->counter_id,
+            'product_id'       => $salesDetail->product_id,
+            'stock_item_id'    => null,
+            'movement_type'    => StockMovement::TYPE_SALE,
+            'transaction_type' => InventoryTransactionType::SALES->value,
+            'quantity'         => -abs($quantity),
+            'unit_cost'        => $salesDetail->rate,
+            'reference_type'   => Sale::class,
+            'reference_id'     => $sale->id,
+            'movement_date'    => $invoiceDateStr,
+            'business_date'    => $this->resolveBusinessDate($invoiceDateStr),
+            'remarks'          => "Sales Invoice #{$sale->invoice_no_display}",
+            'created_by'       => Auth::id() ?? $sale->created_by,
         ]);
     }
 
@@ -170,30 +270,40 @@ class InventoryService
                     $stockItem->update(['status' => \App\Enums\StockItemStatus::AVAILABLE->value]);
                 }
 
-                StockMovement::create([
-                    'company_id' => $sale->company_id,
-                    'branch_id' => $sale->branch_id,
-                    'product_id' => $detail->product_id,
-                    'stock_item_id' => $detail->allocated_item_id,
-                    'movement_type' => StockMovement::TYPE_RETURN,
-                    'quantity' => 1.00,
-                    'reference_type' => Sale::class,
-                    'reference_id' => $sale->id,
-                    'movement_date' => now()->toDateString(),
-                    'created_by' => Auth::id() ?? $sale->created_by,
+                $this->recordMovement([
+                    'company_id'       => $sale->company_id,
+                    'branch_id'        => $sale->branch_id,
+                    'counter_id'       => $sale->counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => $detail->allocated_item_id,
+                    'movement_type'    => StockMovement::TYPE_RETURN,
+                    'transaction_type' => InventoryTransactionType::CANCELLED->value,
+                    'quantity'         => 1.00,
+                    'unit_cost'        => null,
+                    'reference_type'   => Sale::class,
+                    'reference_id'     => $sale->id,
+                    'movement_date'    => now()->toDateString(),
+                    'business_date'    => $this->resolveBusinessDate(now()->toDateString()),
+                    'remarks'          => "Cancellation reversal of Sale Invoice #{$sale->invoice_no_display}",
+                    'created_by'       => Auth::id() ?? $sale->created_by,
                 ]);
             } else {
-                StockMovement::create([
-                    'company_id' => $sale->company_id,
-                    'branch_id' => $sale->branch_id,
-                    'product_id' => $detail->product_id,
-                    'stock_item_id' => null,
-                    'movement_type' => StockMovement::TYPE_RETURN,
-                    'quantity' => abs((float) $detail->quantity),
-                    'reference_type' => Sale::class,
-                    'reference_id' => $sale->id,
-                    'movement_date' => now()->toDateString(),
-                    'created_by' => Auth::id() ?? $sale->created_by,
+                $this->recordMovement([
+                    'company_id'       => $sale->company_id,
+                    'branch_id'        => $sale->branch_id,
+                    'counter_id'       => $sale->counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => null,
+                    'movement_type'    => StockMovement::TYPE_RETURN,
+                    'transaction_type' => InventoryTransactionType::CANCELLED->value,
+                    'quantity'         => abs((float) $detail->quantity),
+                    'unit_cost'        => $detail->rate,
+                    'reference_type'   => Sale::class,
+                    'reference_id'     => $sale->id,
+                    'movement_date'    => now()->toDateString(),
+                    'business_date'    => $this->resolveBusinessDate(now()->toDateString()),
+                    'remarks'          => "Cancellation reversal of Sale Invoice #{$sale->invoice_no_display}",
+                    'created_by'       => Auth::id() ?? $sale->created_by,
                 ]);
             }
         }

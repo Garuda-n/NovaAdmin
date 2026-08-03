@@ -20,11 +20,17 @@ function stockInwardForm(initialItems, availableProducts) {
         hasSubProducts(productId) {
             return this.getSubProducts(productId).length > 0;
         },
-        onCategoryChange(row) {
+        onCategoryChange(row, event) {
             row.product_id = '';
             row.sub_product_id = '';
+            if (event && event.target && typeof jQuery !== 'undefined') {
+                const $tr = jQuery(event.target).closest('tr');
+                setTimeout(function () {
+                    $tr.find('select').trigger('change.select2');
+                }, 50);
+            }
         },
-        onProductChange(row) {
+        onProductChange(row, event) {
             const subProds = this.getSubProducts(row.product_id);
             if (subProds.length === 0) {
                 row.sub_product_id = '';
@@ -32,6 +38,12 @@ function stockInwardForm(initialItems, availableProducts) {
                 if (!subProds.some(sp => sp.id == row.sub_product_id)) {
                     row.sub_product_id = '';
                 }
+            }
+            if (event && event.target && typeof jQuery !== 'undefined') {
+                const $tr = jQuery(event.target).closest('tr');
+                setTimeout(function () {
+                    $tr.find('select').trigger('change.select2');
+                }, 50);
             }
         },
         addRow() {
@@ -46,6 +58,11 @@ function stockInwardForm(initialItems, availableProducts) {
                 mrp: '',
                 remarks: ''
             });
+            if (typeof window.initSearchableSelects === 'function') {
+                setTimeout(function () {
+                    window.initSearchableSelects();
+                }, 100);
+            }
         },
         removeRow(index) {
             if (this.items.length > 1) {

@@ -43,21 +43,6 @@
                 }
             });
 
-            // Force dropdown menu to open downwards below the selection box
-            $select.on('select2:open', function () {
-                setTimeout(function () {
-                    const $dropdown = $('.select2-dropdown');
-                    if ($dropdown.hasClass('select2-dropdown--above')) {
-                        $dropdown.removeClass('select2-dropdown--above').addClass('select2-dropdown--below');
-                        const $container = $select.next('.select2-container');
-                        if ($container.length) {
-                            const containerOffset = $container.offset();
-                            $dropdown.css('top', (containerOffset.top + $container.outerHeight()) + 'px');
-                        }
-                    }
-                }, 0);
-            });
-
             // Dispatch native change event ONLY on explicit user selection/clearing to prevent infinite loops
             $select.on('select2:select select2:clear', function () {
                 const event = document.createEvent('HTMLEvents');

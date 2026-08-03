@@ -100,7 +100,7 @@ class QuotationService
             }
         }
 
-        $customers = Customer::where('status', true)->orderBy('customer_name')->get();
+        $customers = collect();
         $products = Product::with(['uom', 'tax'])->where('status', true)->orderBy('name')->get();
         $uoms = Uom::where('status', true)->orderBy('name')->get();
 
@@ -112,6 +112,44 @@ class QuotationService
             'products' => $products,
             'uoms' => $uoms,
         ];
+    }
+
+    /**
+     * Search customers via AJAX for quotation form dropdown.
+     *
+     * @param string|null $query
+     * @return array
+     */
+    public function searchCustomers(?string $query = null): array
+    {
+        $q = trim($query ?? '');
+        $customerQuery = Customer::where('status', true);
+
+        if (!empty($q)) {
+            $customerQuery->where(function ($sub) use ($q) {
+                $sub->where('customer_name', 'like', "%{$q}%")
+                    ->orWhere('mobile', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('gst_number', 'like', "%{$q}%")
+                    ->orWhere('id', $q);
+            });
+        }
+
+        $customers = $customerQuery->orderBy('customer_name')->limit(30)->get();
+
+        return $customers->map(function ($cust) {
+            $displayText = strtoupper($cust->customer_name) . ($cust->mobile ? '-' . $cust->mobile : '');
+            $searchContent = strtolower($cust->customer_name . ' ' . ($cust->mobile ?? '') . ' ' . ($cust->email ?? '') . ' ' . ($cust->gst_number ?? ''));
+
+            return [
+                'id' => $cust->id,
+                'display' => $displayText,
+                'name' => $cust->customer_name,
+                'mobile' => $cust->mobile ?? '',
+                'search' => $searchContent,
+                'type' => $cust->customer_type ?? 'B2C',
+            ];
+        })->toArray();
     }
 
     /**

@@ -65,33 +65,87 @@
         }
     }
 
-    // Filter and display customer list on input, focus, or click
+    const searchUrl = $customerSearchInput.data('search-url') || $customerSearchInput.attr('data-search-url') || '/quotations/search-customers';
+    const $optionsContainer = $('#customer-options-container');
+    const $searchSpinner = $('#customer-search-spinner');
+    const $noCustomerFound = $('#no-customer-found');
+    let customerSearchTimer = null;
+    let currentCustomerAjaxRequest = null;
+    let lastCustomerSearchQuery = null;
+
+    /**
+     * Fetch customers via AJAX matching search query
+     */
+    function fetchCustomersAjax(query) {
+        if (currentCustomerAjaxRequest) {
+            currentCustomerAjaxRequest.abort();
+            currentCustomerAjaxRequest = null;
+        }
+
+        lastCustomerSearchQuery = query;
+        $searchSpinner.removeClass('hidden').addClass('flex');
+        $noCustomerFound.addClass('hidden');
+
+        currentCustomerAjaxRequest = $.ajax({
+            url: searchUrl,
+            method: 'GET',
+            data: { q: query },
+            dataType: 'json',
+            success: function (data) {
+                currentCustomerAjaxRequest = null;
+                $searchSpinner.removeClass('flex').addClass('hidden');
+                $optionsContainer.empty();
+
+                const customers = (data && data.customers) ? data.customers : [];
+                if (customers.length === 0) {
+                    $noCustomerFound.removeClass('hidden');
+                } else {
+                    $noCustomerFound.addClass('hidden');
+                    customers.forEach(function (cust) {
+                        const $option = $('<div>', {
+                            class: 'customer-option px-3 py-2 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-semibold text-sm cursor-pointer border-b border-slate-100 dark:border-slate-700/50 last:border-0 transition',
+                            'data-id': cust.id,
+                            'data-display': cust.display,
+                            'data-name': cust.name,
+                            'data-mobile': cust.mobile || '',
+                            'data-search': cust.search || '',
+                            'data-type': cust.type || 'B2C'
+                        }).text(cust.display);
+
+                        $optionsContainer.append($option);
+                    });
+                }
+
+                $customerResultsList.removeClass('hidden');
+                highlightOption(0);
+            },
+            error: function (xhr, status) {
+                if (status !== 'abort') {
+                    currentCustomerAjaxRequest = null;
+                    $searchSpinner.removeClass('flex').addClass('hidden');
+                }
+            }
+        });
+    }
+
+    // Filter and display customer list on input, focus, or click via AJAX
     $customerSearchInput.on('input focus click', function (e) {
         e.stopPropagation();
         const query = $(this).val().toLowerCase().trim();
-        let matchCount = 0;
 
-        $customerResultsList.find('.customer-option').each(function () {
-            const searchContent = ($(this).attr('data-search') || $(this).data('search') || $(this).text() || '').toString().toLowerCase();
-
-            if (!query || searchContent.includes(query)) {
-                $(this).removeClass('hidden');
-                matchCount++;
-            } else {
-                $(this).addClass('hidden');
-            }
-        });
-
-        if (matchCount === 0 && query !== '') {
-            $('#no-customer-found').removeClass('hidden');
-        } else {
-            $('#no-customer-found').addClass('hidden');
+        // If focus or click occurs and dropdown already has results for same query, just show list
+        if ((e.type === 'focus' || e.type === 'click') && lastCustomerSearchQuery === query && $optionsContainer.children().length > 0) {
+            $customerResultsList.removeClass('hidden');
+            return;
         }
 
-        $customerResultsList.removeClass('hidden');
+        if (customerSearchTimer) {
+            clearTimeout(customerSearchTimer);
+        }
 
-        // Auto highlight the first matching option
-        highlightOption(0);
+        customerSearchTimer = setTimeout(function () {
+            fetchCustomersAjax(query);
+        }, 150);
     });
 
     // Arrow keys & Enter key navigation inside customer search input
@@ -180,7 +234,7 @@
                 'data-type': customer.customer_type || 'B2C'
             }).text(displayText);
 
-            $customerResultsList.prepend($option);
+            $optionsContainer.prepend($option);
         } else {
             $option.attr('data-display', displayText)
                    .attr('data-name', customer.customer_name)
@@ -199,8 +253,7 @@
         $selectedCustomerId.val('');
         $customerSearchInput.val('').focus();
         $clearCustomerBtn.addClass('hidden');
-        $customerResultsList.removeClass('hidden');
-        highlightOption(0);
+        fetchCustomersAjax('');
     });
 
     // Hide customer dropdown when clicking outside

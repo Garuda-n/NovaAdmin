@@ -205,5 +205,37 @@ class MenuSeeder extends Seeder
                 array_merge($child, ['parent_id' => $sales->id, 'status' => true])
             );
         }
+
+        // Reports (Dropdown parent)
+        $reports = Menu::firstOrCreate(
+            ['name' => 'Reports'],
+            [
+                'route' => null,
+                'icon' => 'chart-bar-square',
+                'parent_id' => null,
+                'permission_slug' => null,
+                'order' => 9,
+                'status' => true,
+            ]
+        );
+
+        // Remove any old sub-parent inventory record under Reports
+        Menu::where('parent_id', $reports->id)->where('name', 'Inventory')->delete();
+
+        $reportsChildren = [
+            ['name' => 'Stock Register', 'route' => 'reports.inventory.index', 'icon' => 'archive-box', 'permission_slug' => 'reports.inventory', 'order' => 1],
+            ['name' => 'Allocated Item History', 'route' => 'reports.allocated-item-history.index', 'icon' => 'clock', 'permission_slug' => 'reports.allocated-item-history', 'order' => 2],
+            ['name' => 'Sales', 'route' => 'reports.sales.index', 'icon' => 'shopping-cart', 'permission_slug' => 'reports.sales', 'order' => 3],
+            ['name' => 'Purchase', 'route' => 'reports.purchase.index', 'icon' => 'truck', 'permission_slug' => 'reports.purchase', 'order' => 4],
+            ['name' => 'Customer', 'route' => 'reports.customer.index', 'icon' => 'user-group', 'permission_slug' => 'reports.customer', 'order' => 5],
+            ['name' => 'Supplier', 'route' => 'reports.supplier.index', 'icon' => 'building-storefront', 'permission_slug' => 'reports.supplier', 'order' => 6],
+        ];
+
+        foreach ($reportsChildren as $child) {
+            Menu::updateOrCreate(
+                ['name' => $child['name'], 'parent_id' => $reports->id],
+                array_merge($child, ['parent_id' => $reports->id, 'status' => true])
+            );
+        }
     }
 }

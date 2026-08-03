@@ -23,25 +23,34 @@ class StockMovement extends Model
     protected $fillable = [
         'company_id',
         'branch_id',
+        'counter_id',
         'product_id',
         'stock_item_id',
         'movement_type',
+        'transaction_type',
         'quantity',
+        'unit_cost',
         'reference_type',
         'reference_id',
         'movement_date',
+        'business_date',
+        'remarks',
         'created_by',
     ];
 
     protected $casts = [
         'company_id' => 'integer',
         'branch_id' => 'integer',
+        'counter_id' => 'integer',
         'product_id' => 'integer',
         'stock_item_id' => 'integer',
         'movement_type' => 'integer',
+        'transaction_type' => 'integer',
         'quantity' => 'decimal:2',
+        'unit_cost' => 'decimal:2',
         'reference_id' => 'integer',
         'movement_date' => 'date',
+        'business_date' => 'date',
         'created_by' => 'integer',
     ];
 
@@ -59,6 +68,14 @@ class StockMovement extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Relationship: Counter
+     */
+    public function counter(): BelongsTo
+    {
+        return $this->belongsTo(Counter::class);
     }
 
     /**

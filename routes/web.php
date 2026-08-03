@@ -27,6 +27,11 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ReceivableController;
+use App\Http\Controllers\Reports\Inventory\StockRegisterController;
+use App\Http\Controllers\Reports\Sales\SalesReportController;
+use App\Http\Controllers\Reports\Purchase\PurchaseReportController;
+use App\Http\Controllers\Reports\Customer\CustomerReportController;
+use App\Http\Controllers\Reports\Supplier\SupplierReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -539,6 +544,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('quotations.create')
         ->middleware('permission:quotation.create');
 
+    Route::get('quotations/search-customers', [QuotationController::class, 'searchCustomers'])
+        ->name('quotations.search-customers')
+        ->middleware('permission:quotation.create');
+
     Route::post('quotations', [QuotationController::class, 'store'])
         ->name('quotations.store')
         ->middleware('permission:quotation.create');
@@ -578,6 +587,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::prefix('receivables')->name('receivables.')->group(function () {
         Route::get('/', [ReceivableController::class, 'index'])->name('index')->middleware('permission:receivable.view');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reports Module
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::match(['get', 'post'], 'inventory', [StockRegisterController::class, 'index'])
+            ->name('inventory.index')->middleware('permission:reports.inventory');
+        Route::post('inventory/search', [StockRegisterController::class, 'search'])
+            ->name('inventory.search')->middleware('permission:reports.inventory');
+
+        Route::match(['get', 'post'], 'allocated-item-history', [StockRegisterController::class, 'allocatedItemHistory'])
+            ->name('allocated-item-history.index')->middleware('permission:reports.allocated-item-history');
+        Route::post('allocated-item-history/search', [StockRegisterController::class, 'searchAllocatedItemHistory'])
+            ->name('allocated-item-history.search')->middleware('permission:reports.allocated-item-history');
+
+        Route::match(['get', 'post'], 'sales', [SalesReportController::class, 'index'])
+            ->name('sales.index')->middleware('permission:reports.sales');
+
+        Route::match(['get', 'post'], 'purchase', [PurchaseReportController::class, 'index'])
+            ->name('purchase.index')->middleware('permission:reports.purchase');
+
+        Route::match(['get', 'post'], 'customer', [CustomerReportController::class, 'index'])
+            ->name('customer.index')->middleware('permission:reports.customer');
+
+        Route::match(['get', 'post'], 'supplier', [SupplierReportController::class, 'index'])
+            ->name('supplier.index')->middleware('permission:reports.supplier');
     });
 });
 

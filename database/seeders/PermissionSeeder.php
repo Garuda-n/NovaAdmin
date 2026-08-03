@@ -118,6 +118,14 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Menus', 'slug' => 'menus.create', 'group' => 'Administration'],
             ['name' => 'Edit Menus', 'slug' => 'menus.edit', 'group' => 'Administration'],
             ['name' => 'Delete Menus', 'slug' => 'menus.delete', 'group' => 'Administration'],
+
+            // Reports
+            ['name' => 'View Inventory Report', 'slug' => 'reports.inventory', 'group' => 'Reports'],
+            ['name' => 'View Allocated Item History Report', 'slug' => 'reports.allocated-item-history', 'group' => 'Reports'],
+            ['name' => 'View Sales Report', 'slug' => 'reports.sales', 'group' => 'Reports'],
+            ['name' => 'View Purchase Report', 'slug' => 'reports.purchase', 'group' => 'Reports'],
+            ['name' => 'View Customer Report', 'slug' => 'reports.customer', 'group' => 'Reports'],
+            ['name' => 'View Supplier Report', 'slug' => 'reports.supplier', 'group' => 'Reports'],
         ];
 
         foreach ($permissions as $permission) {

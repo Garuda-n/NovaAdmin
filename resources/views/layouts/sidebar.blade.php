@@ -272,21 +272,6 @@
 
         </a>
 
-        <!-- Reports -->
-        <a href="#"
-            class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
-
-            <x-heroicon-o-chart-bar class="w-5 h-5 shrink-0" />
-
-            <span
-                x-show="sidebarOpen"
-                x-transition
-                class="ml-2.5">
-                Reports
-            </span>
-
-        </a>
-
         <!-- Settings -->
         <a href="#"
             class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
