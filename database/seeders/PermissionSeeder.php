@@ -91,6 +91,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'Edit Stock Inward', 'slug' => 'stock-inwards.edit', 'group' => 'Inventory'],
             ['name' => 'Delete Stock Inward', 'slug' => 'stock-inwards.delete', 'group' => 'Inventory'],
 
+            ['name' => 'View Stock Transfer', 'slug' => 'stock-transfer.view', 'group' => 'Inventory'],
+            ['name' => 'Create Stock Transfer', 'slug' => 'stock-transfer.create', 'group' => 'Inventory'],
+            ['name' => 'Edit Stock Transfer', 'slug' => 'stock-transfer.edit', 'group' => 'Inventory'],
+            ['name' => 'Dispatch Stock Transfer', 'slug' => 'stock-transfer.dispatch', 'group' => 'Inventory'],
+            ['name' => 'Receive Stock Transfer', 'slug' => 'stock-transfer.receive', 'group' => 'Inventory'],
+            ['name' => 'Cancel Stock Transfer', 'slug' => 'stock-transfer.cancel', 'group' => 'Inventory'],
+
             // Stock Report
             ['name' => 'View Available Stock', 'slug' => 'available-stock.view', 'group' => 'Stock Report'],
 

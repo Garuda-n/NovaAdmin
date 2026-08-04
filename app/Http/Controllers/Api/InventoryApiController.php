@@ -30,14 +30,16 @@ class InventoryApiController extends Controller
     public function search(Request $request): JsonResponse
     {
         $request->validate([
-            'search'    => 'required|string|min:2',
-            'branch_id' => 'nullable|integer|exists:branches,id',
+            'search'     => 'required|string|min:2',
+            'branch_id'  => 'nullable|integer|exists:branches,id',
+            'counter_id' => 'nullable|integer|exists:counters,id',
         ]);
 
         $search = $request->input('search');
         $branchId = $request->input('branch_id');
+        $counterId = $request->input('counter_id');
 
-        $items = $this->inventoryService->search($search, $branchId);
+        $items = $this->inventoryService->search($search, $branchId, $counterId);
 
         return response()->json([
             'status' => true,

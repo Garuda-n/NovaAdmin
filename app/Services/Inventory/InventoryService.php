@@ -338,10 +338,11 @@ class InventoryService
      *
      * @param string $search
      * @param int|null $branchId
+     * @param int|null $counterId
      * @param int $limit
      * @return array
      */
-    public function search(string $search, ?int $branchId = null, int $limit = 20): array
+    public function search(string $search, ?int $branchId = null, ?int $counterId = null, int $limit = 20): array
     {
         $search = trim($search);
         if (strlen($search) < 2) {
@@ -361,10 +362,15 @@ class InventoryService
         $results = [];
 
         // 1. Search Individual Item Tracking
-        $individualItems = StockItem::with(['product.uom', 'product.tax', 'stockInwardItem', 'branch'])
+        $individualQuery = StockItem::with(['product.uom', 'product.tax', 'stockInwardItem', 'branch'])
             ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
-            ->where('branch_id', $branchId)
-            ->whereHas('product', function ($q) {
+            ->where('branch_id', $branchId);
+
+        if ($counterId) {
+            $individualQuery->where('counter_id', $counterId);
+        }
+
+        $individualItems = $individualQuery->whereHas('product', function ($q) {
                 $q->where('status', true)
                   ->where('tracking_type', Product::TRACKING_INDIVIDUAL);
             })
@@ -406,8 +412,11 @@ class InventoryService
             })
             ->limit($limit)
             ->get();
+
+        $availableStockService = app(AvailableStockService::class);
+
         foreach ($bulkProducts as $product) {
-            $availableQty = $this->getAvailableStockQuantity($product->id, $branchId);
+            $availableQty = $availableStockService->getAvailableQuantity($product->id, $branchId, $counterId);
             if ($availableQty > 0) {
                 $latestInwardItem = \App\Models\StockInwardItem::where('product_id', $product->id)
                     ->whereHas('stockInward', function ($q) use ($branchId) {
@@ -439,5 +448,204 @@ class InventoryService
             }
         }
         return array_slice($results, 0, $limit);
+    }
+
+    /**
+     * Record stock movement when a transfer is DISPATCHED (outward from source).
+     *
+     * @param \App\Models\StockTransfer $transfer
+     * @return void
+     */
+    public function recordTransferOut(\App\Models\StockTransfer $transfer): void
+    {
+        $transfer->loadMissing(['details.product', 'details.stockItem']);
+
+        $transDateStr = $transfer->transfer_date ? $transfer->transfer_date->format('Y-m-d') : now()->toDateString();
+        $transType = $transfer->transfer_type === \App\Enums\StockTransferType::COUNTER
+            ? InventoryTransactionType::COUNTER_TRANSFER->value
+            : InventoryTransactionType::BRANCH_TRANSFER->value;
+
+        foreach ($transfer->details as $detail) {
+            if ($detail->tracking_type === Product::TRACKING_INDIVIDUAL && $detail->stock_item_id) {
+                $stockItem = StockItem::findOrFail($detail->stock_item_id);
+
+                if ($stockItem->status !== \App\Enums\StockItemStatus::AVAILABLE->value) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Item code '{$stockItem->item_code}' is not available for transfer (Status: {$stockItem->status})."],
+                    ]);
+                }
+
+                $newStatus = $transfer->transfer_type === \App\Enums\StockTransferType::COUNTER
+                    ? \App\Enums\StockItemStatus::COUNTER_TRANSFERRED->value
+                    : \App\Enums\StockItemStatus::BRANCH_TRANSFERRED->value;
+
+                $stockItem->update(['status' => $newStatus]);
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->source_branch_id,
+                    'counter_id'       => $transfer->source_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => $stockItem->id,
+                    'movement_type'    => StockMovement::TYPE_TRANSFER,
+                    'transaction_type' => $transType,
+                    'quantity'         => -1.00,
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Stock Transfer Out #{$transfer->transfer_no} (Item: {$stockItem->item_code})",
+                    'created_by'       => Auth::id() ?? $transfer->dispatched_by ?? $transfer->created_by,
+                ]);
+            } else {
+                $qty = (float) $detail->transferred_qty;
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->source_branch_id,
+                    'counter_id'       => $transfer->source_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => null,
+                    'movement_type'    => StockMovement::TYPE_TRANSFER,
+                    'transaction_type' => $transType,
+                    'quantity'         => -abs($qty),
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Stock Transfer Out #{$transfer->transfer_no}",
+                    'created_by'       => Auth::id() ?? $transfer->dispatched_by ?? $transfer->created_by,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Record stock movement when a transfer is RECEIVED (inward to destination).
+     *
+     * @param \App\Models\StockTransfer $transfer
+     * @return void
+     */
+    public function recordTransferIn(\App\Models\StockTransfer $transfer): void
+    {
+        $transfer->loadMissing(['details.product', 'details.stockItem']);
+
+        $transDateStr = now()->toDateString();
+        $transType = $transfer->transfer_type === \App\Enums\StockTransferType::COUNTER
+            ? InventoryTransactionType::COUNTER_TRANSFER->value
+            : InventoryTransactionType::BRANCH_TRANSFER->value;
+
+        foreach ($transfer->details as $detail) {
+            if ($detail->tracking_type === Product::TRACKING_INDIVIDUAL && $detail->stock_item_id) {
+                $stockItem = StockItem::findOrFail($detail->stock_item_id);
+
+                // Update stock item location and restore to AVAILABLE
+                $stockItem->update([
+                    'branch_id'  => $transfer->destination_branch_id,
+                    'counter_id' => $transfer->destination_counter_id,
+                    'status'     => \App\Enums\StockItemStatus::AVAILABLE->value,
+                ]);
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->destination_branch_id,
+                    'counter_id'       => $transfer->destination_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => $stockItem->id,
+                    'movement_type'    => StockMovement::TYPE_TRANSFER,
+                    'transaction_type' => $transType,
+                    'quantity'         => 1.00,
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Stock Transfer In #{$transfer->transfer_no} (Item: {$stockItem->item_code})",
+                    'created_by'       => Auth::id() ?? $transfer->received_by ?? $transfer->created_by,
+                ]);
+            } else {
+                $receivedQty = (float) ($detail->received_qty ?? $detail->transferred_qty);
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->destination_branch_id,
+                    'counter_id'       => $transfer->destination_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => null,
+                    'movement_type'    => StockMovement::TYPE_TRANSFER,
+                    'transaction_type' => $transType,
+                    'quantity'         => abs($receivedQty),
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Stock Transfer In #{$transfer->transfer_no}",
+                    'created_by'       => Auth::id() ?? $transfer->received_by ?? $transfer->created_by,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Reverse stock movement when a transfer is CANCELLED after dispatch.
+     *
+     * @param \App\Models\StockTransfer $transfer
+     * @return void
+     */
+    public function reverseTransferOut(\App\Models\StockTransfer $transfer): void
+    {
+        $transfer->loadMissing(['details.product', 'details.stockItem']);
+
+        $transDateStr = now()->toDateString();
+
+        foreach ($transfer->details as $detail) {
+            if ($detail->tracking_type === Product::TRACKING_INDIVIDUAL && $detail->stock_item_id) {
+                $stockItem = StockItem::find($detail->stock_item_id);
+                if ($stockItem) {
+                    $stockItem->update(['status' => \App\Enums\StockItemStatus::AVAILABLE->value]);
+                }
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->source_branch_id,
+                    'counter_id'       => $transfer->source_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => $detail->stock_item_id,
+                    'movement_type'    => StockMovement::TYPE_RETURN,
+                    'transaction_type' => InventoryTransactionType::CANCELLED->value,
+                    'quantity'         => 1.00,
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Cancellation reversal of Stock Transfer Out #{$transfer->transfer_no}",
+                    'created_by'       => Auth::id() ?? $transfer->cancelled_by ?? $transfer->created_by,
+                ]);
+            } else {
+                $qty = (float) $detail->transferred_qty;
+
+                $this->recordMovement([
+                    'company_id'       => $transfer->company_id,
+                    'branch_id'        => $transfer->source_branch_id,
+                    'counter_id'       => $transfer->source_counter_id,
+                    'product_id'       => $detail->product_id,
+                    'stock_item_id'    => null,
+                    'movement_type'    => StockMovement::TYPE_RETURN,
+                    'transaction_type' => InventoryTransactionType::CANCELLED->value,
+                    'quantity'         => abs($qty),
+                    'unit_cost'        => $detail->unit_cost,
+                    'reference_type'   => \App\Models\StockTransfer::class,
+                    'reference_id'     => $transfer->id,
+                    'movement_date'    => $transDateStr,
+                    'business_date'    => $this->resolveBusinessDate($transDateStr),
+                    'remarks'          => "Cancellation reversal of Stock Transfer Out #{$transfer->transfer_no}",
+                    'created_by'       => Auth::id() ?? $transfer->cancelled_by ?? $transfer->created_by,
+                ]);
+            }
+        }
     }
 }

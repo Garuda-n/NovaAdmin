@@ -20,6 +20,7 @@ use App\Http\Controllers\SubProductController;
 use App\Http\Controllers\Inventory\StockInwardController;
 use App\Http\Controllers\Inventory\ItemAllocationController;
 use App\Http\Controllers\Inventory\AvailableStockController;
+use App\Http\Controllers\Inventory\StockTransferController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
@@ -436,6 +437,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->only(['destroy'])
         ->names('stock-inwards')
         ->middleware('permission:stock-inwards.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Inventory Stock Transfer
+    |--------------------------------------------------------------------------
+    */
+    Route::post('inventory/stock-transfers/filter', [StockTransferController::class, 'index'])
+        ->name('stock-transfers.filter')
+        ->middleware('permission:stock-transfer.view');
+
+    Route::post('inventory/stock-transfers/{stockTransfer}/dispatch', [StockTransferController::class, 'dispatch'])
+        ->name('stock-transfers.dispatch')
+        ->middleware('permission:stock-transfer.dispatch');
+
+    Route::get('inventory/stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receiveForm'])
+        ->name('stock-transfers.receive-form')
+        ->middleware('permission:stock-transfer.receive');
+
+    Route::post('inventory/stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive'])
+        ->name('stock-transfers.receive')
+        ->middleware('permission:stock-transfer.receive');
+
+    Route::post('inventory/stock-transfers/{stockTransfer}/cancel', [StockTransferController::class, 'cancel'])
+        ->name('stock-transfers.cancel')
+        ->middleware('permission:stock-transfer.cancel');
+
+    Route::get('inventory/stock-transfers/{stockTransfer}/print', [StockTransferController::class, 'print'])
+        ->name('stock-transfers.print')
+        ->middleware('permission:stock-transfer.view');
+
+    Route::resource('inventory/stock-transfers', StockTransferController::class)
+        ->names('stock-transfers');
 
     /*
     |--------------------------------------------------------------------------

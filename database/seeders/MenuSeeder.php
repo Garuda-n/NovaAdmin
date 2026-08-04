@@ -147,6 +147,7 @@ class MenuSeeder extends Seeder
         $inventoryChildren = [
             ['name' => 'Bulk Inward', 'route' => 'stock-inwards.index', 'icon' => 'arrow-down-tray', 'permission_slug' => 'stock-inwards.view', 'order' => 1],
             ['name' => 'Item Allocation', 'route' => 'item-allocation.index', 'icon' => 'cube-transparent', 'permission_slug' => 'stock-inwards.view', 'order' => 2],
+            ['name' => 'Stock Transfer', 'route' => 'stock-transfers.index', 'icon' => 'arrows-right-left', 'permission_slug' => 'stock-transfer.view', 'order' => 3],
         ];
 
         foreach ($inventoryChildren as $child) {
@@ -169,12 +170,15 @@ class MenuSeeder extends Seeder
             ]
         );
 
+        // Delete any duplicate "Available Stock Register" menu entries
+        Menu::where('name', 'Available Stock Register')->delete();
+
         $stockReportChildren = [
             ['name' => 'Available Stocks Item wise', 'route' => 'available-stock.index', 'icon' => 'cube', 'permission_slug' => 'available-stock.view', 'order' => 1],
         ];
 
         foreach ($stockReportChildren as $child) {
-            Menu::firstOrCreate(
+            Menu::updateOrCreate(
                 ['name' => $child['name'], 'parent_id' => $stockReport->id],
                 array_merge($child, ['parent_id' => $stockReport->id, 'status' => true])
             );
