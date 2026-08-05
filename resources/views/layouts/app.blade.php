@@ -19,6 +19,7 @@
         <script src="{{ asset('js/theme_init.js') }}"></script>
         <script src="{{ asset('js/common/customer_slide.js') }}"></script>
         <script src="{{ asset('js/common/searchable_select.js') }}"></script>
+        <script src="{{ asset('js/report/export.js') }}"></script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body
@@ -59,5 +60,33 @@
 
         <x-customer-create-slide />
         @stack('scripts')
+
+        <script>
+            // Global Escape key listener to close all modals across the application
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' || event.key === 'Esc' || event.keyCode === 27) {
+                    // Dispatch Alpine global close-modal event
+                    window.dispatchEvent(new CustomEvent('close-modal'));
+
+                    // Invoke named modal close helper functions if present
+                    if (typeof closeCustomerSalesModal === 'function') closeCustomerSalesModal();
+                    if (typeof closeSerialModal === 'function') closeSerialModal();
+                    if (typeof closeAllocationModal === 'function') closeAllocationModal();
+                    if (typeof closeCancelModal === 'function') closeCancelModal();
+                    if (typeof openCancelModal === 'function') {
+                        const cancelModal = document.getElementById('cancelModal') || document.getElementById('cancel_modal');
+                        if (cancelModal) cancelModal.classList.add('hidden');
+                    }
+
+                    // Find and close any open modal overlay containers (top-level fixed overlays)
+                    const modalContainers = document.querySelectorAll('[id*="modal"], [id*="Modal"], .fixed.inset-0');
+                    modalContainers.forEach(function (modal) {
+                        if (modal.classList.contains('fixed') && !modal.classList.contains('hidden')) {
+                            modal.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

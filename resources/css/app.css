@@ -105,3 +105,10 @@
     font-size: 0.8125rem;
   }
 }
+
+/* Utility for explicit print hiding if needed */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

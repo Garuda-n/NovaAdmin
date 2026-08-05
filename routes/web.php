@@ -640,15 +640,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::match(['get', 'post'], 'sales', [SalesReportController::class, 'index'])
             ->name('sales.index')->middleware('permission:reports.sales');
+        Route::post('sales/search', [SalesReportController::class, 'search'])
+            ->name('sales.search')->middleware('permission:reports.sales');
 
         Route::match(['get', 'post'], 'purchase', [PurchaseReportController::class, 'index'])
             ->name('purchase.index')->middleware('permission:reports.purchase');
 
         Route::match(['get', 'post'], 'customer', [CustomerReportController::class, 'index'])
             ->name('customer.index')->middleware('permission:reports.customer');
+        Route::post('customer/search', [CustomerReportController::class, 'search'])
+            ->name('customer.search')->middleware('permission:reports.customer');
+        Route::get('customer/{customer}/sales-modal', [CustomerReportController::class, 'salesModal'])
+            ->name('customer.sales-modal')->middleware('permission:reports.customer');
 
         Route::match(['get', 'post'], 'supplier', [SupplierReportController::class, 'index'])
             ->name('supplier.index')->middleware('permission:reports.supplier');
+        Route::post('supplier/search', [SupplierReportController::class, 'search'])
+            ->name('supplier.search')->middleware('permission:reports.supplier');
+        Route::get('supplier/{supplier}/inwards-modal', [SupplierReportController::class, 'inwardsModal'])
+            ->name('supplier.inwards-modal')->middleware('permission:reports.supplier');
     });
 });
 

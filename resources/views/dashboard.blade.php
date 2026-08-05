@@ -1283,21 +1283,28 @@
                 });
             }
 
-            // 5. Sales Trend Chart (Line)
+            // 5. Sales Revenue Trend Chart (Candle Bar View)
             const salesTrendCtx = document.getElementById('salesTrendChart')?.getContext('2d');
             if (salesTrendCtx) {
+                const candleGradient = salesTrendCtx.createLinearGradient(0, 0, 0, 300);
+                candleGradient.addColorStop(0, 'rgba(99, 102, 241, 0.95)');  // Indigo top
+                candleGradient.addColorStop(1, 'rgba(67, 56, 202, 0.75)');   // Deep indigo bottom
+
                 window.salesTrendChartInstance = new Chart(salesTrendCtx, {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: @json($monthlySalesLabels),
                         datasets: [{
                             label: 'Gross Monthly Revenue (₹)',
                             data: @json($monthlySalesData),
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.08)',
-                            fill: true,
-                            tension: 0.3,
-                            borderWidth: 3
+                            backgroundColor: candleGradient,
+                            borderColor: '#818cf8',
+                            borderWidth: 2,
+                            borderRadius: { topLeft: 10, topRight: 10, bottomLeft: 4, bottomRight: 4 },
+                            borderSkipped: false,
+                            maxBarThickness: 48,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.65
                         }]
                     },
                     options: {
@@ -1306,17 +1313,31 @@
                         plugins: {
                             legend: {
                                 display: true,
-                                labels: { color: textColor }
+                                labels: { color: textColor, font: { weight: 'bold', size: 11 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.raw || 0;
+                                        return ' Gross Revenue: ₹' + val.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                                    }
+                                }
                             }
                         },
                         scales: {
                             x: {
-                                ticks: { color: textColor, font: { size: 10 } },
-                                grid: { color: gridColor }
+                                ticks: { color: textColor, font: { size: 11, weight: 'bold' } },
+                                grid: { display: false }
                             },
                             y: {
                                 beginAtZero: true,
-                                ticks: { color: textColor, font: { size: 10 } },
+                                ticks: {
+                                    color: textColor,
+                                    font: { size: 10 },
+                                    callback: function(value) {
+                                        return '₹' + (value >= 1000 ? (value / 1000) + 'k' : value);
+                                    }
+                                },
                                 grid: { color: gridColor }
                             }
                         }
