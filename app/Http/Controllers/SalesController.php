@@ -69,18 +69,34 @@ class SalesController extends Controller
     public function convert(Request $request, Quotation $quotation): RedirectResponse
     {
         $validated = $request->validate([
-            'sale_type'         => 'required|in:1,2',
-            'gst_type'          => 'required|in:1,2',
-            'due_date'          => 'nullable|required_if:sale_type,2|date|after_or_equal:today',
-            'payment_mode_id'   => 'nullable|required_if:sale_type,1|exists:payment_modes,id',
-            'paid_amount'       => 'nullable|required_if:sale_type,1|numeric|min:0',
-            'reference_no'      => 'nullable|string|max:100',
-            'remarks'           => 'nullable|string',
-            'invoice_discount'  => 'nullable|numeric|min:0',
-            'round_off'         => 'nullable|numeric',
+            'sale_type'            => 'required|in:1,2',
+            'gst_type'             => 'required|in:1,2',
+            'due_date'             => 'nullable|required_if:sale_type,2|date|after_or_equal:today',
+            'payments'             => 'nullable|array',
+            'payments.*.payment_mode_id' => 'required_with:payments|exists:payment_modes,id',
+            'payments.*.amount'    => 'required_with:payments|numeric|min:0',
+            'payments.*.reference_no' => 'nullable|string|max:100',
+            'payment_mode_id'      => 'nullable|exists:payment_modes,id',
+            'paid_amount'          => 'nullable|numeric|min:0',
+            'reference_no'         => 'nullable|string|max:100',
+            'remarks'              => 'nullable|string',
+            'invoice_discount'     => 'nullable|numeric|min:0',
+            'round_off'            => 'nullable|numeric',
         ]);
 
-        $sale = $this->salesService->convertQuotationToSale($quotation, $validated);
+        try {
+            $sale = $this->salesService->convertQuotationToSale($quotation, $validated);
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', "Failed to convert quotation: " . $e->getMessage());
+        }
 
         return redirect()
             ->route('sales.show', $sale->id)

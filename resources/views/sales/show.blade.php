@@ -150,7 +150,43 @@
                 </div>
             </div>
 
-            <!-- Customer Receivable / Payments Card -->
+            <!-- Payment History / Breakdown Card -->
+            @if ($sale->salesPayments->count() > 0)
+                <div class="bg-white dark:bg-[#182035] rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 dark:border-slate-800">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Payment Breakdown</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-[#0f1422] text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <tr>
+                                    <th class="px-6 py-3">#</th>
+                                    <th class="px-6 py-3">Payment Mode</th>
+                                    <th class="px-6 py-3">Reference / Txn No</th>
+                                    <th class="px-6 py-3">Date</th>
+                                    <th class="px-6 py-3 text-right">Amount Paid (₹)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                                @foreach ($sale->salesPayments as $idx => $payment)
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                                        <td class="px-6 py-4 text-slate-400">{{ $idx + 1 }}</td>
+                                        <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">
+                                            {{ $payment->paymentMode->mode_name ?? 'N/A' }}
+                                            <span class="text-xs text-slate-400 font-normal">({{ $payment->paymentMode->mode_code ?? '' }})</span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-slate-600 dark:text-slate-400">{{ $payment->reference_no ?: '-' }}</td>
+                                        <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ $payment->payment_date ? $payment->payment_date->format('d M Y') : '-' }}</td>
+                                        <td class="px-6 py-4 text-right font-extrabold text-emerald-600 dark:text-emerald-400">₹{{ number_format($payment->amount, 2) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Customer Receivable Status -->
             @if ($sale->customerReceivable)
                 <div class="bg-white dark:bg-[#182035] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">Customer Receivable Status</h3>

@@ -373,14 +373,45 @@ class SalesService
             // 4. Handle Receivable / Payment Workflow
             if ($sale->isCreditSale()) {
                 $this->createReceivable($sale);
-            } elseif ($sale->isCashSale() && !empty($data['payment_mode_id']) && !empty($data['paid_amount'])) {
-                $this->paymentService->createPayment($sale, [
-                    'payment_mode_id' => $data['payment_mode_id'],
-                    'payment_date' => $sale->invoice_date->format('Y-m-d'),
-                    'amount' => (float) $data['paid_amount'],
-                    'reference_no' => $data['reference_no'] ?? null,
-                    'remarks' => 'Cash sale payment during quotation conversion',
-                ]);
+            } elseif ($sale->isCashSale()) {
+                $totalPaid = 0.0;
+                if (!empty($data['payments']) && is_array($data['payments'])) {
+                    foreach ($data['payments'] as $pItem) {
+                        $totalPaid += (float) ($pItem['amount'] ?? 0);
+                    }
+                } elseif (!empty($data['paid_amount'])) {
+                    $totalPaid = (float) $data['paid_amount'];
+                }
+
+                if (round($totalPaid, 2) < round($totals['grand_total'], 2)) {
+                    $shortfall = number_format($totals['grand_total'] - $totalPaid, 2);
+                    throw new \InvalidArgumentException(
+                        "For Cash Sale (Instant Payment), total payments (₹" . number_format($totalPaid, 2) . ") must equal the Grand Total (₹" . number_format($totals['grand_total'], 2) . "). Please add the shortfall of ₹{$shortfall} or select Credit Sale."
+                    );
+                }
+
+                if (!empty($data['payments']) && is_array($data['payments'])) {
+                    foreach ($data['payments'] as $paymentItem) {
+                        $amt = (float) ($paymentItem['amount'] ?? 0);
+                        if (!empty($paymentItem['payment_mode_id']) && $amt > 0) {
+                            $this->paymentService->createPayment($sale, [
+                                'payment_mode_id' => $paymentItem['payment_mode_id'],
+                                'payment_date'    => $sale->invoice_date->format('Y-m-d'),
+                                'amount'          => $amt,
+                                'reference_no'    => $paymentItem['reference_no'] ?? null,
+                                'remarks'         => 'Cash sale payment during quotation conversion',
+                            ]);
+                        }
+                    }
+                } elseif (!empty($data['payment_mode_id']) && !empty($data['paid_amount'])) {
+                    $this->paymentService->createPayment($sale, [
+                        'payment_mode_id' => $data['payment_mode_id'],
+                        'payment_date'    => $sale->invoice_date->format('Y-m-d'),
+                        'amount'          => (float) $data['paid_amount'],
+                        'reference_no'    => $data['reference_no'] ?? null,
+                        'remarks'         => 'Cash sale payment during quotation conversion',
+                    ]);
+                }
             }
 
             // 5. Reduce Inventory Stock via InventoryService
