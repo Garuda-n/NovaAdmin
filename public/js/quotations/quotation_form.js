@@ -14,6 +14,126 @@
     }
 
     // ==========================================
+    // 0. DYNAMIC BRANCH-BASED COUNTER FILTERING
+    // ==========================================
+    const $counterSelectEl = $('#quotation-counter-select');
+    const masterCounterOptions = [];
+
+    if ($counterSelectEl.length) {
+        $counterSelectEl.find('option').each(function () {
+            masterCounterOptions.push({
+                value: $(this).val(),
+                text: $(this).text(),
+                branchIds: $(this).attr('data-branch-ids') || $(this).data('branch-ids') || '[]',
+                selected: $(this).is(':selected')
+            });
+        });
+    }
+
+    function filterCountersByBranch() {
+        const $branchSelect = $('#quotation-branch-select');
+        const $counterSelect = $('#quotation-counter-select');
+        if (!$branchSelect.length || !$counterSelect.length || !masterCounterOptions.length) return;
+
+        const selectedBranchId = parseInt($branchSelect.val(), 10);
+        let currentVal = $counterSelect.val();
+
+        if (currentVal === null || currentVal === undefined) {
+            const preSelected = masterCounterOptions.find(opt => opt.selected);
+            if (preSelected) {
+                currentVal = preSelected.value;
+            }
+        }
+
+        $counterSelect.empty();
+
+        masterCounterOptions.forEach(function (opt) {
+            if (!opt.value) {
+                // Always include "-- None (No Counter) --"
+                $counterSelect.append(new Option(opt.text, opt.value));
+                return;
+            }
+
+            let branchIds = opt.branchIds;
+            if (typeof branchIds === 'string') {
+                try { branchIds = JSON.parse(branchIds); } catch(e) { branchIds = []; }
+            }
+            if (!Array.isArray(branchIds)) {
+                branchIds = [];
+            }
+
+            if (!isNaN(selectedBranchId) && branchIds.includes(selectedBranchId)) {
+                const newOpt = new Option(opt.text, opt.value);
+                $(newOpt).attr('data-branch-ids', JSON.stringify(branchIds));
+                $counterSelect.append(newOpt);
+            }
+        });
+
+        if ($counterSelect.find('option[value="' + currentVal + '"]').length) {
+            $counterSelect.val(currentVal);
+        } else {
+            $counterSelect.val('');
+        }
+
+        if ($counterSelect.data('select2')) {
+            $counterSelect.trigger('change.select2');
+        }
+    }
+
+    let currentSelectedBranchId = $('#quotation-branch-select').val();
+
+    $('#quotation-branch-select').on('change select2:select', function () {
+        const newBranchId = $(this).val();
+        if (currentSelectedBranchId && newBranchId && currentSelectedBranchId !== newBranchId) {
+            let hasItems = false;
+            $('.product-id-input').each(function () {
+                if ($(this).val()) {
+                    hasItems = true;
+                }
+            });
+
+            if (hasItems) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Branch Changed',
+                        text: 'Line items have been cleared to prevent cross-branch stock mismatch.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+                $('.inventory-search-container').each(function () {
+                    const $container = $(this);
+                    const $row = $container.closest('tr, .quotation-row');
+                    $container.find('.inventory-search-input').val('');
+                    $container.find('.modal-search-input').val('');
+                    $container.find('.product-id-input').val('');
+                    $container.find('.stock-item-id-input').val('');
+                    $container.find('.tracking-type-input').val('');
+                    $container.find('.available-qty-input').val('');
+                    $container.find('.inventory-item-info').empty();
+                    $container.find('.qty-warning-container').addClass('hidden');
+                    $container.find('.inventory-search-clear').addClass('hidden');
+
+                    $row.find('.product-name-input').val('');
+                    $row.find('.uom-id-input').val('');
+                    $row.find('.uom-name-input').val('');
+                    $row.find('.uom-name-hidden').val('');
+                    $row.find('.tax-percent-input').val('0.00');
+                    $row.find('.rate-input').val('0.00');
+                    $row.find('.qty-input').val('1').prop('readonly', false).removeClass('bg-slate-100 dark:bg-slate-900 cursor-not-allowed');
+
+                    $row.find('.rate-input').trigger('change');
+                    $row.find('.qty-input').trigger('change');
+                });
+            }
+        }
+        currentSelectedBranchId = newBranchId;
+        filterCountersByBranch();
+    });
+
+    filterCountersByBranch();
+
+    // ==========================================
     // 1. CUSTOMER SEARCHABLE SELECTION (WITH ARROW KEY NAVIGATION)
     // ==========================================
     const $customerSearchInput = $('#customer-search-input');

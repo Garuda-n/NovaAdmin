@@ -40,6 +40,18 @@ class QuotationService
      */
     public function getPaginatedQuotations(Request $request): LengthAwarePaginator
     {
+        // Auto-revert any converted quotations whose associated sales invoices were cancelled
+        $convertedQuotationIds = Quotation::where('status', Quotation::STATUS_CONVERTED)->pluck('id');
+        foreach ($convertedQuotationIds as $qId) {
+            $hasActiveSale = \App\Models\Sale::where('quotation_id', $qId)
+                ->where('status', '!=', \App\Models\Sale::STATUS_CANCELLED)
+                ->exists();
+
+            if (!$hasActiveSale) {
+                Quotation::where('id', $qId)->update(['status' => Quotation::STATUS_CREATED]);
+            }
+        }
+
         $query = Quotation::with(['customer', 'branch', 'counter', 'creator']);
 
         if ($request->filled('search')) {
@@ -82,13 +94,10 @@ class QuotationService
             $branch = Branch::where('status', true)->first();
         }
 
-        // Resolve counter for logged in user or default active counter
+        // Resolve counter for logged in user (optional)
         $counter = null;
         if (isset($user->counter_id) && $user->counter_id) {
             $counter = Counter::find($user->counter_id);
-        }
-        if (!$counter) {
-            $counter = Counter::where('status', true)->first();
         }
 
         // Resolve business date from Day Closing table or default system date
@@ -100,12 +109,18 @@ class QuotationService
             }
         }
 
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $counters = Counter::with(['branches' => function ($q) {
+            $q->where('branch_counters.status', 1);
+        }])->where('status', true)->orderBy('counter_name')->get();
         $customers = collect();
         $products = Product::with(['uom', 'tax'])->where('status', true)->orderBy('name')->get();
         $uoms = Uom::where('status', true)->orderBy('name')->get();
 
         return [
+            'branches' => $branches,
             'branch' => $branch,
+            'counters' => $counters,
             'counter' => $counter,
             'businessDate' => $businessDate,
             'customers' => $customers,
@@ -168,6 +183,7 @@ class QuotationService
             'updater',
             'details.product',
             'details.uom',
+            'details.stockItem',
             'logs.changedBy'
         ]);
     }
@@ -187,20 +203,27 @@ class QuotationService
             'creator',
             'updater',
             'details.product',
-            'details.uom'
+            'details.uom',
+            'details.stockItem'
         ]);
 
         $branch = $quotation->branch;
         $counter = $quotation->counter;
         $businessDate = $quotation->business_date ? $quotation->business_date->format('Y-m-d') : date('Y-m-d');
 
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $counters = Counter::with(['branches' => function ($q) {
+            $q->where('branch_counters.status', 1);
+        }])->where('status', true)->orderBy('counter_name')->get();
         $customers = Customer::where('status', true)->orderBy('customer_name')->get();
         $products = Product::with(['uom', 'tax'])->where('status', true)->orderBy('name')->get();
         $uoms = Uom::where('status', true)->orderBy('name')->get();
 
         return [
             'quotation' => $quotation,
+            'branches' => $branches,
             'branch' => $branch,
+            'counters' => $counters,
             'counter' => $counter,
             'businessDate' => $businessDate,
             'customers' => $customers,
@@ -263,7 +286,7 @@ class QuotationService
             );
 
             // 7. Commit & return clean quotation model
-            return $quotation->fresh(['customer', 'branch', 'counter', 'details.product', 'details.uom', 'creator']);
+            return $quotation->fresh(['customer', 'branch', 'counter', 'details.product', 'details.uom', 'details.stockItem', 'creator']);
         });
     }
 
@@ -292,8 +315,9 @@ class QuotationService
             }
 
             // STEP 3: Store current quotation state as old_data
-            $quotation->load(['customer', 'branch', 'counter', 'details.product', 'details.uom']);
+            $quotation->load(['customer', 'branch', 'counter', 'details.product', 'details.uom', 'details.stockItem']);
             $oldData = $quotation->toArray();
+            $existingStockItemIds = $quotation->details()->pluck('stock_item_id')->filter()->toArray();
 
             $userId = Auth::id();
 
@@ -311,7 +335,7 @@ class QuotationService
             $quotation->details()->delete();
 
             // STEP 6: Loop request items and create fresh QuotationDetail records
-            $this->saveDetails($quotation, $data['items'] ?? []);
+            $this->saveDetails($quotation, $data['items'] ?? [], $existingStockItemIds);
 
             // STEP 7: Calculate and update subtotal, tax_amount, grand_total
             $this->calculateAndUpdateTotals($quotation);
@@ -321,7 +345,7 @@ class QuotationService
             $this->saveLog($quotation, $oldData, $newData, $userId);
 
             // STEP 9: Return updated quotation model
-            return $quotation->fresh(['customer', 'branch', 'counter', 'details.product', 'details.uom', 'creator', 'updater']);
+            return $quotation->fresh(['customer', 'branch', 'counter', 'details.product', 'details.uom', 'details.stockItem', 'creator', 'updater']);
         });
     }
 
@@ -341,9 +365,10 @@ class QuotationService
      *
      * @param Quotation $quotation
      * @param array $items
+     * @param array $existingStockItemIds
      * @return void
      */
-    public function saveDetails(Quotation $quotation, array $items): void
+    public function saveDetails(Quotation $quotation, array $items, array $existingStockItemIds = []): void
     {
         foreach ($items as $item) {
             $productId = $item['product_id'] ?? null;
@@ -354,6 +379,52 @@ class QuotationService
             $product = Product::with(['uom', 'tax'])->find($productId);
             if (!$product) {
                 continue;
+            }
+
+            $stockItemId = $item['stock_item_id'] ?? null;
+
+            $branchId = $quotation->branch_id;
+            $branchName = $quotation->branch->name ?? "Branch #{$branchId}";
+
+            // If product has individual tracking (tracking_type == 2)
+            if ($product->tracking_type == 2) {
+                if (!$stockItemId) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Serial stock item selection missing for product '{$product->name}'."],
+                    ]);
+                }
+
+                $stockItem = \App\Models\StockItem::with('branch')->find($stockItemId);
+                if (!$stockItem) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Selected stock item ID #{$stockItemId} for product '{$product->name}' does not exist."],
+                    ]);
+                }
+
+                if ((int) $stockItem->branch_id !== (int) $branchId) {
+                    $itemBranchName = $stockItem->branch->name ?? "Branch #{$stockItem->branch_id}";
+                    throw ValidationException::withMessages([
+                        'items' => ["Selected item '{$stockItem->item_code}' belongs to branch '{$itemBranchName}', but the quotation branch is set to '{$branchName}'. Line items must match the selected branch."],
+                    ]);
+                }
+
+                $isAvailable = $stockItem->status === \App\Enums\StockItemStatus::AVAILABLE->value;
+                $isAlreadySelected = in_array((int) $stockItemId, array_map('intval', $existingStockItemIds), true);
+
+                if (!$isAvailable && !$isAlreadySelected) {
+                    $statusLabel = \App\Enums\StockItemStatus::tryFrom($stockItem->status)?->label() ?? 'Unavailable';
+                    throw ValidationException::withMessages([
+                        'items' => ["Selected stock item '{$stockItem->item_code}' for product '{$product->name}' is no longer available (Status: {$statusLabel}). Please select an available serial item."],
+                    ]);
+                }
+            } elseif ($product->tracking_type == Product::TRACKING_QUANTITY) {
+                $requestedQty = (float) ($item['qty'] ?? 1);
+                $availableQty = app(\App\Services\Inventory\AvailableStockService::class)->getAvailableQuantity($product->id, $branchId, $quotation->counter_id);
+                if ($availableQty < $requestedQty) {
+                    throw ValidationException::withMessages([
+                        'items' => ["Product '{$product->name}' has insufficient stock in branch '{$branchName}' (Available: {$availableQty}, Requested: {$requestedQty})."],
+                    ]);
+                }
             }
 
             $productName = $item['product_name'] ?? $product->name;
@@ -373,15 +444,16 @@ class QuotationService
             $calculatedLine = $this->pricingService->calculateLine($qty, $rate, $taxPercent);
 
             $quotation->details()->create([
-                'product_id'   => $product->id,
-                'product_name' => $productName,
-                'uom_id'       => $uomId,
-                'uom_name'     => $uomName,
-                'qty'          => $calculatedLine['qty'],
-                'rate'         => $calculatedLine['rate'],
-                'tax_percent'  => $calculatedLine['tax_percent'],
-                'tax_amount'   => $calculatedLine['tax_amount'],
-                'line_total'   => $calculatedLine['line_total'],
+                'product_id'    => $product->id,
+                'stock_item_id' => $stockItemId,
+                'product_name'  => $productName,
+                'uom_id'        => $uomId,
+                'uom_name'      => $uomName,
+                'qty'           => $calculatedLine['qty'],
+                'rate'          => $calculatedLine['rate'],
+                'tax_percent'   => $calculatedLine['tax_percent'],
+                'tax_amount'    => $calculatedLine['tax_amount'],
+                'line_total'    => $calculatedLine['line_total'],
             ]);
         }
     }

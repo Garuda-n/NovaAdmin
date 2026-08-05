@@ -19,7 +19,7 @@ class TaxCalculationService
         array $items,
         int $gstType = Sale::GST_CGST_SGST,
         float $invoiceDiscount = 0.00,
-        float $roundOff = 0.00
+        ?float $roundOff = null
     ): array {
         $subtotal = 0.00;
         $itemDiscountTotal = 0.00;
@@ -42,7 +42,15 @@ class TaxCalculationService
         }
 
         $netSubtotal = max(0, $subtotal - $itemDiscountTotal - $invoiceDiscount);
-        $grandTotal = round($netSubtotal + $taxTotal + $roundOff, 2);
+        $unroundedTotal = $netSubtotal + $taxTotal;
+
+        if ($roundOff === null) {
+            $grandTotal = (float) round($unroundedTotal);
+            $calculatedRoundOff = round($grandTotal - $unroundedTotal, 2);
+        } else {
+            $calculatedRoundOff = round($roundOff, 2);
+            $grandTotal = round($unroundedTotal + $calculatedRoundOff, 2);
+        }
 
         return [
             'subtotal' => round($subtotal, 2),
@@ -52,7 +60,7 @@ class TaxCalculationService
             'sgst_amount' => round($sgstTotal, 2),
             'igst_amount' => round($igstTotal, 2),
             'tax_amount' => round($taxTotal, 2),
-            'round_off' => round($roundOff, 2),
+            'round_off' => $calculatedRoundOff,
             'grand_total' => $grandTotal,
             'items' => $calculatedItems,
         ];

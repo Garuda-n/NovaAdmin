@@ -4,7 +4,7 @@
         Invoice Financial Summary
     </h2>
 
-    <div class="space-y-3">
+    <div class="space-y-3" id="invoice_summary_card" data-subtotal="{{ $totals['subtotal'] }}" data-item-discount="{{ $totals['item_discount'] }}" data-tax-amount="{{ $totals['tax_amount'] }}">
         <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
             <span>Subtotal</span>
             <span class="font-medium text-slate-900 dark:text-white" id="summary_subtotal">₹{{ number_format($totals['subtotal'], 2) }}</span>

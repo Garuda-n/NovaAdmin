@@ -119,21 +119,21 @@ class InventoryService
             if ($itemType === SalesDetail::ITEM_ALLOCATED) {
                 if (!$allocatedItemId) {
                     throw ValidationException::withMessages([
-                        'items' => ["Allocated item selection missing for product {$productName}."],
+                        'items' => ["Allocated item selection missing for product '{$productName}'."],
                     ]);
                 }
 
                 $stockItem = StockItem::find($allocatedItemId);
                 if (!$stockItem) {
                     throw ValidationException::withMessages([
-                        'items' => ["Allocated stock item ID #{$allocatedItemId} for product {$productName} does not exist."],
+                        'items' => ["Allocated stock item ID #{$allocatedItemId} for product '{$productName}' does not exist."],
                     ]);
                 }
 
-                // Status 5 represents SOLD
-                if ($stockItem->status === \App\Enums\StockItemStatus::SOLD->value) {
+                if ($stockItem->status !== \App\Enums\StockItemStatus::AVAILABLE->value) {
+                    $statusLabel = \App\Enums\StockItemStatus::tryFrom($stockItem->status)?->label() ?? 'Unavailable';
                     throw ValidationException::withMessages([
-                        'items' => ["Allocated item code {$stockItem->item_code} has already been sold."],
+                        'items' => ["Selected stock item '{$stockItem->item_code}' for product '{$productName}' is no longer available (Status: {$statusLabel})."],
                     ]);
                 }
             } else {
@@ -178,14 +178,17 @@ class InventoryService
     public function processAllocatedItem(SalesDetail $salesDetail, Sale $sale): void
     {
         if (!$salesDetail->allocated_item_id) {
-            return;
+            throw ValidationException::withMessages([
+                'allocated_item_id' => ["Allocated item selection missing for product '{$salesDetail->product_name}'."],
+            ]);
         }
 
         $stockItem = StockItem::findOrFail($salesDetail->allocated_item_id);
 
-        if ($stockItem->status === \App\Enums\StockItemStatus::SOLD->value) {
+        if ($stockItem->status !== \App\Enums\StockItemStatus::AVAILABLE->value) {
+            $statusLabel = \App\Enums\StockItemStatus::tryFrom($stockItem->status)?->label() ?? 'Unavailable';
             throw ValidationException::withMessages([
-                'allocated_item_id' => ["Allocated item {$stockItem->item_code} is already marked as SOLD."],
+                'allocated_item_id' => ["Selected stock item '{$stockItem->item_code}' for product '{$salesDetail->product_name}' is no longer available (Status: {$statusLabel})."],
             ]);
         }
 
@@ -361,7 +364,7 @@ class InventoryService
 
         $results = [];
 
-        // 1. Search Individual Item Tracking
+        // 1. Search Stock Items (by specific item_code or individually tracked product name/code)
         $individualQuery = StockItem::with(['product.uom', 'product.tax', 'stockInwardItem', 'branch'])
             ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
             ->where('branch_id', $branchId);
@@ -371,21 +374,26 @@ class InventoryService
         }
 
         $individualItems = $individualQuery->whereHas('product', function ($q) {
-                $q->where('status', true)
-                  ->where('tracking_type', Product::TRACKING_INDIVIDUAL);
+                $q->where('status', true);
             })
             ->where(function ($q) use ($search) {
                 $q->where('item_code', 'like', "%{$search}%")
                   ->orWhereHas('product', function ($pq) use ($search) {
-                      $pq->where('code', 'like', "%{$search}%")
-                         ->orWhere('name', 'like', "%{$search}%");
+                      $pq->where('tracking_type', Product::TRACKING_INDIVIDUAL)
+                         ->where(function ($sq) use ($search) {
+                             $sq->where('code', 'like', "%{$search}%")
+                                ->orWhere('name', 'like', "%{$search}%");
+                         });
                   });
             })
             ->limit($limit)
             ->get();
 
+        $matchedProductIdsInItems = [];
+
         foreach ($individualItems as $item) {
             $rate = $item->stockInwardItem ? $item->stockInwardItem->selling_price : 0.00;
+            $matchedProductIdsInItems[] = $item->product_id;
             $results[] = [
                 'product_id'     => $item->product_id,
                 'product_name'   => $item->product->name,
@@ -397,18 +405,23 @@ class InventoryService
                 'tax_percent'    => $item->product->tax ? (float) $item->product->tax->percentage : 0.00,
                 'uom_id'         => $item->product->uom_id,
                 'uom_name'       => $item->product->uom ? $item->product->uom->name : '',
-                'tracking_type'  => Product::TRACKING_INDIVIDUAL,
+                'tracking_type'  => $item->product->tracking_type,
                 'branch_id'      => $item->branch_id,
                 'branch_name'    => $item->branch ? $item->branch->name : '',
             ];
         }
+
         // 2. Search Bulk Quantity Tracking
         $bulkProducts = Product::with(['uom', 'tax'])
             ->where('status', true)
             ->where('tracking_type', Product::TRACKING_QUANTITY)
-            ->where(function ($q) use ($search) {
+            ->where(function ($q) use ($search, $branchId) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%");
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhereHas('stockItems', function ($sq) use ($search, $branchId) {
+                      $sq->where('item_code', 'like', "%{$search}%")
+                         ->where('branch_id', $branchId);
+                  });
             })
             ->limit($limit)
             ->get();
@@ -416,6 +429,9 @@ class InventoryService
         $availableStockService = app(AvailableStockService::class);
 
         foreach ($bulkProducts as $product) {
+            if (in_array($product->id, $matchedProductIdsInItems, true)) {
+                continue;
+            }
             $availableQty = $availableStockService->getAvailableQuantity($product->id, $branchId, $counterId);
             if ($availableQty > 0) {
                 $latestInwardItem = \App\Models\StockInwardItem::where('product_id', $product->id)

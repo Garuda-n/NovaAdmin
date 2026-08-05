@@ -69,7 +69,7 @@ class QuotationController extends Controller
     {
         $validated = $request->validate([
             'branch_id'             => 'required|exists:branches,id',
-            'counter_id'            => 'required|exists:counters,id',
+            'counter_id'            => 'nullable|exists:counters,id',
             'customer_id'           => 'required|exists:customers,id',
             'customer_type'         => 'required|in:B2B,B2C',
             'remarks'               => 'nullable|string',
@@ -137,7 +137,7 @@ class QuotationController extends Controller
         }
         $validated = $request->validate([
             'branch_id'             => 'required|exists:branches,id',
-            'counter_id'            => 'required|exists:counters,id',
+            'counter_id'            => 'nullable|exists:counters,id',
             'customer_id'           => 'required|exists:customers,id',
             'customer_type'         => 'required|in:B2B,B2C',
             'remarks'               => 'nullable|string',

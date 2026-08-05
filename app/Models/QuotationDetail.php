@@ -13,6 +13,7 @@ class QuotationDetail extends Model
     protected $fillable = [
         'quotation_id',
         'product_id',
+        'stock_item_id',
         'product_name',
         'uom_id',
         'uom_name',
@@ -26,6 +27,7 @@ class QuotationDetail extends Model
     protected $casts = [
         'quotation_id' => 'integer',
         'product_id' => 'integer',
+        'stock_item_id' => 'integer',
         'uom_id' => 'integer',
         'qty' => 'decimal:3',
         'rate' => 'decimal:2',
@@ -48,6 +50,14 @@ class QuotationDetail extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Relationship: StockItem
+     */
+    public function stockItem(): BelongsTo
+    {
+        return $this->belongsTo(StockItem::class);
     }
 
     /**

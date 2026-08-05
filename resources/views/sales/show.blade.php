@@ -32,7 +32,7 @@
                     </div>
                     <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">
                         Invoice Date: <span class="font-medium text-slate-700 dark:text-slate-300">{{ $sale->invoice_date ? $sale->invoice_date->format('d M Y') : '-' }}</span>
-                        @if($sale->due_date)
+                        @if($sale->isCreditSale() && $sale->due_date)
                             • Due Date: <span class="font-medium text-amber-600 dark:text-amber-400">{{ $sale->due_date->format('d M Y') }}</span>
                         @endif
                     </p>

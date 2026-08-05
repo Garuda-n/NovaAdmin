@@ -30,6 +30,62 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleSaleType();
     }
 
+    let isUserModifiedRoundOff = false;
+
+    if (roundOffInput) {
+        roundOffInput.addEventListener('input', function () {
+            isUserModifiedRoundOff = true;
+            recalculateSummary();
+        });
+        roundOffInput.addEventListener('change', function () {
+            isUserModifiedRoundOff = true;
+            recalculateSummary();
+        });
+    }
+
+    function recalculateSummary() {
+        const summaryCard = document.getElementById('invoice_summary_card');
+        if (!summaryCard) return;
+
+        const subtotal = parseFloat(summaryCard.dataset.subtotal) || 0;
+        const itemDiscount = parseFloat(summaryCard.dataset.itemDiscount) || 0;
+        const taxAmount = parseFloat(summaryCard.dataset.taxAmount) || 0;
+
+        const invoiceDiscount = Math.max(0, parseFloat(invoiceDiscountInput?.value) || 0);
+        const netSubtotal = Math.max(0, subtotal - itemDiscount - invoiceDiscount);
+        const unroundedTotal = netSubtotal + taxAmount;
+
+        let roundOff = 0;
+
+        if (isUserModifiedRoundOff) {
+            roundOff = parseFloat(roundOffInput.value) || 0;
+        } else {
+            const roundedTotal = Math.round(unroundedTotal);
+            roundOff = parseFloat((roundedTotal - unroundedTotal).toFixed(2));
+            if (roundOffInput) {
+                roundOffInput.value = roundOff;
+            }
+        }
+
+        const grandTotal = Math.max(0, unroundedTotal + roundOff);
+
+        const grandTotalSpan = document.getElementById('summary_grand_total');
+        if (grandTotalSpan) {
+            grandTotalSpan.textContent = '₹' + grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        if (paidAmountInput) {
+            paidAmountInput.value = grandTotal.toFixed(2);
+        }
+    }
+
+    if (invoiceDiscountInput) {
+        invoiceDiscountInput.addEventListener('input', recalculateSummary);
+        invoiceDiscountInput.addEventListener('change', recalculateSummary);
+    }
+
+    recalculateSummary();
+
     // Form submit guard
     const conversionForm = document.getElementById('sales_conversion_form');
     const submitBtn = document.getElementById('submit_conversion_btn');

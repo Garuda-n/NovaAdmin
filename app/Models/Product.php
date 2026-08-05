@@ -137,6 +137,11 @@ class Product extends Model
         return $this->belongsToMany(SubProduct::class, 'product_sub_product', 'product_id', 'sub_product_id');
     }
 
+    public function stockItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StockItem::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

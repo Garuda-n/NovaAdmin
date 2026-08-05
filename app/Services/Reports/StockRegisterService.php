@@ -415,12 +415,17 @@ class StockRegisterService
                 continue;
             }
 
-            $mType = match ((int)$m->movement_type) {
-                4 => ['type' => 'transfer', 'title' => 'Stock Transfer', 'icon' => 'arrows-right-left', 'color' => 'blue'],
-                5 => ['type' => 'adjustment', 'title' => 'Stock Adjustment', 'icon' => 'adjustments-horizontal', 'color' => 'slate'],
-                6 => ['type' => 'return', 'title' => 'Stock Return', 'icon' => 'arrow-path', 'color' => 'rose'],
-                default => ['type' => 'movement', 'title' => 'Stock Movement', 'icon' => 'cube', 'color' => 'gray'],
-            };
+            if ((int)$m->movement_type === 4) {
+                $isTransferOut = (float)$m->quantity < 0 || str_contains(strtolower($m->remarks ?? ''), 'transfer out');
+                $mType = $isTransferOut
+                    ? ['type' => 'transfer_out', 'title' => 'Stock Transfer Out (Dispatched)', 'icon' => 'arrows-right-left', 'color' => 'amber']
+                    : ['type' => 'transfer_in', 'title' => 'Stock Transfer In (Downloaded)', 'icon' => 'arrows-right-left', 'color' => 'emerald'];
+            } else {
+                $mType = match ((int)$m->movement_type) {
+                    5 => ['type' => 'adjustment', 'title' => 'Stock Adjustment', 'icon' => 'adjustments-horizontal', 'color' => 'slate'],
+                    6 => ['type' => 'return', 'title' => 'Stock Return', 'icon' => 'arrow-path', 'color' => 'rose'],
+                };
+            }
 
             $mDate = $m->business_date ?? ($m->movement_date ? $m->movement_date->format('Y-m-d') : ($m->created_at ? $m->created_at->format('Y-m-d') : date('Y-m-d')));
 

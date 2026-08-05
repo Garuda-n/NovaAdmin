@@ -336,107 +336,156 @@
             </div>
 
             <!-- Tab Content Panel: Sales -->
-            <div id="content-sales" class="dashboard-content-panel hidden space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Sales Invoices</p>
-                            <h3 id="val-total-sales-invoices" class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">{{ number_format($totalSalesCount) }}</h3>
-                            <p class="text-xs text-slate-400 mt-1">Generated bills</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-document-text class="w-6 h-6" />
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Sales Revenue</p>
-                            <h3 id="val-gross-sales-revenue" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">₹{{ number_format($totalSalesRevenue, 2) }}</h3>
-                            <p class="text-xs text-slate-400 mt-1">Inclusive of GST</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-currency-rupee class="w-6 h-6" />
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cancelled Invoices</p>
-                            <h3 id="val-cancelled-invoices" class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">{{ number_format($cancelledSalesCount) }}</h3>
-                            <p class="text-xs text-slate-400 mt-1">Cancelled transactions</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-x-circle class="w-6 h-6" />
+            <div id="content-sales" class="dashboard-content-panel hidden space-y-6">
+                <!-- Top KPI Cards Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Total Sales Invoices Card -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Sales Invoices</p>
+                                <h3 id="val-total-sales-invoices" class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{{ number_format($totalSalesCount) }}</h3>
+                                <p class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span>{{ number_format($totalSalesCount - $cancelledSalesCount) }} Completed</span>
+                                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                                    <span class="text-rose-500">{{ number_format($cancelledSalesCount) }} Cancelled</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner">
+                                <x-heroicon-o-document-text class="w-6 h-6" />
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Average Invoice Value</p>
-                            <h3 id="val-avg-invoice-value" class="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">₹{{ number_format($avgInvoiceValue, 2) }}</h3>
-                            <p class="text-xs text-slate-400 mt-1">Average ticket size</p>
+
+                    <!-- Gross Sales Revenue Card -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Sales Revenue</p>
+                                <h3 id="val-gross-sales-revenue" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{{ number_format($totalSalesRevenue, 2) }}</h3>
+                                <p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">GST Inclusive</span>
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+                                <x-heroicon-o-currency-rupee class="w-6 h-6" />
+                            </div>
                         </div>
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                            <x-heroicon-o-ticket class="w-6 h-6" />
+                    </div>
+
+                    <!-- Gross Profit Card -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estimated Gross Profit</p>
+                                <h3 class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">₹{{ number_format($grossProfit, 2) }}</h3>
+                                <p class="text-xs text-purple-700 dark:text-purple-300 mt-1 font-semibold">
+                                    Margin: {{ number_format($grossProfitMargin, 1) }}%
+                                </p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-inner">
+                                <x-heroicon-o-chart-pie class="w-6 h-6" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Average Invoice Value Card -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition-all duration-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avg Ticket Size</p>
+                                <h3 id="val-avg-invoice-value" class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">₹{{ number_format($avgInvoiceValue, 2) }}</h3>
+                                <p class="text-xs text-slate-400 mt-1">Average per customer bill</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-inner">
+                                <x-heroicon-o-ticket class="w-6 h-6" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Middle Section: Recent Sales & Revenue Chart -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm lg:col-span-2">
+                    <!-- Recent Sales Table (2 cols) -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm lg:col-span-2">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <x-heroicon-o-clock class="w-5 h-5 text-indigo-500" />
                                 Recent Sales Invoices
                             </h3>
-                            <a href="{{ route('sales.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
-                                View All →
+                            <a href="{{ route('sales.index') }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold flex items-center gap-1">
+                                View All Invoices →
                             </a>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-xs text-left divide-y divide-slate-200 dark:divide-slate-700">
                                 <thead class="bg-slate-50 dark:bg-slate-700/50">
                                     <tr>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300">Invoice No</th>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300">Customer</th>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300">Branch</th>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300">Invoice Date</th>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300">Status</th>
-                                        <th class="px-3 py-2 font-semibold text-slate-600 dark:text-slate-300 text-right">Grand Total</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Invoice No</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Customer</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Branch</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Date</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Status</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-right">Grand Total</th>
+                                        <th class="px-3 py-2 font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-recent-sales" class="divide-y divide-slate-200 dark:divide-slate-700">
                                     @forelse($recentSales as $sale)
-                                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40">
-                                            <td class="px-3 py-2.5 text-indigo-600 dark:text-indigo-400 font-semibold">
+                                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                            <td class="px-3 py-3 text-indigo-600 dark:text-indigo-400 font-bold">
                                                 #{{ $sale->invoice_no_display }}
                                             </td>
-                                            <td class="px-3 py-2.5 text-slate-800 dark:text-slate-200 font-medium">
+                                            <td class="px-3 py-3 text-slate-800 dark:text-slate-200 font-medium">
                                                 {{ $sale->customer->customer_name ?? '—' }}
+                                                @if(isset($sale->customer->customer_type) && $sale->customer->customer_type === 'B2B')
+                                                    <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">B2B</span>
+                                                @endif
                                             </td>
-                                            <td class="px-3 py-2.5 text-slate-600 dark:text-slate-400">
+                                            <td class="px-3 py-3 text-slate-600 dark:text-slate-400">
                                                 {{ $sale->branch->name ?? '—' }}
                                             </td>
-                                            <td class="px-3 py-2.5 text-slate-500 whitespace-nowrap font-medium">
+                                            <td class="px-3 py-3 text-slate-500 whitespace-nowrap font-medium">
                                                 {{ $sale->invoice_date ? $sale->invoice_date->format('d M Y') : '—' }}
                                             </td>
-                                            <td class="px-3 py-2.5">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold {{ $sale->status === \App\Models\Sale::STATUS_COMPLETED ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300' }}">
-                                                    {{ $sale->status === \App\Models\Sale::STATUS_COMPLETED ? 'Completed' : 'Cancelled' }}
-                                                </span>
+                                            <td class="px-3 py-3">
+                                                @if($sale->status === \App\Models\Sale::STATUS_COMPLETED)
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                        Completed
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                        Cancelled
+                                                    </span>
+                                                @endif
                                             </td>
-                                            <td class="px-3 py-2.5 text-right font-bold text-slate-900 dark:text-white">
+                                            <td class="px-3 py-3 text-right font-black text-slate-900 dark:text-white">
                                                 ₹{{ number_format($sale->grand_total, 2) }}
+                                            </td>
+                                            <td class="px-3 py-3 text-center">
+                                                <a href="{{ route('sales.print', $sale->id) }}" target="_blank" class="inline-flex items-center gap-1 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold text-xs">
+                                                    <x-heroicon-o-printer class="w-4 h-4" />
+                                                    Print
+                                                </a>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-6 text-slate-400">No sales transactions found.</td>
+                                            <td colspan="7" class="text-center py-8 text-slate-400">
+                                                No sales transactions recorded for this date.
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+
+                    <!-- Revenue Trend Chart (1 col) -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
                         <div>
                             <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
                                 <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-500" />
@@ -444,6 +493,101 @@
                             </h3>
                             <div class="h-64 relative">
                                 <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Analytical Widgets Row: Top Selling Products + Payment Mode Split -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Top 5 Selling Products (2 cols) -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm lg:col-span-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <x-heroicon-o-sparkles class="w-5 h-5 text-amber-500" />
+                                Top Selling Products (Active Business Date)
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs text-left divide-y divide-slate-200 dark:divide-slate-700">
+                                <thead class="bg-slate-50 dark:bg-slate-700/50">
+                                    <tr>
+                                        <th class="px-3 py-2 font-bold uppercase text-slate-600 dark:text-slate-300">#</th>
+                                        <th class="px-3 py-2 font-bold uppercase text-slate-600 dark:text-slate-300">Product Name</th>
+                                        <th class="px-3 py-2 font-bold uppercase text-slate-600 dark:text-slate-300">Code</th>
+                                        <th class="px-3 py-2 font-bold uppercase text-slate-600 dark:text-slate-300 text-right">Units Sold</th>
+                                        <th class="px-3 py-2 font-bold uppercase text-slate-600 dark:text-slate-300 text-right">Total Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                                    @forelse($topSellingProducts as $index => $topProduct)
+                                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                                            <td class="px-3 py-2.5 font-extrabold text-slate-400">
+                                                {{ $index + 1 }}
+                                            </td>
+                                            <td class="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-100">
+                                                {{ $topProduct->product_name }}
+                                            </td>
+                                            <td class="px-3 py-2.5">
+                                                <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-mono font-bold text-[11px]">
+                                                    {{ $topProduct->product_code }}
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2.5 text-right font-black text-indigo-600 dark:text-indigo-400">
+                                                {{ number_format($topProduct->total_qty, 0) }} {{ $topProduct->uom_name }}
+                                            </td>
+                                            <td class="px-3 py-2.5 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                                ₹{{ number_format($topProduct->total_amount, 2) }}
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center py-6 text-slate-400">
+                                                No product sales data recorded for this date.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment Mode Distribution (1 col) -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+                                <x-heroicon-o-credit-card class="w-5 h-5 text-emerald-500" />
+                                Payment Method Split
+                            </h3>
+
+                            @php
+                                $totalPaymentSum = $paymentModeData->sum('total_amount');
+                            @endphp
+
+                            <div class="space-y-3.5">
+                                @forelse($paymentModeData as $payMode)
+                                    @php
+                                        $percent = $totalPaymentSum > 0 ? ($payMode->total_amount / $totalPaymentSum) * 100 : 0;
+                                    @endphp
+                                    <div>
+                                        <div class="flex items-center justify-between text-xs mb-1">
+                                            <span class="font-bold text-slate-700 dark:text-slate-200">
+                                                {{ $payMode->mode_name }}
+                                            </span>
+                                            <span class="font-black text-slate-900 dark:text-white">
+                                                ₹{{ number_format($payMode->total_amount, 2) }}
+                                                <span class="text-[10px] font-normal text-slate-400">({{ number_format($percent, 0) }}%)</span>
+                                            </span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                                            <div class="bg-gradient-to-r from-emerald-500 to-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ max(4, $percent) }}%"></div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-8 text-slate-400 text-xs">
+                                        No payment transaction breakdown available.
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                     </div>

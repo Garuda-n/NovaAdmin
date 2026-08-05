@@ -24,7 +24,7 @@
             <div style="font-size: 12px; color: #334155;">
                 <strong>Sale Type:</strong> {{ $sale->isCashSale() ? 'Cash Sale' : 'Credit Sale' }}
             </div>
-            @if($sale->due_date)
+            @if($sale->isCreditSale() && $sale->due_date)
                 <div style="font-size: 12px; color: #d97706;">
                     <strong>Due Date:</strong> {{ $sale->due_date->format('d/m/Y') }}
                 </div>

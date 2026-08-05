@@ -74,7 +74,7 @@
                     <div style="margin-top: 6px;"><strong>Invoice No:</strong> {{ $sale->invoice_no_display }}</div>
                     <div><strong>Date:</strong> {{ $sale->invoice_date ? $sale->invoice_date->format('d/m/Y') : '' }}</div>
                     <div><strong>Sale Type:</strong> {{ $sale->isCashSale() ? 'Cash Sale' : 'Credit Sale' }}</div>
-                    @if($sale->due_date)
+                    @if($sale->isCreditSale() && $sale->due_date)
                         <div><strong>Due Date:</strong> {{ $sale->due_date->format('d/m/Y') }}</div>
                     @endif
                 </td>

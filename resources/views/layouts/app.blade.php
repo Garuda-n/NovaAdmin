@@ -58,5 +58,6 @@
         </div>
 
         <x-customer-create-slide />
+        @stack('scripts')
     </body>
 </html>

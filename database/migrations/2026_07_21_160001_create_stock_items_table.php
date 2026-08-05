@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('sub_product_id')->nullable()->constrained('sub_products')->nullOnDelete();
             $table->foreignId('size_id')->nullable()->constrained('sizes')->nullOnDelete();
             $table->string('item_code')->unique()->index();
-            $table->unsignedTinyInteger('status')->default(1);
+            $table->unsignedTinyInteger('status')->default(1)->comment('1=>Available, 2=>Counter Transferred, 3=>Branch Transferred, 4=>Reserved, 5=>Sold, 6=>Damaged, 7=>Under Repair, 8=>Disposed');
             $table->foreignId('allocated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('allocated_at')->nullable();
             $table->timestamps();

@@ -265,6 +265,48 @@ class DashboardController extends Controller
         });
         $totalPurchaseValue = (float)$totalPurchaseValueQuery->select(DB::raw('SUM(qty * purchase_price) as total'))->value('total') ?? 0.00;
 
+        // 13. Top Selling Products for the active business date
+        $topProductsQuery = DB::table('sales_details as sd')
+            ->join('sales as s', 'sd.sales_id', '=', 's.id')
+            ->join('products as p', 'sd.product_id', '=', 'p.id')
+            ->leftJoin('uoms as u', 'p.uom_id', '=', 'u.id')
+            ->where('s.status', \App\Models\Sale::STATUS_COMPLETED)
+            ->whereDate('s.invoice_date', $businessDate);
+        if ($branchId) {
+            $topProductsQuery->where('s.branch_id', $branchId);
+        }
+        $topSellingProducts = $topProductsQuery->select(
+                'p.id as product_id',
+                'p.name as product_name',
+                'p.code as product_code',
+                'u.name as uom_name',
+                DB::raw('SUM(sd.quantity) as total_qty'),
+                DB::raw('SUM(sd.line_total) as total_amount')
+            )
+            ->groupBy('p.id', 'p.name', 'p.code', 'u.name')
+            ->orderByDesc('total_qty')
+            ->limit(5)
+            ->get();
+
+        // 14. Payment Mode Breakdown for the active business date
+        $paymentModeQuery = DB::table('sales_payments as sp')
+            ->join('payment_modes as pm', 'sp.payment_mode_id', '=', 'pm.id')
+            ->join('sales as s', 'sp.sales_id', '=', 's.id')
+            ->where('sp.status', \App\Models\SalesPayment::STATUS_COMPLETED)
+            ->where('s.status', \App\Models\Sale::STATUS_COMPLETED)
+            ->whereDate('s.invoice_date', $businessDate);
+        if ($branchId) {
+            $paymentModeQuery->where('s.branch_id', $branchId);
+        }
+        $paymentModeData = $paymentModeQuery->select(
+                'pm.mode_name',
+                'pm.mode_type',
+                DB::raw('SUM(sp.amount) as total_amount')
+            )
+            ->groupBy('pm.id', 'pm.mode_name', 'pm.mode_type')
+            ->orderByDesc('total_amount')
+            ->get();
+
         return view('dashboard', compact(
             'businessDate',
             'branchesListForDropdown',
@@ -301,7 +343,9 @@ class DashboardController extends Controller
             'totalCogs',
             'grossProfit',
             'grossProfitMargin',
-            'totalPurchaseValue'
+            'totalPurchaseValue',
+            'topSellingProducts',
+            'paymentModeData'
         ));
     }
 }

@@ -44,30 +44,66 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-            <!-- Branch (Read Only) -->
+            <!-- Branch Selection -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
-                    Branch
+                    Branch <span class="text-red-500">*</span>
                 </label>
-                <input
-                    type="text"
-                    value="{{ $branch->name ?? 'Main Branch' }} {{ isset($branch->branch_code) ? '('.$branch->branch_code.')' : '' }}"
-                    class="w-full rounded-lg border-gray-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400 text-sm cursor-not-allowed"
-                    readonly>
-                <input type="hidden" name="branch_id" value="{{ $branch->id ?? '' }}">
+                @if($isConverted)
+                    <input
+                        type="text"
+                        value="{{ $branch->name ?? 'Main Branch' }} {{ isset($branch->branch_code) ? '('.$branch->branch_code.')' : '' }}"
+                        class="w-full rounded-lg border-gray-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400 text-sm cursor-not-allowed"
+                        readonly>
+                    <input type="hidden" name="branch_id" value="{{ $branch->id ?? ($quotation->branch_id ?? '') }}">
+                @else
+                    <select
+                        name="branch_id"
+                        id="quotation-branch-select"
+                        class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        required>
+                        @foreach($branches as $b)
+                            <option value="{{ $b->id }}" {{ (old('branch_id', $quotation->branch_id ?? ($branch->id ?? '')) == $b->id) ? 'selected' : '' }}>
+                                {{ $b->name }} {{ $b->branch_code ? '('.$b->branch_code.')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
+                @error('branch_id')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Counter (Read Only) -->
+            <!-- Counter Selection (Optional) -->
             <div>
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
                     Counter
                 </label>
-                <input
-                    type="text"
-                    value="{{ $counter->counter_name ?? 'Main Counter' }} {{ isset($counter->counter_code) ? '('.$counter->counter_code.')' : '' }}"
-                    class="w-full rounded-lg border-gray-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400 text-sm cursor-not-allowed"
-                    readonly>
-                <input type="hidden" name="counter_id" value="{{ $counter->id ?? '' }}">
+                @if($isConverted)
+                    <input
+                        type="text"
+                        value="{{ $counter->counter_name ?? 'Main Counter' }} {{ isset($counter->counter_code) ? '('.$counter->counter_code.')' : '' }}"
+                        class="w-full rounded-lg border-gray-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400 text-sm cursor-not-allowed"
+                        readonly>
+                    <input type="hidden" name="counter_id" value="{{ $counter->id ?? ($quotation->counter_id ?? '') }}">
+                @else
+                    <select
+                        name="counter_id"
+                        id="quotation-counter-select"
+                        class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- None (No Counter) --</option>
+                        @foreach($counters as $c)
+                            <option value="{{ $c->id }}"
+                                    data-branch-ids="{{ json_encode($c->branches->pluck('id')->toArray()) }}"
+                                    {{ (old('counter_id', $quotation->counter_id ?? ($counter->id ?? null)) == $c->id) ? 'selected' : '' }}>
+                                {{ $c->counter_name }} {{ $c->counter_code ? '('.$c->counter_code.')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
+                @error('counter_id')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Business Date (Read Only) -->
@@ -243,14 +279,14 @@
                                     <x-inventory-search
                                         name="items[{{ $index }}][product_id]"
                                         value="{{ $item->product_id }}"
-                                        textValue="{{ $item->product_name }}"
+                                        textValue="{{ $item->stockItem ? $item->stockItem->item_code : $item->product_name }}"
                                         placeholder="Search inventory..."
                                         disabled="{{ $isConverted }}"
                                         required="true"
-                                        stockItemId=""
-                                        stockItemName=""
-                                        trackingType="{{ $item->product->tracking_type }}"
-                                        availableQty="{{ $item->product->available_qty }}"
+                                        stockItemId="{{ $item->stock_item_id }}"
+                                        stockItemName="{{ $item->stockItem ? $item->stockItem->item_code : '' }}"
+                                        trackingType="{{ $item->product ? $item->product->tracking_type : '' }}"
+                                        availableQty="{{ $item->product ? $item->product->available_qty : '' }}"
                                     />
                                     <input type="hidden" name="items[{{ $index }}][product_name]" class="product-name-input" value="{{ $item->product_name }}">
                                 </td>

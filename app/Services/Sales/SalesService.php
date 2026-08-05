@@ -16,6 +16,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 class SalesService
@@ -95,6 +96,19 @@ class SalesService
     public function getCreateFromQuotationData(Quotation $quotation): array
     {
         if (!$quotation->isConvertible()) {
+            if ($quotation->status == Quotation::STATUS_CONVERTED) {
+                $hasActiveSale = Sale::where('quotation_id', $quotation->id)
+                    ->where('status', '!=', Sale::STATUS_CANCELLED)
+                    ->exists();
+
+                if (!$hasActiveSale) {
+                    $quotation->update(['status' => Quotation::STATUS_CREATED]);
+                    $quotation->refresh();
+                }
+            }
+        }
+
+        if (!$quotation->isConvertible()) {
             throw new InvalidArgumentException("Quotation #{$quotation->quotation_no} is expired or already converted.");
         }
 
@@ -132,15 +146,29 @@ class SalesService
             // If product has individual tracking (tracking_type == 2)
             if ($product && $product->tracking_type == 2) {
                 $itemType = SalesDetail::ITEM_ALLOCATED;
-                $allocatedItemId = \App\Models\StockItem::where('product_id', $productId)
-                    ->where('branch_id', $branchId)
-                    ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
-                    ->whereNotIn('id', $allocatedIds)
-                    ->value('id');
-                
-                if ($allocatedItemId) {
-                    $allocatedIds[] = $allocatedItemId;
+                $allocatedItemId = $detail->stock_item_id;
+
+                if (!$allocatedItemId) {
+                    throw new InvalidArgumentException("Quotation item '{$detail->product_name}' requires a selected serial stock item.");
                 }
+
+                $stockItem = \App\Models\StockItem::with('branch')->find($allocatedItemId);
+                if (!$stockItem) {
+                    throw new InvalidArgumentException("Selected stock item ID #{$allocatedItemId} for product '{$detail->product_name}' does not exist.");
+                }
+
+                if ((int) $stockItem->branch_id !== (int) $branchId) {
+                    $itemBranchName = $stockItem->branch->name ?? "Branch #{$stockItem->branch_id}";
+                    $selectedBranchName = $quotation->branch->name ?? "Branch #{$branchId}";
+                    throw new InvalidArgumentException("Selected item '{$stockItem->item_code}' belongs to branch '{$itemBranchName}', but the sales invoice branch is set to '{$selectedBranchName}'. Items must match the selected branch.");
+                }
+
+                if ($stockItem->status !== \App\Enums\StockItemStatus::AVAILABLE->value) {
+                    $statusLabel = \App\Enums\StockItemStatus::tryFrom($stockItem->status)?->label() ?? 'Unavailable';
+                    throw new InvalidArgumentException("Selected stock item '{$stockItem->item_code}' for product '{$detail->product_name}' is no longer available (Status: {$statusLabel}). Please update the quotation with an available serial item.");
+                }
+
+                $allocatedIds[] = $allocatedItemId;
             }
 
             $itemsPreview[] = [
@@ -198,7 +226,7 @@ class SalesService
         }
 
         return DB::transaction(function () use ($quotation, $data) {
-            $quotation->load(['customer', 'branch.company', 'counter', 'details.product', 'details.uom']);
+            $quotation->load(['customer', 'branch.company', 'counter', 'details.product', 'details.uom', 'details.stockItem']);
 
             if (!$quotation->customer) {
                 throw new InvalidArgumentException("Quotation customer missing.");
@@ -213,7 +241,7 @@ class SalesService
             $gstType = (int) ($data['gst_type'] ?? Sale::GST_CGST_SGST);
             $saleType = (int) ($data['sale_type'] ?? Sale::TYPE_CASH);
             $invoiceDiscount = (float) ($data['invoice_discount'] ?? 0.00);
-            $roundOff = (float) ($data['round_off'] ?? 0.00);
+            $roundOff = isset($data['round_off']) && $data['round_off'] !== '' ? (float) $data['round_off'] : null;
 
             // Prepare line items from quotation or submitted data
             $rawItems = $data['items'] ?? [];
@@ -228,19 +256,28 @@ class SalesService
                     // If product has individual tracking (tracking_type == 2)
                     if ($product && $product->tracking_type == 2) {
                         $itemType = SalesDetail::ITEM_ALLOCATED;
-                        $availableItem = \App\Models\StockItem::where('product_id', $productId)
-                            ->where('branch_id', $branchId)
-                            ->where('status', \App\Enums\StockItemStatus::AVAILABLE->value)
-                            ->whereNotIn('id', $allocatedIds)
-                            ->first();
+                        $allocatedItemId = $detail->stock_item_id;
 
-                        if (!$availableItem) {
+                        if (!$allocatedItemId) {
                             throw ValidationException::withMessages([
-                                'items' => ["No available stock items (serial numbers) found for individually tracked product '{$product->name}' in this branch."],
+                                'items' => ["Quotation item '{$detail->product_name}' requires a selected serial stock item."],
                             ]);
                         }
 
-                        $allocatedItemId = $availableItem->id;
+                        $stockItem = \App\Models\StockItem::find($allocatedItemId);
+                        if (!$stockItem) {
+                            throw ValidationException::withMessages([
+                                'items' => ["Selected stock item ID #{$allocatedItemId} for product '{$detail->product_name}' does not exist."],
+                            ]);
+                        }
+
+                        if ($stockItem->status !== \App\Enums\StockItemStatus::AVAILABLE->value) {
+                            $statusLabel = \App\Enums\StockItemStatus::tryFrom($stockItem->status)?->label() ?? 'Unavailable';
+                            throw ValidationException::withMessages([
+                                'items' => ["Selected stock item '{$stockItem->item_code}' for product '{$detail->product_name}' is no longer available (Status: {$statusLabel}). Please update the quotation with an available serial item."],
+                            ]);
+                        }
+
                         $allocatedIds[] = $allocatedItemId;
                     }
 
@@ -296,7 +333,7 @@ class SalesService
                 'round_off' => $totals['round_off'],
                 'grand_total' => $totals['grand_total'],
                 'sale_type' => $saleType,
-                'due_date' => $data['due_date'] ?? null,
+                'due_date' => $saleType == Sale::TYPE_CREDIT ? ($data['due_date'] ?? null) : null,
                 'status' => Sale::STATUS_COMPLETED,
                 'remarks' => $data['remarks'] ?? "Converted from Quotation #{$quotation->quotation_no}",
                 'created_by' => $userId,
@@ -414,6 +451,23 @@ class SalesService
 
             // Reverse Inventory Stock Movement
             $this->inventoryService->reverseStock($sale);
+            // Revert associated Quotation status to STATUS_CREATED if no active sale remains
+            if ($sale->quotation_id) {
+                $quotation = Quotation::find($sale->quotation_id);
+                if ($quotation && $quotation->status === Quotation::STATUS_CONVERTED) {
+                    $hasOtherActiveSale = Sale::where('quotation_id', $quotation->id)
+                        ->where('id', '!=', $sale->id)
+                        ->where('status', '!=', Sale::STATUS_CANCELLED)
+                        ->exists();
+
+                    if (!$hasOtherActiveSale) {
+                        $quotation->update([
+                            'status' => Quotation::STATUS_CREATED,
+                            'updated_by' => $userId,
+                        ]);
+                    }
+                }
+            }
 
             $sale->update([
                 'status' => Sale::STATUS_CANCELLED,
@@ -447,7 +501,7 @@ class SalesService
         array $items,
         int $gstType = Sale::GST_CGST_SGST,
         float $invoiceDiscount = 0.00,
-        float $roundOff = 0.00
+        ?float $roundOff = null
     ): array {
         return $this->taxService->calculateTax($items, $gstType, $invoiceDiscount, $roundOff);
     }

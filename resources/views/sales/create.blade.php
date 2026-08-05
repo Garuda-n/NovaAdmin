@@ -58,6 +58,6 @@
     </div>
 
     @push('scripts')
-        <script src="{{ asset('js/sales/sales_form.js') }}"></script>
+        <script src="{{ asset('js/sales/sales_form.js') }}?v={{ time() }}"></script>
     @endpush
 </x-app-layout>

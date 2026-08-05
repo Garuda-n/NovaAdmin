@@ -30,6 +30,16 @@
                         <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">
                             {{ $item['product_name'] }}
                             <span class="block text-xs text-slate-400 font-mono">{{ $item['product_code'] }}</span>
+                            @if(!empty($item['allocated_item_id']))
+                                @php
+                                    $allocatedStockItem = \App\Models\StockItem::find($item['allocated_item_id']);
+                                @endphp
+                                @if($allocatedStockItem)
+                                    <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                                        Serial: {{ $allocatedStockItem->item_code }}
+                                    </span>
+                                @endif
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-right font-semibold">{{ number_format($item['quantity'], 2) }}</td>
                         <td class="px-4 py-3 text-right">{{ number_format($item['rate'], 2) }}</td>
