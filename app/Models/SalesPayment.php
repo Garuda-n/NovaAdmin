@@ -19,6 +19,7 @@ class SalesPayment extends Model
 
     protected $fillable = [
         'sales_id',
+        'sales_return_id',
         'payment_mode_id',
         'payment_date',
         'amount',
@@ -34,6 +35,7 @@ class SalesPayment extends Model
 
     protected $casts = [
         'sales_id' => 'integer',
+        'sales_return_id' => 'integer',
         'payment_mode_id' => 'integer',
         'payment_date' => 'date',
         'amount' => 'decimal:2',
@@ -114,5 +116,13 @@ class SalesPayment extends Model
     public function isCancelled(): bool
     {
         return $this->status === self::STATUS_CANCELLED;
+    }
+
+    /**
+     * Relationship: Sales Return
+     */
+    public function salesReturn(): BelongsTo
+    {
+        return $this->belongsTo(SalesReturn::class, 'sales_return_id');
     }
 }

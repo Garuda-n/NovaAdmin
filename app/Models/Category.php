@@ -15,12 +15,16 @@ class Category extends Model
         'tax_id',
         'image',
         'status',
+        'is_returnable',
+        'return_window_days',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'status' => 'boolean',
+        'is_returnable' => 'boolean',
+        'return_window_days' => 'integer',
     ];
 
     public function tax()

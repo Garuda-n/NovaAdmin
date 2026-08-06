@@ -117,4 +117,12 @@ class Customer extends Model
     {
         return $query->where('customer_type', $type);
     }
+
+    /**
+     * Relationship: Sales Returns
+     */
+    public function salesReturns(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SalesReturn::class, 'customer_id');
+    }
 }

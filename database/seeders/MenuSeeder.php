@@ -148,6 +148,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Bulk Inward', 'route' => 'stock-inwards.index', 'icon' => 'arrow-down-tray', 'permission_slug' => 'stock-inwards.view', 'order' => 1],
             ['name' => 'Item Allocation', 'route' => 'item-allocation.index', 'icon' => 'cube-transparent', 'permission_slug' => 'stock-inwards.view', 'order' => 2],
             ['name' => 'Stock Transfer', 'route' => 'stock-transfers.index', 'icon' => 'arrows-right-left', 'permission_slug' => 'stock-transfer.view', 'order' => 3],
+            ['name' => 'Returned Stock', 'route' => 'returned-stock.index', 'icon' => 'arrow-path', 'permission_slug' => 'returned-stock.view', 'order' => 4],
         ];
 
         foreach ($inventoryChildren as $child) {
@@ -201,6 +202,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Quotations', 'route' => 'quotations.index', 'icon' => 'document-text', 'permission_slug' => 'quotation.view', 'order' => 1],
             ['name' => 'Sales Invoices', 'route' => 'sales.index', 'icon' => 'shopping-cart', 'permission_slug' => 'sales.view', 'order' => 2],
             ['name' => 'Customer Receivables', 'route' => 'receivables.index', 'icon' => 'banknotes', 'permission_slug' => 'receivable.view', 'order' => 3],
+            ['name' => 'Sales Returns', 'route' => 'sales-returns.index', 'icon' => 'arrow-uturn-left', 'permission_slug' => 'sales-returns.view', 'order' => 4],
         ];
 
         foreach ($salesChildren as $child) {

@@ -117,4 +117,12 @@ class SalesDetail extends Model
     {
         return $this->item_type === self::ITEM_UNALLOCATED;
     }
+
+    /**
+     * Relationship: Sales Return Line Details
+     */
+    public function salesReturnDetails(): HasMany
+    {
+        return $this->hasMany(SalesReturnDetail::class, 'sales_detail_id');
+    }
 }

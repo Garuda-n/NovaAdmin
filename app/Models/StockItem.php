@@ -108,4 +108,20 @@ class StockItem extends Model
 
         return $this->product?->image_url;
     }
+
+    /**
+     * Relationship: Sales Return Details (where this item was the original returned item)
+     */
+    public function salesReturnAsOriginal(): HasMany
+    {
+        return $this->hasMany(SalesReturnDetail::class, 'original_stock_item_id');
+    }
+
+    /**
+     * Relationship: Sales Return Details (where this item was the recreated item)
+     */
+    public function salesReturnAsRecreated(): HasMany
+    {
+        return $this->hasMany(SalesReturnDetail::class, 'recreated_stock_item_id');
+    }
 }

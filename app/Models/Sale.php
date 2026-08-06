@@ -294,4 +294,12 @@ class Sale extends Model
     {
         return $this->sale_type === self::TYPE_CREDIT;
     }
+
+    /**
+     * Relationship: Sales Returns
+     */
+    public function salesReturns(): HasMany
+    {
+        return $this->hasMany(SalesReturn::class, 'sales_id');
+    }
 }

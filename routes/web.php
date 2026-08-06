@@ -29,6 +29,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ReceivableController;
+use App\Http\Controllers\SalesReturnController;
+use App\Http\Controllers\Inventory\ReturnedStockController;
 use App\Http\Controllers\Reports\Inventory\StockRegisterController;
 use App\Http\Controllers\Reports\Sales\SalesReportController;
 use App\Http\Controllers\Reports\Purchase\PurchaseReportController;
@@ -633,6 +635,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{sale}/invoice/pdf', [SalesController::class, 'downloadPdf'])->name('invoice.pdf')->middleware('permission:sales.print');
         Route::post('/{sale}/cancel', [SalesController::class, 'cancel'])->name('cancel')->middleware('permission:sales.cancel');
         Route::post('/{sale}/collect-payment', [ReceivableController::class, 'collectPayment'])->name('collect-payment')->middleware('permission:receivable.allocate');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Returns Module
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('sales-returns')->name('sales-returns.')->group(function () {
+        Route::get('/', [SalesReturnController::class, 'index'])->name('index')->middleware('permission:sales-returns.view');
+        Route::get('/get-invoices/{customerId}', [SalesReturnController::class, 'getInvoices'])->name('get-invoices')->middleware('permission:sales-returns.create');
+        Route::get('/get-invoice-details/{saleId}', [SalesReturnController::class, 'getInvoiceDetails'])->name('get-invoice-details')->middleware('permission:sales-returns.create');
+        Route::get('/create/{sale?}', [SalesReturnController::class, 'create'])->name('create')->middleware('permission:sales-returns.create');
+        Route::post('/', [SalesReturnController::class, 'store'])->name('store')->middleware('permission:sales-returns.create');
+        Route::get('/{salesReturn}', [SalesReturnController::class, 'show'])->name('show')->middleware('permission:sales-returns.view');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Returned Stock Module
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('returned-stock')->name('returned-stock.')->group(function () {
+        Route::get('/', [ReturnedStockController::class, 'index'])->name('index')->middleware('permission:returned-stock.view');
+        Route::post('/{salesReturnDetail}/recreate', [ReturnedStockController::class, 'recreate'])->name('recreate')->middleware('permission:returned-stock.recreate');
     });
 
     /*

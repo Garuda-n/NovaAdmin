@@ -12,6 +12,7 @@ enum StockItemStatus: int
     case DAMAGED = 6;
     case UNDER_REPAIR = 7;
     case DISPOSED = 8;
+    case RETURNED = 9;
 
     public function label(): string
     {
@@ -24,6 +25,7 @@ enum StockItemStatus: int
             self::DAMAGED => 'Damaged',
             self::UNDER_REPAIR => 'Under Repair',
             self::DISPOSED => 'Disposed',
+            self::RETURNED => 'Returned',
         };
     }
 }
