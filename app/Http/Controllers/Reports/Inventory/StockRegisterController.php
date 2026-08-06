@@ -54,19 +54,8 @@ class StockRegisterController extends Controller
         $filters['from_date'] = $dateRange['from_date']->format('Y-m-d');
         $filters['to_date'] = $dateRange['to_date']->format('Y-m-d');
 
-        $hasSearched = $request->has('search') || $request->boolean('search') || $request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest';
-
-        if ($hasSearched) {
-            $reportData = $this->stockRegisterService->getReport($filters);
-            $reportData['has_searched'] = true;
-        } else {
-            $reportData = [
-                'items' => [],
-                'summary' => [],
-                'paginator' => null,
-                'has_searched' => false,
-            ];
-        }
+        $reportData = $this->stockRegisterService->getReport($filters);
+        $reportData['has_searched'] = true;
 
         if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
             return response()->json([

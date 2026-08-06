@@ -20,6 +20,7 @@ use App\Http\Controllers\SubProductController;
 use App\Http\Controllers\Inventory\StockInwardController;
 use App\Http\Controllers\Inventory\ItemAllocationController;
 use App\Http\Controllers\Inventory\AvailableStockController;
+use App\Http\Controllers\Inventory\StockItemImageController;
 use App\Http\Controllers\Inventory\StockTransferController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
@@ -403,6 +404,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('available-stock.filter')
         ->middleware('permission:available-stock.view');
 
+    Route::get('inventory/stock-item-images', [StockItemImageController::class, 'index'])
+        ->name('stock-item-images.index')
+        ->middleware('permission:available-stock.view');
+
+    Route::get('inventory/stock-item-images/search', [StockItemImageController::class, 'search'])
+        ->name('stock-item-images.search')
+        ->middleware('permission:available-stock.view');
+
+    Route::post('inventory/stock-item-images/{stockItem}/upload', [StockItemImageController::class, 'upload'])
+        ->name('stock-item-images.upload')
+        ->middleware('permission:available-stock.view');
+
+    Route::put('inventory/stock-item-images/{stockItem}/set-default/{image}', [StockItemImageController::class, 'setDefault'])
+        ->name('stock-item-images.set-default')
+        ->middleware('permission:available-stock.view');
+
+    Route::delete('inventory/stock-item-images/{stockItem}/delete/{image}', [StockItemImageController::class, 'delete'])
+        ->name('stock-item-images.delete')
+        ->middleware('permission:available-stock.view');
+
     Route::get('inventory/stock-inwards/items/{stockInwardItem}/pending-info', [ItemAllocationController::class, 'pendingInfo'])
         ->name('stock-inwards.items.pending-info')
         ->middleware('permission:stock-inwards.view');
@@ -611,6 +632,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{sale}/invoice/print', [SalesController::class, 'print'])->name('invoice.print')->middleware('permission:sales.print');
         Route::get('/{sale}/invoice/pdf', [SalesController::class, 'downloadPdf'])->name('invoice.pdf')->middleware('permission:sales.print');
         Route::post('/{sale}/cancel', [SalesController::class, 'cancel'])->name('cancel')->middleware('permission:sales.cancel');
+        Route::post('/{sale}/collect-payment', [ReceivableController::class, 'collectPayment'])->name('collect-payment')->middleware('permission:receivable.allocate');
     });
 
     /*

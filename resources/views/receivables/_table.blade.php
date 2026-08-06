@@ -67,11 +67,20 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 text-center">
-                        @if($receivable->sale)
-                            <a href="{{ route('sales.show', $receivable->sale->id) }}" class="p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium transition">
-                                View Invoice
-                            </a>
-                        @endif
+                        <div class="flex items-center justify-center gap-2">
+                            @if($receivable->sale)
+                                <a href="{{ route('sales.show', $receivable->sale->id) }}" class="p-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium transition">
+                                    View Invoice
+                                </a>
+                                @if(!$receivable->isPaid() && $receivable->sale->isCompleted())
+                                    @can('receivable.allocate')
+                                        <a href="{{ route('sales.show', $receivable->sale->id) }}?collect=1" class="p-1.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition">
+                                            Collect
+                                        </a>
+                                    @endcan
+                                @endif
+                            @endif
+                        </div>
                     </td>
                 </tr>
             @empty

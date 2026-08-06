@@ -129,6 +129,81 @@
             <div id="available-stock-table-container">
                 @include('inventory.available_stock._table')
             </div>
+
+            <!-- Image Gallery Modal -->
+            <div
+                x-data="{ open: false, images: [], currentIndex: 0, title: '' }"
+                x-show="open"
+                @open-image-modal.window="open = true; images = $event.detail.images; title = $event.detail.title; currentIndex = 0;"
+                @keydown.escape.window="open = false"
+                class="fixed inset-0 z-50 overflow-y-auto"
+                style="display: none;"
+            >
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-black/70 transition-opacity" @click="open = false"></div>
+
+                <!-- Modal Content -->
+                <div class="relative min-h-screen flex items-center justify-center p-4">
+                    <div class="relative bg-white dark:bg-slate-900 rounded-xl max-w-lg w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+                        
+                        <!-- Header -->
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-white" x-text="title"></h3>
+                            <button @click="open = false" class="text-slate-400 hover:text-slate-650 dark:hover:text-slate-250">
+                                <x-heroicon-o-x-mark class="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <!-- Gallery Content -->
+                        <div class="relative flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 aspect-square">
+                            
+                            <!-- Slide Image -->
+                            <template x-if="images.length > 0">
+                                <img :src="images[currentIndex]" class="w-full h-full object-cover transition-all duration-300" />
+                            </template>
+                            
+                            <!-- No Images -->
+                            <template x-if="images.length === 0">
+                                <div class="text-center p-6 text-slate-400">
+                                    <x-heroicon-o-photo class="w-12 h-12 mx-auto stroke-1" />
+                                    <span class="text-xs mt-2 block">No Images Available</span>
+                                </div>
+                            </template>
+
+                            <!-- Navigation Arrows -->
+                            <template x-if="images.length > 1">
+                                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4">
+                                    <button 
+                                        @click="currentIndex = (currentIndex === 0) ? images.length - 1 : currentIndex - 1"
+                                        class="bg-black/50 hover:bg-black/75 text-white p-2 rounded-full transition shadow"
+                                    >
+                                        <x-heroicon-o-chevron-left class="w-5 h-5" />
+                                    </button>
+                                    <button 
+                                        @click="currentIndex = (currentIndex === images.length - 1) ? 0 : currentIndex + 1"
+                                        class="bg-black/50 hover:bg-black/75 text-white p-2 rounded-full transition shadow"
+                                    >
+                                        <x-heroicon-o-chevron-right class="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </template>
+
+                            <!-- Dots Indicator -->
+                            <template x-if="images.length > 1">
+                                <div class="absolute bottom-4 flex justify-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full">
+                                    <template x-for="(img, idx) in images" :key="idx">
+                                        <button 
+                                            @click="currentIndex = idx" 
+                                            class="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                                            :class="currentIndex === idx ? 'bg-indigo-500 scale-125' : 'bg-white/60 hover:bg-white'"
+                                        ></button>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

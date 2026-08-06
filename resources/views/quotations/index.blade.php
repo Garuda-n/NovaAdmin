@@ -4,13 +4,19 @@
              search: '{{ request('search') }}',
              status: '{{ request('status') }}',
              customerType: '{{ request('customer_type') }}',
+             preset: '{{ $dateRange['preset'] }}',
+             dateFrom: '{{ $dateRange['from_date']->format('Y-m-d') }}',
+             dateTo: '{{ $dateRange['to_date']->format('Y-m-d') }}',
              loading: false,
              applyFilter() {
                  this.loading = true;
                  const params = new URLSearchParams({
                      search: this.search,
                      status: this.status,
-                     customer_type: this.customerType
+                     customer_type: this.customerType,
+                     preset: this.preset,
+                     date_from: this.dateFrom,
+                     date_to: this.dateTo
                  });
                  fetch('{{ route('quotations.filter') }}', {
                      method: 'POST',
@@ -27,6 +33,65 @@
                  })
                  .catch(err => console.error(err))
                  .finally(() => { this.loading = false; });
+             },
+             onPresetChange() {
+                 const today = new Date();
+                 const formatDate = (d) => {
+                     const yyyy = d.getFullYear();
+                     const mm   = String(d.getMonth() + 1).padStart(2, '0');
+                     const dd   = String(d.getDate()).padStart(2, '0');
+                     return yyyy + '-' + mm + '-' + dd;
+                 };
+                 let from = '', to = '';
+                 switch (this.preset) {
+                     case 'today':
+                         from = to = formatDate(today);
+                         break;
+                     case 'yesterday': {
+                         const d = new Date(today);
+                         d.setDate(d.getDate() - 1);
+                         from = to = formatDate(d);
+                         break;
+                     }
+                     case 'last_7_days': {
+                         const d = new Date(today);
+                         d.setDate(d.getDate() - 6);
+                         from = formatDate(d);
+                         to = formatDate(today);
+                         break;
+                     }
+                     case 'last_30_days': {
+                         const d = new Date(today);
+                         d.setDate(d.getDate() - 29);
+                         from = formatDate(d);
+                         to = formatDate(today);
+                         break;
+                     }
+                     case 'this_month':
+                         from = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+                         to = formatDate(today);
+                         break;
+                     case 'last_month': {
+                         const first = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                         const last  = new Date(today.getFullYear(), today.getMonth(), 0);
+                         from = formatDate(first);
+                         to = formatDate(last);
+                         break;
+                     }
+                     case 'this_year':
+                         from = formatDate(new Date(today.getFullYear(), 0, 1));
+                         to = formatDate(today);
+                         break;
+                     case 'last_year':
+                         from = formatDate(new Date(today.getFullYear() - 1, 0, 1));
+                         to = formatDate(new Date(today.getFullYear() - 1, 11, 31));
+                         break;
+                     case 'custom':
+                         return;
+                 }
+                 this.dateFrom = from;
+                 this.dateTo = to;
+                 this.applyFilter();
              }
          }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -54,7 +119,7 @@
 
             <!-- Filter Card Container -->
             <div class="bg-white border border-slate-200 dark:bg-[#1c2538] dark:border-[#27334d] rounded-xl p-4 shadow-sm">
-                <form @submit.prevent="applyFilter()" method="POST" action="{{ route('quotations.filter') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                <form @submit.prevent="applyFilter()" method="POST" action="{{ route('quotations.filter') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-center">
                     @csrf
                     
                     <!-- Search Input -->
@@ -92,6 +157,39 @@
                             <option value="B2C">B2C</option>
                             <option value="B2B">B2B</option>
                         </select>
+                    </div>
+
+                    <!-- Date Range Preset Filter -->
+                    <div>
+                        <select
+                            name="preset"
+                            x-model="preset"
+                            @change="onPresetChange()"
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            @foreach($presetOptions as $option)
+                                <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Date From Filter -->
+                    <div>
+                        <input
+                            type="date"
+                            name="date_from"
+                            x-model="dateFrom"
+                            @change="preset = 'custom'; applyFilter()"
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Date To Filter -->
+                    <div>
+                        <input
+                            type="date"
+                            name="date_to"
+                            x-model="dateTo"
+                            @change="preset = 'custom'; applyFilter()"
+                            class="w-full rounded-lg border-gray-300 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                 </form>
             </div>

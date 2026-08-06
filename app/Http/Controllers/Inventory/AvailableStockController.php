@@ -11,7 +11,10 @@ use App\Models\Product;
 use App\Models\Size;
 use App\Models\StockItem;
 use App\Models\SubProduct;
+use App\Models\StockItemImage;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AvailableStockController extends Controller
 {
@@ -25,7 +28,8 @@ class AvailableStockController extends Controller
             'counter',
             'product.category',
             'subProduct',
-            'size'
+            'size',
+            'images'
         ])
         ->where('status', StockItemStatus::AVAILABLE->value);
 
@@ -84,5 +88,82 @@ class AvailableStockController extends Controller
             'subProducts',
             'sizes'
         ));
+    }
+
+    /**
+     * Display a dedicated gallery view to manage stock item images.
+     */
+    public function images(StockItem $stockItem)
+    {
+        $stockItem->load(['product.category', 'images', 'branch', 'counter', 'subProduct', 'size']);
+        return view('inventory.available_stock.images', compact('stockItem'));
+    }
+
+    /**
+     * Upload an image for a stock item.
+     */
+    public function uploadImage(Request $request, StockItem $stockItem)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ]);
+
+        try {
+            $path = ImageUploadService::upload($request->file('image'), 'stockitemimg');
+
+            // If this is the first image, set it as default
+            $isDefault = !$stockItem->images()->exists();
+
+            $stockItem->images()->create([
+                'image_path' => $path,
+                'is_default' => $isDefault,
+            ]);
+
+            return redirect()->back()->with('success', 'Image uploaded successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to upload image: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Set default image for a stock item.
+     */
+    public function setDefaultImage(StockItem $stockItem, StockItemImage $image)
+    {
+        if ($image->stock_item_id !== $stockItem->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        DB::transaction(function () use ($stockItem, $image) {
+            $stockItem->images()->update(['is_default' => false]);
+            $image->update(['is_default' => true]);
+        });
+
+        return redirect()->back()->with('success', 'Default image updated successfully.');
+    }
+
+    /**
+     * Delete an image of a stock item.
+     */
+    public function deleteImage(StockItem $stockItem, StockItemImage $image)
+    {
+        if ($image->stock_item_id !== $stockItem->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        DB::transaction(function () use ($stockItem, $image) {
+            ImageUploadService::delete($image->image_path);
+            $wasDefault = $image->is_default;
+            $image->delete();
+
+            if ($wasDefault) {
+                $nextImage = $stockItem->images()->first();
+                if ($nextImage) {
+                    $nextImage->update(['is_default' => true]);
+                }
+            }
+        });
+
+        return redirect()->back()->with('success', 'Image deleted successfully.');
     }
 }

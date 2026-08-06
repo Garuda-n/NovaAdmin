@@ -119,7 +119,13 @@ class ItemAllocationController extends Controller
         $pendingQty = $this->allocationService->getPendingQuantity($stockInwardItem);
         $allocatedQty = (int) StockItem::where('stock_inward_item_id', $stockInwardItem->id)->count();
 
-        $counters = Counter::where('status', 1)->orderBy('counter_name')->get();
+        $counters = Counter::where('status', 1)
+            ->whereHas('branches', function ($q) use ($stockInwardItem) {
+                $q->where('branches.id', $stockInwardItem->stockInward->branch_id)
+                  ->where('branch_counters.status', 1);
+            })
+            ->orderBy('counter_name')
+            ->get();
         
         $sizes = $stockInwardItem->product->sizes->count() > 0 
             ? $stockInwardItem->product->sizes 

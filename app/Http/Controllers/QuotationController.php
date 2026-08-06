@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Quotation;
+use App\Services\Common\DateRangeService;
 use App\Services\QuotationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,8 +27,20 @@ class QuotationController extends Controller
     /**
      * Display a listing of the quotations.
      */
-    public function index(Request $request)
+    public function index(Request $request, DateRangeService $dateRangeService)
     {
+        $dateRange = $dateRangeService->resolve(
+            $request->input('preset', 'today'),
+            $request->input('date_from'),
+            $request->input('date_to')
+        );
+        $presetOptions = $dateRangeService->getPresetOptions();
+
+        $request->merge([
+            'date_from' => $dateRange['from_date']->format('Y-m-d'),
+            'date_to' => $dateRange['to_date']->format('Y-m-d'),
+        ]);
+
         $quotations = $this->quotationService->getPaginatedQuotations($request);
 
         if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
@@ -36,7 +49,7 @@ class QuotationController extends Controller
             ]);
         }
 
-        return view('quotations.index', compact('quotations'));
+        return view('quotations.index', compact('quotations', 'dateRange', 'presetOptions'));
     }
 
     /**

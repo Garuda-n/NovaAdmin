@@ -73,6 +73,14 @@ class QuotationService
             $query->where('customer_type', $request->customer_type);
         }
 
+        if ($request->filled('date_from')) {
+            $query->whereDate('business_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('business_date', '<=', $request->date_to);
+        }
+
         return $query->latest()->paginate(15)->withQueryString();
     }
 

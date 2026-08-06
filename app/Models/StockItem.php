@@ -82,4 +82,30 @@ class StockItem extends Model
     {
         return $this->hasMany(StockItemLog::class, 'stock_item_id');
     }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(StockItemImage::class, 'stock_item_id');
+    }
+
+    public function defaultImage(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(StockItemImage::class, 'stock_item_id')->where('is_default', true);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        // Access loaded collection to avoid N+1 query overhead
+        $defaultImg = $this->images->first(fn($img) => $img->is_default);
+        if ($defaultImg) {
+            return $defaultImg->url;
+        }
+
+        $firstImg = $this->images->first();
+        if ($firstImg) {
+            return $firstImg->url;
+        }
+
+        return $this->product?->image_url;
+    }
 }

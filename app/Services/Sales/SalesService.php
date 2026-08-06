@@ -592,9 +592,9 @@ class SalesService
      */
     protected function generateNextInvoiceNo(int $companyId, int $branchId): int
     {
-        $maxNo = Sale::where('company_id', $companyId)
-            ->where('branch_id', $branchId)
-            ->max('invoice_no');
+        // invoice_no has a global unique constraint (not scoped by branch),
+        // so MAX must be computed across all rows to avoid collisions.
+        $maxNo = Sale::lockForUpdate()->max('invoice_no');
 
         return ($maxNo ? (int) $maxNo : 0) + 1;
     }

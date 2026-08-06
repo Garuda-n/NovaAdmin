@@ -99,4 +99,71 @@ class QuotationCustomerSearchTest extends TestCase
         $response->assertJsonCount(1, 'customers');
         $response->assertJsonPath('customers.0.name', 'Alice Smith');
     }
+
+    public function test_quotations_filter_works_with_date_range()
+    {
+        $role = Role::firstOrCreate(['name' => 'Admin', 'slug' => 'admin']);
+        $role->permissions()->sync(Permission::all());
+        $user = User::factory()->create(['role_id' => $role->id]);
+
+        $country = Country::create(['name' => 'India', 'code' => 'IN', 'status' => 1]);
+        $state = State::create(['country_id' => $country->id, 'name' => 'Maharashtra', 'code' => 'MH', 'status' => 1]);
+        $city = City::create(['state_id' => $state->id, 'name' => 'Mumbai', 'status' => 1]);
+        $company = Company::create(['name' => 'Test Company', 'code' => 'COMP1', 'status' => 1]);
+        $branch = \App\Models\Branch::create(['company_id' => $company->id, 'name' => 'Coimbatore Branch', 'branch_name' => 'Coimbatore', 'branch_code' => 'CBE', 'status' => 1]);
+
+        $cust = Customer::create([
+            'company_id' => $company->id,
+            'customer_name' => 'Alice Smith',
+            'customer_code' => 'CUST001',
+            'mobile' => '9111111111',
+            'customer_type' => 'B2C',
+            'country_id' => $country->id,
+            'state_id' => $state->id,
+            'city_id' => $city->id,
+            'pincode' => '400001',
+            'status' => 1,
+        ]);
+
+        // Create one quotation today
+        $qToday = \App\Models\Quotation::create([
+            'quotation_no' => 'QT-001',
+            'business_date' => now()->toDateString(),
+            'branch_id' => $branch->id,
+            'customer_id' => $cust->id,
+            'customer_type' => 'B2C',
+            'status' => \App\Models\Quotation::STATUS_CREATED,
+            'subtotal' => 100,
+            'tax_amount' => 5,
+            'grand_total' => 105,
+            'created_by' => $user->id,
+        ]);
+
+        // Create one quotation yesterday
+        $qYesterday = \App\Models\Quotation::create([
+            'quotation_no' => 'QT-002',
+            'business_date' => now()->subDay()->toDateString(),
+            'branch_id' => $branch->id,
+            'customer_id' => $cust->id,
+            'customer_type' => 'B2C',
+            'status' => \App\Models\Quotation::STATUS_CREATED,
+            'subtotal' => 100,
+            'tax_amount' => 5,
+            'grand_total' => 105,
+            'created_by' => $user->id,
+        ]);
+
+        // Post request with preset = custom, date_from = today and X-Requested-With header
+        $response = $this->actingAs($user)->postJson(route('quotations.filter'), [
+            'preset' => 'custom',
+            'date_from' => now()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest'
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('QT-001', $response->json('html'));
+        $this->assertStringNotContainsString('QT-002', $response->json('html'));
+    }
 }

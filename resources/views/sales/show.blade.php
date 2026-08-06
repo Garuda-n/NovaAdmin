@@ -189,7 +189,16 @@
             <!-- Customer Receivable Status -->
             @if ($sale->customerReceivable)
                 <div class="bg-white dark:bg-[#182035] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Customer Receivable Status</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Customer Receivable Status</h3>
+                        @if(!$sale->customerReceivable->isPaid() && $sale->isCompleted())
+                            @can('receivable.allocate')
+                                <button type="button" onclick="document.getElementById('collect_payment_modal').classList.remove('hidden')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow transition">
+                                    Collect Payment
+                                </button>
+                            @endcan
+                        @endif
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="p-4 bg-slate-50 dark:bg-[#0f1422] rounded-lg">
                             <span class="text-xs text-slate-400 uppercase font-semibold">Original Invoice Amount</span>
@@ -237,6 +246,72 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Collect Payment Modal -->
+            @if($sale->customerReceivable && !$sale->customerReceivable->isPaid() && $sale->isCompleted())
+            <div id="collect_payment_modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+                <div class="bg-white dark:bg-[#182035] rounded-xl p-6 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">Collect Outstanding Payment</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Record a customer payment to settle the outstanding balance for invoice #{{ $sale->invoice_no_display }}.</p>
+
+                    <form action="{{ route('sales.collect-payment', $sale->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label for="payment_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Date</label>
+                            <input type="date" name="payment_date" id="payment_date" required value="{{ now()->toDateString() }}" class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f1422] text-slate-900 dark:text-white text-sm">
+                        </div>
+
+                        <div>
+                            <label for="payment_mode_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Mode</label>
+                            <select name="payment_mode_id" id="payment_mode_id" required class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f1422] text-slate-900 dark:text-white text-sm">
+                                <option value="">Select Mode</option>
+                                @foreach(\App\Models\PaymentMode::where('status', \App\Models\PaymentMode::STATUS_ACTIVE)->orderBy('display_order', 'asc')->get() as $mode)
+                                    <option value="{{ $mode->id }}">{{ $mode->mode_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount (₹)</label>
+                            <input type="number" name="amount" id="amount" required step="0.01" min="0.01" max="{{ $sale->customerReceivable->balance_amount }}" value="{{ $sale->customerReceivable->balance_amount }}" class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f1422] text-slate-900 dark:text-white text-sm">
+                        </div>
+
+                        <div>
+                            <label for="reference_no" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Reference / Txn ID</label>
+                            <input type="text" name="reference_no" id="reference_no" placeholder="Reference or Transaction ID" class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f1422] text-slate-900 dark:text-white text-sm">
+                        </div>
+
+                        <div>
+                            <label for="remarks" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Remarks</label>
+                            <textarea name="remarks" id="remarks" rows="2" placeholder="Optional comments" class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0f1422] text-slate-900 dark:text-white text-sm"></textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button type="button" onclick="document.getElementById('collect_payment_modal').classList.add('hidden')" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-lg">
+                                Close
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-indigo-700">
+                                Settle Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endif
+
+            @if($sale->customerReceivable && !$sale->customerReceivable->isPaid() && $sale->isCompleted())
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('collect') === '1') {
+                        const modal = document.getElementById('collect_payment_modal');
+                        if (modal) {
+                            modal.classList.remove('hidden');
+                        }
+                    }
+                });
+            </script>
+            @endif
 
         </div>
     </div>

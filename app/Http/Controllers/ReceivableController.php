@@ -3,11 +3,53 @@
 namespace App\Http\Controllers;
 
 use App\Models\CustomerReceivable;
+use App\Models\Sale;
+use App\Services\Sales\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ReceivableController extends Controller
 {
+    /**
+     * Collect payment for a customer receivable against a sale.
+     *
+     * @param Request $request
+     * @param Sale $sale
+     * @param PaymentService $paymentService
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function collectPayment(Request $request, Sale $sale, PaymentService $paymentService)
+    {
+        $receivable = $sale->customerReceivable;
+        if (!$receivable) {
+            return redirect()->back()->with('error', 'No outstanding receivable found for this sale.');
+        }
+
+        $validated = $request->validate([
+            'payment_mode_id' => 'required|exists:payment_modes,id',
+            'amount' => 'required|numeric|min:0.01|max:' . $receivable->balance_amount,
+            'payment_date' => 'required|date',
+            'reference_no' => 'nullable|string|max:100',
+            'remarks' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $paymentService->createPayment($sale, [
+                'payment_mode_id' => $validated['payment_mode_id'],
+                'payment_date' => $validated['payment_date'],
+                'amount' => (float)$validated['amount'],
+                'reference_no' => $validated['reference_no'],
+                'remarks' => $validated['remarks'] ?? 'Receivable payment collection',
+            ]);
+
+            return redirect()->route('sales.show', $sale->id)
+                ->with('success', 'Payment collected and allocated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to collect payment: ' . $e->getMessage());
+        }
+    }
     /**
      * Display a listing of customer receivables.
      *

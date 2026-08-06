@@ -5,20 +5,32 @@
     </div>
 
     @if ($sale->isCashSale())
-        @php $payment = $sale->salesPayments->first(); @endphp
         <table style="width: 100%; border-collapse: collapse; color: #1e293b;">
             <tr>
-                <td style="width: 33%;"><strong>Payment Type:</strong> Instant Cash / Settlement</td>
-                <td style="width: 33%;"><strong>Payment Mode:</strong> {{ $payment->paymentMode->mode_name ?? 'Cash' }}</td>
-                <td style="width: 34%; text-align: right;"><strong>Paid Amount:</strong> ₹{{ number_format($payment->amount ?? $sale->grand_total, 2) }}</td>
+                <td colspan="4" style="padding-bottom: 6px;"><strong>Payment Type:</strong> Instant Cash / Settlement</td>
             </tr>
-            @if(isset($payment->reference_no) && $payment->reference_no)
-                <tr>
-                    <td colspan="3" style="padding-top: 4px; color: #64748b;">
-                        <strong>Reference / Txn ID:</strong> {{ $payment->reference_no }}
-                    </td>
-                </tr>
-            @endif
+            <tr style="background-color: #e2e8f0;">
+                <td style="padding: 4px 6px; font-weight: bold; border: 1px solid #cbd5e1;">#</td>
+                <td style="padding: 4px 6px; font-weight: bold; border: 1px solid #cbd5e1;">Payment Mode</td>
+                <td style="padding: 4px 6px; font-weight: bold; border: 1px solid #cbd5e1;">Reference / Txn ID</td>
+                <td style="padding: 4px 6px; font-weight: bold; border: 1px solid #cbd5e1; text-align: right;">Amount (₹)</td>
+            </tr>
+            @php $paymentTotal = 0; @endphp
+            @foreach ($sale->salesPayments as $idx => $payment)
+                @if (!$payment->isCancelled())
+                    @php $paymentTotal += (float) $payment->amount; @endphp
+                    <tr>
+                        <td style="padding: 4px 6px; border: 1px solid #cbd5e1;">{{ $idx + 1 }}</td>
+                        <td style="padding: 4px 6px; border: 1px solid #cbd5e1;">{{ $payment->paymentMode->mode_name ?? 'Cash' }}</td>
+                        <td style="padding: 4px 6px; border: 1px solid #cbd5e1; color: #64748b;">{{ $payment->reference_no ?? '—' }}</td>
+                        <td style="padding: 4px 6px; border: 1px solid #cbd5e1; text-align: right;">₹{{ number_format($payment->amount, 2) }}</td>
+                    </tr>
+                @endif
+            @endforeach
+            <tr style="background-color: #f1f5f9;">
+                <td colspan="3" style="padding: 4px 6px; border: 1px solid #cbd5e1; font-weight: bold; text-align: right;">Total Paid</td>
+                <td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-weight: bold; text-align: right;">₹{{ number_format($paymentTotal, 2) }}</td>
+            </tr>
         </table>
     @else
         @php $receivable = $sale->customerReceivable; @endphp
