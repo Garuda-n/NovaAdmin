@@ -448,75 +448,80 @@
     }
 
     /**
-     * Live calculation for a single row matching server-side PricingService
+     * Live totals: debounced call to the server-side Calculation Engine
+     * preview endpoint (quotations.calculate) so the form never computes
+     * subtotal/tax/grand-total itself — the server is the single source of
+     * truth for these formulas.
      */
-    function calculateRow($row) {
-        const productId = $row.find('.product-id-input').val();
+    const calculateUrl = '/quotations/calculate';
+    let calculateDebounceTimer = null;
 
-        if (!productId) {
-            $row.find('.tax-amount-input').val('0.00');
-            $row.find('.line-total-input').val('0.00');
-            return { subtotal: 0.00, taxAmount: 0.00, grandTotal: 0.00 };
-        }
-
-        const $qtyInput = $row.find('.qty-input');
-        const $rateInput = $row.find('.rate-input');
-
-        let qty = parseFloat($qtyInput.val());
-        let rate = parseFloat($rateInput.val());
-        
-        const rawTax = $row.find('.tax-percent-input').val();
-        let taxPercent = parseFloat(rawTax) || 0.00;
-
-        // Prevent negative values or NaN
-        if (isNaN(qty) || qty < 0) {
-            qty = 0.00;
-        }
-        if (isNaN(rate) || rate < 0) {
-            rate = 0.00;
-        }
-        if (isNaN(taxPercent) || taxPercent < 0) {
-            taxPercent = 0.00;
-        }
-
-        // Calculation matching PricingService
-        const subtotal = Math.round((qty * rate) * 100) / 100;
-        const taxAmount = Math.round((subtotal * (taxPercent / 100.0)) * 100) / 100;
-        const lineTotal = Math.round((subtotal + taxAmount) * 100) / 100;
-
-        $row.find('.tax-amount-input').val(taxAmount.toFixed(2));
-        $row.find('.line-total-input').val(lineTotal.toFixed(2));
-
-        return {
-            subtotal: subtotal,
-            taxAmount: taxAmount,
-            grandTotal: lineTotal
-        };
+    function applyZeroTotals() {
+        $('#summary-subtotal-display').text('₹ 0.00');
+        $('#summary-subtotal-input').val('0.00');
+        $('#summary-tax-amount-display').text('₹ 0.00');
+        $('#summary-tax-amount-input').val('0.00');
+        $('#summary-grand-total-display').text('₹ 0.00');
+        $('#summary-grand-total-input').val('0.00');
     }
 
-    /**
-     * Live Summary Calculation
-     */
     function calculateSummary() {
-        let subtotal = 0.00;
-        let taxAmount = 0.00;
-        let grandTotal = 0.00;
+        const $rows = $itemsBody.find('.quotation-row');
+        const rowsHaveProduct = [];
+        const itemsPayload = [];
 
-        $itemsBody.find('.quotation-row').each(function () {
-            const rowCalc = calculateRow($(this));
-            subtotal += rowCalc.subtotal;
-            taxAmount += rowCalc.taxAmount;
-            grandTotal += rowCalc.grandTotal;
+        $rows.each(function () {
+            const productId = $(this).find('.product-id-input').val();
+            const hasProduct = !!productId;
+            rowsHaveProduct.push(hasProduct);
+
+            if (!hasProduct) {
+                $(this).find('.tax-amount-input').val('0.00');
+                $(this).find('.line-total-input').val('0.00');
+                return;
+            }
+
+            const qty = parseFloat($(this).find('.qty-input').val()) || 0;
+            const rate = parseFloat($(this).find('.rate-input').val()) || 0;
+            const taxPercent = parseFloat($(this).find('.tax-percent-input').val()) || 0;
+            itemsPayload.push({ qty: qty, rate: rate, tax_percent: taxPercent });
         });
 
-        $('#summary-subtotal-display').text('₹ ' + subtotal.toFixed(2));
-        $('#summary-subtotal-input').val(subtotal.toFixed(2));
+        if (itemsPayload.length === 0) {
+            applyZeroTotals();
+            return;
+        }
 
-        $('#summary-tax-amount-display').text('₹ ' + taxAmount.toFixed(2));
-        $('#summary-tax-amount-input').val(taxAmount.toFixed(2));
+        clearTimeout(calculateDebounceTimer);
+        calculateDebounceTimer = setTimeout(function () {
+            $.ajax({
+                url: calculateUrl,
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                data: { items: itemsPayload },
+                dataType: 'json',
+                success: function (data) {
+                    if (!data || !data.success) return;
+                    const totals = data.totals;
 
-        $('#summary-grand-total-display').text('₹ ' + grandTotal.toFixed(2));
-        $('#summary-grand-total-input').val(grandTotal.toFixed(2));
+                    let payloadIndex = 0;
+                    $rows.each(function (i) {
+                        if (!rowsHaveProduct[i]) return;
+                        const lineResult = totals.items[payloadIndex];
+                        $(this).find('.tax-amount-input').val(parseFloat(lineResult.tax_amount).toFixed(2));
+                        $(this).find('.line-total-input').val(parseFloat(lineResult.line_total).toFixed(2));
+                        payloadIndex++;
+                    });
+
+                    $('#summary-subtotal-display').text('₹ ' + parseFloat(totals.subtotal).toFixed(2));
+                    $('#summary-subtotal-input').val(parseFloat(totals.subtotal).toFixed(2));
+                    $('#summary-tax-amount-display').text('₹ ' + parseFloat(totals.tax_amount).toFixed(2));
+                    $('#summary-tax-amount-input').val(parseFloat(totals.tax_amount).toFixed(2));
+                    $('#summary-grand-total-display').text('₹ ' + parseFloat(totals.grand_total).toFixed(2));
+                    $('#summary-grand-total-input').val(parseFloat(totals.grand_total).toFixed(2));
+                }
+            });
+        }, 250);
     }
 
     /**
@@ -558,10 +563,7 @@
         }
     }
 
-    // Initialize initial calculations & row states on page load
-    $itemsBody.find('.quotation-row').each(function () {
-        calculateRow($(this));
-    });
+    // Initialize row states & totals on page load
     updateRemoveButtonsState();
     calculateSummary();
 
@@ -593,7 +595,6 @@
             $(this).val(0);
         }
 
-        calculateRow($row);
         calculateSummary();
     });
 

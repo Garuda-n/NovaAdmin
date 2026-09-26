@@ -588,6 +588,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('quotations.filter')
         ->middleware('permission:quotation.view');
 
+    Route::post('quotations/calculate', [QuotationController::class, 'calculate'])
+        ->name('quotations.calculate');
+
     Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'pdf'])
         ->name('quotations.pdf')
         ->middleware('permission:quotation.print');
@@ -628,6 +631,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('sales')->name('sales.')->group(function () {
         Route::get('/', [SalesController::class, 'index'])->name('index')->middleware('permission:sales.view');
         Route::get('/quotation/{quotation}/create', [SalesController::class, 'createFromQuotation'])->name('createFromQuotation')->middleware('permission:sales.create');
+        Route::post('/quotation/{quotation}/calculate', [SalesController::class, 'calculate'])->name('calculate')->middleware('permission:sales.create');
         Route::post('/quotation/{quotation}/convert', [SalesController::class, 'convert'])->name('convert')->middleware('permission:sales.create');
         Route::get('/{sale}', [SalesController::class, 'show'])->name('show')->middleware('permission:sales.view');
         Route::get('/{sale}/print', [SalesController::class, 'print'])->name('print')->middleware('permission:sales.print');

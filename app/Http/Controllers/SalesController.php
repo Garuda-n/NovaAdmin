@@ -60,6 +60,24 @@ class SalesController extends Controller
     }
 
     /**
+     * Live totals preview for the Quotation -> Sale conversion form (AJAX).
+     * Server-side source of truth for line and document totals so the form's
+     * JavaScript no longer needs to duplicate the calculation formula.
+     */
+    public function calculate(Request $request, Quotation $quotation): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'gst_type'          => 'nullable|in:1,2',
+            'invoice_discount'  => 'nullable|numeric|min:0',
+            'round_off'         => 'nullable|numeric',
+        ]);
+
+        $totals = $this->salesService->previewTotals($quotation, $validated);
+
+        return response()->json(['success' => true, 'totals' => $totals]);
+    }
+
+    /**
      * Convert quotation to sales invoice.
      *
      * @param Request $request

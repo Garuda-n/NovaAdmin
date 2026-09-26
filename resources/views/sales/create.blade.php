@@ -22,7 +22,7 @@
             </div>
 
             <!-- Conversion Form -->
-            <form action="{{ route('sales.convert', $quotation->id) }}" method="POST" id="sales_conversion_form" class="space-y-6">
+            <form action="{{ route('sales.convert', $quotation->id) }}" method="POST" id="sales_conversion_form" class="space-y-6" data-calculate-url="{{ route('sales.calculate', $quotation->id) }}">
                 @csrf
 
                 <!-- Partials -->

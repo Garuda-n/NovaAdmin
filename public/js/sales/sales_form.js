@@ -1,5 +1,8 @@
 /**
- * Sales Form Interactivity & Dynamic Calculation Engine
+ * Sales Form Interactivity. Line/document totals are computed server-side by
+ * the shared Calculation Engine (sales.calculate preview endpoint) — this
+ * file only reflects the server's numbers in the DOM, it never computes
+ * subtotal/tax/grand-total itself.
  */
 document.addEventListener('DOMContentLoaded', function () {
     const saleTypeCash = document.getElementById('sale_type_cash');
@@ -7,9 +10,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const dueDateContainer = document.getElementById('due_date_container');
     const cashPaymentContainer = document.getElementById('cash_payment_container');
 
+    const gstTypeSelect = document.getElementById('gst_type');
     const invoiceDiscountInput = document.getElementById('invoice_discount');
     const roundOffInput = document.getElementById('round_off');
     const paidAmountInput = document.getElementById('paid_amount');
+
+    const conversionForm = document.getElementById('sales_conversion_form');
+    const summaryCard = document.getElementById('invoice_summary_card');
+    const calculateUrl = conversionForm ? conversionForm.dataset.calculateUrl : null;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
     function toggleSaleType() {
         if (!saleTypeCash || !saleTypeCredit) return;
@@ -30,16 +39,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let isUserModifiedRoundOff = false;
+    let isUserModifiedPaymentAmounts = false;
+    // Seeded from the server-rendered totals so the page doesn't need a
+    // network round-trip just to show the numbers it already rendered.
+    let lastGrandTotal = parseFloat(summaryCard?.dataset.grandTotal) || 0;
+    let calculateDebounceTimer = null;
+    let pendingCalculation = null;
 
-    if (roundOffInput) {
-        roundOffInput.addEventListener('input', function () {
-            isUserModifiedRoundOff = true;
-            recalculateSummary();
-        });
-        roundOffInput.addEventListener('change', function () {
-            isUserModifiedRoundOff = true;
-            recalculateSummary();
-        });
+    function getGrandTotal() {
+        return lastGrandTotal;
     }
 
     // Multi-Payment Mode Management
@@ -48,27 +56,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const paymentRowTemplate = document.getElementById('payment_row_template');
     const paymentTotalDisplay = document.getElementById('payment_total_display');
     const paymentBalanceDisplay = document.getElementById('payment_balance_display');
-
-    let isUserModifiedPaymentAmounts = false;
-
-    function getGrandTotal() {
-        const summaryCard = document.getElementById('invoice_summary_card');
-        if (!summaryCard) return 0;
-        const subtotal = parseFloat(summaryCard.dataset.subtotal) || 0;
-        const itemDiscount = parseFloat(summaryCard.dataset.itemDiscount) || 0;
-        const taxAmount = parseFloat(summaryCard.dataset.taxAmount) || 0;
-        const invoiceDiscount = Math.max(0, parseFloat(invoiceDiscountInput?.value) || 0);
-        const netSubtotal = Math.max(0, subtotal - itemDiscount - invoiceDiscount);
-        const unroundedTotal = netSubtotal + taxAmount;
-        let roundOff = 0;
-        if (isUserModifiedRoundOff) {
-            roundOff = parseFloat(roundOffInput?.value) || 0;
-        } else {
-            const roundedTotal = Math.round(unroundedTotal);
-            roundOff = parseFloat((roundedTotal - unroundedTotal).toFixed(2));
-        }
-        return Math.max(0, unroundedTotal + roundOff);
-    }
 
     function updatePaymentTotals() {
         if (!paymentRowsContainer) return;
@@ -128,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
         addPaymentRowBtn.addEventListener('click', function () {
             const rowsCount = paymentRowsContainer.querySelectorAll('.payment-row').length;
             const templateHtml = paymentRowTemplate.innerHTML.replace(/__INDEX__/g, rowsCount);
-            
+
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = templateHtml.trim();
             const newRow = tempDiv.firstElementChild;
@@ -176,39 +163,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function recalculateSummary() {
-        const summaryCard = document.getElementById('invoice_summary_card');
-        if (!summaryCard) return;
+    /**
+     * Apply a totals payload returned by the sales.calculate preview endpoint
+     * to the DOM. Never recomputes anything itself.
+     */
+    function applyTotals(totals) {
+        lastGrandTotal = parseFloat(totals.grand_total) || 0;
 
-        const subtotal = parseFloat(summaryCard.dataset.subtotal) || 0;
-        const itemDiscount = parseFloat(summaryCard.dataset.itemDiscount) || 0;
-        const taxAmount = parseFloat(summaryCard.dataset.taxAmount) || 0;
-
-        const invoiceDiscount = Math.max(0, parseFloat(invoiceDiscountInput?.value) || 0);
-        const netSubtotal = Math.max(0, subtotal - itemDiscount - invoiceDiscount);
-        const unroundedTotal = netSubtotal + taxAmount;
-
-        let roundOff = 0;
-
-        if (isUserModifiedRoundOff) {
-            roundOff = parseFloat(roundOffInput.value) || 0;
-        } else {
-            const roundedTotal = Math.round(unroundedTotal);
-            roundOff = parseFloat((roundedTotal - unroundedTotal).toFixed(2));
-            if (roundOffInput) {
-                roundOffInput.value = roundOff;
-            }
+        if (!isUserModifiedRoundOff && roundOffInput) {
+            roundOffInput.value = totals.round_off;
         }
 
-        const grandTotal = Math.max(0, unroundedTotal + roundOff);
+        const fmt = (v) => '₹' + (parseFloat(v) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        const taxAmountEl = document.getElementById('summary_tax_amount');
+        if (taxAmountEl) taxAmountEl.textContent = fmt(totals.tax_amount);
+
+        const cgstEl = document.getElementById('summary_cgst');
+        if (cgstEl) cgstEl.textContent = fmt(totals.cgst_amount);
+
+        const sgstEl = document.getElementById('summary_sgst');
+        if (sgstEl) sgstEl.textContent = fmt(totals.sgst_amount);
+
+        const igstEl = document.getElementById('summary_igst');
+        if (igstEl) igstEl.textContent = fmt(totals.igst_amount);
 
         const grandTotalSpan = document.getElementById('summary_grand_total');
-        if (grandTotalSpan) {
-            grandTotalSpan.textContent = '₹' + grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        if (grandTotalSpan) grandTotalSpan.textContent = fmt(lastGrandTotal);
 
         if (paidAmountInput) {
-            paidAmountInput.value = grandTotal.toFixed(2);
+            paidAmountInput.value = lastGrandTotal.toFixed(2);
         }
 
         if (paymentRowsContainer && !isUserModifiedPaymentAmounts) {
@@ -216,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (rows.length === 1) {
                 const firstAmountInput = rows[0].querySelector('.payment-amount-input');
                 if (firstAmountInput) {
-                    firstAmountInput.value = grandTotal.toFixed(2);
+                    firstAmountInput.value = lastGrandTotal.toFixed(2);
                 }
             }
         }
@@ -224,19 +208,79 @@ document.addEventListener('DOMContentLoaded', function () {
         updatePaymentTotals();
     }
 
+    function recalculateSummary() {
+        if (!calculateUrl) {
+            updatePaymentTotals();
+            return;
+        }
+
+        clearTimeout(calculateDebounceTimer);
+        calculateDebounceTimer = setTimeout(function () {
+            const payload = {
+                gst_type: gstTypeSelect ? gstTypeSelect.value : undefined,
+                invoice_discount: invoiceDiscountInput ? (parseFloat(invoiceDiscountInput.value) || 0) : 0,
+            };
+            if (isUserModifiedRoundOff && roundOffInput) {
+                payload.round_off = roundOffInput.value;
+            }
+
+            pendingCalculation = fetch(calculateUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                },
+                body: JSON.stringify(payload),
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data && data.success) {
+                        applyTotals(data.totals);
+                    }
+                })
+                .catch(function () { /* Preview failure leaves prior totals in place; save still recalculates server-side. */ })
+                .finally(function () { pendingCalculation = null; });
+        }, 250);
+    }
+
+    if (roundOffInput) {
+        roundOffInput.addEventListener('input', function () {
+            isUserModifiedRoundOff = true;
+            recalculateSummary();
+        });
+        roundOffInput.addEventListener('change', function () {
+            isUserModifiedRoundOff = true;
+            recalculateSummary();
+        });
+    }
+
     if (invoiceDiscountInput) {
         invoiceDiscountInput.addEventListener('input', recalculateSummary);
         invoiceDiscountInput.addEventListener('change', recalculateSummary);
     }
 
-    recalculateSummary();
+    if (gstTypeSelect) {
+        gstTypeSelect.addEventListener('change', recalculateSummary);
+    }
+
+    // Reflect the already-correct, server-rendered totals in the payment
+    // section on load (no network call needed for the initial numbers).
+    updatePaymentTotals();
 
     // Form submit guard & payment amount validation
-    const conversionForm = document.getElementById('sales_conversion_form');
     const submitBtn = document.getElementById('submit_conversion_btn');
 
     if (conversionForm && submitBtn) {
         conversionForm.addEventListener('submit', function (e) {
+            if (pendingCalculation) {
+                e.preventDefault();
+                pendingCalculation.then(function () {
+                    conversionForm.requestSubmit ? conversionForm.requestSubmit(submitBtn) : conversionForm.submit();
+                });
+                return;
+            }
+
             if (saleTypeCash && saleTypeCash.checked) {
                 let totalPaid = 0;
                 if (paymentRowsContainer) {

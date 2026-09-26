@@ -181,6 +181,30 @@ class QuotationController extends Controller
     }
 
     /**
+     * Live totals preview for the Add/Edit Quotation form (AJAX). Server-side
+     * source of truth for line and document totals so the form's JavaScript
+     * no longer needs to duplicate the calculation formula.
+     */
+    public function calculate(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !($user->hasPermission('quotation.create') || $user->hasPermission('quotation.edit'))) {
+            return response()->json(['success' => false, 'message' => 'You do not have permission to perform this action.'], 403);
+        }
+
+        $validated = $request->validate([
+            'items'                 => 'array',
+            'items.*.qty'           => 'nullable|numeric',
+            'items.*.rate'          => 'nullable|numeric',
+            'items.*.tax_percent'   => 'nullable|numeric',
+        ]);
+
+        $totals = $this->quotationService->previewTotals($validated['items'] ?? []);
+
+        return response()->json(['success' => true, 'totals' => $totals]);
+    }
+
+    /**
      * Download or view PDF document.
      */
     public function pdf(Quotation $quotation)

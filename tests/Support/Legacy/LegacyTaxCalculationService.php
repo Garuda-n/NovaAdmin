@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Services\Sales;
+namespace Tests\Support\Legacy;
 
-use App\Models\Sale;
-
-class TaxCalculationService
+/**
+ * Frozen, unmodified copy of app/Services/Sales/TaxCalculationService.php as
+ * it existed before the shared Calculation Engine was introduced. Used only
+ * as a parity reference in tests/Unit/Calculation/LegacyParityTest.php —
+ * never used by application code.
+ *
+ * The only change from the original is replacing the `Sale::GST_CGST_SGST` /
+ * `Sale::GST_IGST` constant references with their literal values (1 and 2)
+ * so this copy has no dependency on the App\Models\Sale model. The formulas
+ * themselves are byte-for-byte identical.
+ */
+class LegacyTaxCalculationService
 {
-    /**
-     * Calculate comprehensive line and invoice tax totals.
-     *
-     * @param array $items
-     * @param int $gstType 1 = CGST + SGST, 2 = IGST
-     * @param float $invoiceDiscount
-     * @param float $roundOff
-     * @return array
-     */
+    public const GST_CGST_SGST = 1;
+    public const GST_IGST = 2;
+
     public function calculateTax(
         array $items,
-        int $gstType = Sale::GST_CGST_SGST,
+        int $gstType = self::GST_CGST_SGST,
         float $invoiceDiscount = 0.00,
         ?float $roundOff = null
     ): array {
@@ -66,21 +69,13 @@ class TaxCalculationService
         ];
     }
 
-    /**
-     * Calculate individual line item tax breakup.
-     *
-     * @param array $item
-     * @param int $gstType
-     * @return array
-     */
-    public function calculateLineTax(array $item, int $gstType = Sale::GST_CGST_SGST): array
+    public function calculateLineTax(array $item, int $gstType = self::GST_CGST_SGST): array
     {
         $quantity = (float) ($item['quantity'] ?? 1);
         $rate = (float) ($item['rate'] ?? 0);
         $grossAmount = $quantity * $rate;
 
-        // Discount calculation
-        $discountType = (int) ($item['discount_type'] ?? 2); // 1 = %, 2 = Fixed
+        $discountType = (int) ($item['discount_type'] ?? 2);
         $discountValue = (float) ($item['discount_value'] ?? 0);
         if ($discountType === 1) {
             $discountAmount = ($grossAmount * $discountValue) / 100;
@@ -92,7 +87,7 @@ class TaxCalculationService
 
         $taxPercentage = (float) ($item['tax_percentage'] ?? 0);
 
-        if ($gstType === Sale::GST_CGST_SGST) {
+        if ($gstType === self::GST_CGST_SGST) {
             $cgstPercentage = round($taxPercentage / 2, 2);
             $sgstPercentage = round($taxPercentage / 2, 2);
             $igstPercentage = 0.00;
@@ -134,25 +129,16 @@ class TaxCalculationService
         ]);
     }
 
-    /**
-     * Calculate CGST component.
-     */
     public function calculateCGST(float $taxableAmount, float $rate): float
     {
         return round(($taxableAmount * $rate) / 100, 2);
     }
 
-    /**
-     * Calculate SGST component.
-     */
     public function calculateSGST(float $taxableAmount, float $rate): float
     {
         return round(($taxableAmount * $rate) / 100, 2);
     }
 
-    /**
-     * Calculate IGST component.
-     */
     public function calculateIGST(float $taxableAmount, float $rate): float
     {
         return round(($taxableAmount * $rate) / 100, 2);

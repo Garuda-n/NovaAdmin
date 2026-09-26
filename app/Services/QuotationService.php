@@ -10,7 +10,12 @@ use App\Models\Quotation;
 use App\Models\QuotationDetail;
 use App\Models\QuotationLog;
 use App\Models\Uom;
-use App\Services\PricingService;
+use App\Services\Calculation\CalculationEngine;
+use App\Services\Calculation\CalculationInput;
+use App\Services\Calculation\CalculationOptions;
+use App\Services\Calculation\LineInput;
+use App\Services\Calculation\RoundOffMode;
+use App\Services\Calculation\TaxMode;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,16 +25,30 @@ use Illuminate\Validation\ValidationException;
 
 class QuotationService
 {
-    protected PricingService $pricingService;
+    protected CalculationEngine $calculationEngine;
 
     /**
      * QuotationService constructor.
      *
-     * @param PricingService $pricingService
+     * @param CalculationEngine $calculationEngine
      */
-    public function __construct(PricingService $pricingService)
+    public function __construct(CalculationEngine $calculationEngine)
     {
-        $this->pricingService = $pricingService;
+        $this->calculationEngine = $calculationEngine;
+    }
+
+    /**
+     * Calculation options that reproduce the Quotation module's existing
+     * business rules: single flat tax rate, no discounts, no round-off,
+     * and the line amount (qty*rate) rounded before tax is computed on it.
+     */
+    protected function calculationOptions(): CalculationOptions
+    {
+        return new CalculationOptions(
+            taxMode: TaxMode::Flat,
+            roundOffMode: RoundOffMode::None,
+            roundLineAmountBeforeTax: true,
+        );
     }
 
     /**
@@ -369,7 +388,7 @@ class QuotationService
     }
 
     /**
-     * Save product line item details for a quotation using PricingService.
+     * Save product line item details for a quotation using the shared Calculation Engine.
      *
      * @param Quotation $quotation
      * @param array $items
@@ -448,8 +467,11 @@ class QuotationService
             $rate = (float) ($item['rate'] ?? 0);
             $taxPercent = isset($product->tax) ? (float) $product->tax->percentage : 0.00;
 
-            // Calculate line totals using PricingService
-            $calculatedLine = $this->pricingService->calculateLine($qty, $rate, $taxPercent);
+            // Calculate line totals using the shared Calculation Engine
+            $calculatedLine = $this->calculationEngine->calculateLine(
+                new LineInput(quantity: $qty, rate: $rate, taxPercent: $taxPercent),
+                $this->calculationOptions()
+            );
 
             $quotation->details()->create([
                 'product_id'    => $product->id,
@@ -457,17 +479,47 @@ class QuotationService
                 'product_name'  => $productName,
                 'uom_id'        => $uomId,
                 'uom_name'      => $uomName,
-                'qty'           => $calculatedLine['qty'],
-                'rate'          => $calculatedLine['rate'],
-                'tax_percent'   => $calculatedLine['tax_percent'],
-                'tax_amount'    => $calculatedLine['tax_amount'],
-                'line_total'    => $calculatedLine['line_total'],
+                'qty'           => $calculatedLine->quantity,
+                'rate'          => $calculatedLine->rate,
+                'tax_percent'   => $calculatedLine->taxPercent,
+                'tax_amount'    => $calculatedLine->taxAmount,
+                'line_total'    => $calculatedLine->lineTotal,
             ]);
         }
     }
 
     /**
-     * Calculate and update document totals on quotation header using PricingService.
+     * Preview line and document totals for unsaved form rows (server-side
+     * source of truth for the live "Add Quotation" / "Edit Quotation" form,
+     * replacing the client-side formula previously duplicated in
+     * quotation_form.js).
+     *
+     * @param array $items Array of ['qty' => .., 'rate' => .., 'tax_percent' => ..]
+     * @return array
+     */
+    public function previewTotals(array $items): array
+    {
+        $lines = array_map(fn (array $item) => new LineInput(
+            quantity: (float) ($item['qty'] ?? 0),
+            rate: (float) ($item['rate'] ?? 0),
+            taxPercent: (float) ($item['tax_percent'] ?? 0),
+        ), $items);
+
+        $totals = $this->calculationEngine->calculate(new CalculationInput($lines, $this->calculationOptions()));
+
+        return [
+            'items' => array_map(fn ($line) => [
+                'tax_amount' => $line->taxAmount,
+                'line_total' => $line->lineTotal,
+            ], $totals->lines),
+            'subtotal' => $totals->subtotal,
+            'tax_amount' => $totals->taxAmount,
+            'grand_total' => $totals->grandTotal,
+        ];
+    }
+
+    /**
+     * Calculate and update document totals on quotation header using the shared Calculation Engine.
      *
      * @param Quotation $quotation
      * @return void
@@ -477,19 +529,19 @@ class QuotationService
         $details = $quotation->details()->get();
 
         $lines = $details->map(function ($detail) {
-            return [
-                'qty'         => $detail->qty,
-                'rate'        => $detail->rate,
-                'tax_percent' => $detail->tax_percent,
-            ];
+            return new LineInput(
+                quantity: (float) $detail->qty,
+                rate: (float) $detail->rate,
+                taxPercent: (float) $detail->tax_percent,
+            );
         })->toArray();
 
-        $totals = $this->pricingService->calculateTotals($lines);
+        $totals = $this->calculationEngine->calculate(new CalculationInput($lines, $this->calculationOptions()));
 
         $quotation->update([
-            'subtotal'    => $totals['subtotal'],
-            'tax_amount'  => $totals['tax_amount'],
-            'grand_total' => $totals['grand_total'],
+            'subtotal'    => $totals->subtotal,
+            'tax_amount'  => $totals->taxAmount,
+            'grand_total' => $totals->grandTotal,
         ]);
     }
 
