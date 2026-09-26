@@ -10,6 +10,13 @@ use App\Models\Sale;
 use App\Models\SalesDetail;
 use App\Models\SalesInvoiceSnapshot;
 use App\Models\StockItem;
+use App\Services\Calculation\CalculationEngine;
+use App\Services\Calculation\CalculationInput;
+use App\Services\Calculation\CalculationOptions;
+use App\Services\Calculation\DiscountType;
+use App\Services\Calculation\LineInput;
+use App\Services\Calculation\RoundOffMode;
+use App\Services\Calculation\TaxMode;
 use App\Services\Inventory\InventoryService;
 use App\Services\SettingService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -21,7 +28,7 @@ use InvalidArgumentException;
 
 class SalesService
 {
-    protected TaxCalculationService $taxService;
+    protected CalculationEngine $calculationEngine;
     protected ReceivableService $receivableService;
     protected PaymentService $paymentService;
     protected InventoryService $inventoryService;
@@ -29,21 +36,35 @@ class SalesService
     /**
      * SalesService constructor.
      *
-     * @param TaxCalculationService $taxService
+     * @param CalculationEngine $calculationEngine
      * @param ReceivableService $receivableService
      * @param PaymentService $paymentService
      * @param InventoryService $inventoryService
      */
     public function __construct(
-        TaxCalculationService $taxService,
+        CalculationEngine $calculationEngine,
         ReceivableService $receivableService,
         PaymentService $paymentService,
         InventoryService $inventoryService
     ) {
-        $this->taxService = $taxService;
+        $this->calculationEngine = $calculationEngine;
         $this->receivableService = $receivableService;
         $this->paymentService = $paymentService;
         $this->inventoryService = $inventoryService;
+    }
+
+    /**
+     * Calculation options that reproduce the Sales module's existing
+     * business rules: item + invoice discount, CGST/SGST or IGST tax split,
+     * and auto round-off to the nearest whole unit (or a manual override).
+     */
+    protected function calculationOptions(int $gstType): CalculationOptions
+    {
+        return new CalculationOptions(
+            taxMode: $gstType === Sale::GST_IGST ? TaxMode::Igst : TaxMode::CgstSgst,
+            roundOffMode: RoundOffMode::NearestWhole,
+            roundLineAmountBeforeTax: false,
+        );
     }
 
     /**
@@ -210,6 +231,34 @@ class SalesService
             'paymentModes' => $paymentModes,
             'gstType' => $gstType,
         ];
+    }
+
+    /**
+     * Live totals preview for the Quotation -> Sale conversion form (AJAX).
+     * Server-side source of truth for line and document totals so the form's
+     * JavaScript no longer needs to duplicate the calculation formula.
+     *
+     * @param Quotation $quotation
+     * @param array $data May contain gst_type, invoice_discount, round_off
+     * @return array
+     */
+    public function previewTotals(Quotation $quotation, array $data): array
+    {
+        $quotation->loadMissing('details');
+
+        $gstType = (int) ($data['gst_type'] ?? Sale::GST_CGST_SGST);
+        $invoiceDiscount = (float) ($data['invoice_discount'] ?? 0.00);
+        $roundOff = isset($data['round_off']) && $data['round_off'] !== '' ? (float) $data['round_off'] : null;
+
+        $items = $quotation->details->map(fn ($detail) => [
+            'quantity' => (float) $detail->qty,
+            'rate' => (float) $detail->rate,
+            'discount_type' => 2,
+            'discount_value' => 0.00,
+            'tax_percentage' => (float) $detail->tax_percent,
+        ])->all();
+
+        return $this->calculateTotals($items, $gstType, $invoiceDiscount, $roundOff);
     }
 
     /**
@@ -526,7 +575,7 @@ class SalesService
     }
 
     /**
-     * Calculate totals using TaxCalculationService.
+     * Calculate totals using the shared Calculation Engine.
      */
     public function calculateTotals(
         array $items,
@@ -534,7 +583,59 @@ class SalesService
         float $invoiceDiscount = 0.00,
         ?float $roundOff = null
     ): array {
-        return $this->taxService->calculateTax($items, $gstType, $invoiceDiscount, $roundOff);
+        $lines = [];
+        foreach ($items as $item) {
+            $lines[] = new LineInput(
+                quantity: (float) ($item['quantity'] ?? 1),
+                rate: (float) ($item['rate'] ?? 0),
+                taxPercent: (float) ($item['tax_percentage'] ?? 0),
+                discountType: DiscountType::from((int) ($item['discount_type'] ?? 2)),
+                discountValue: (float) ($item['discount_value'] ?? 0),
+            );
+        }
+
+        $result = $this->calculationEngine->calculate(new CalculationInput(
+            lines: $lines,
+            options: $this->calculationOptions($gstType),
+            documentDiscount: $invoiceDiscount,
+            roundOffOverride: $roundOff,
+        ));
+
+        $calculatedItems = [];
+        foreach ($items as $i => $item) {
+            $line = $result->lines[$i];
+            $calculatedItems[] = array_merge($item, [
+                'quantity' => $line->quantity,
+                'rate' => $line->rate,
+                'gross_amount' => $line->grossAmount,
+                'discount_type' => $line->discountType->value,
+                'discount_value' => $line->discountValue,
+                'discount_amount' => $line->discountAmount,
+                'taxable_amount' => $line->taxableAmount,
+                'tax_percentage' => $line->taxPercent,
+                'cgst_percentage' => $line->cgstPercent,
+                'cgst_amount' => $line->cgstAmount,
+                'sgst_percentage' => $line->sgstPercent,
+                'sgst_amount' => $line->sgstAmount,
+                'igst_percentage' => $line->igstPercent,
+                'igst_amount' => $line->igstAmount,
+                'tax_amount' => $line->taxAmount,
+                'line_total' => $line->lineTotal,
+            ]);
+        }
+
+        return [
+            'subtotal' => $result->subtotal,
+            'item_discount' => $result->itemDiscount,
+            'invoice_discount' => $result->documentDiscount,
+            'cgst_amount' => $result->cgstAmount,
+            'sgst_amount' => $result->sgstAmount,
+            'igst_amount' => $result->igstAmount,
+            'tax_amount' => $result->taxAmount,
+            'round_off' => $result->roundOff,
+            'grand_total' => $result->grandTotal,
+            'items' => $calculatedItems,
+        ];
     }
 
     /**
