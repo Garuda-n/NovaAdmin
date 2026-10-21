@@ -41,10 +41,8 @@
                 position: relative;
                 z-index: 3;
                 display: flex;
-                align-items: center;
-                justify-content: space-between;
+                align-items: stretch;
                 min-height: 100vh;
-                padding: 3rem 6rem;
             }
 
             /* Dark overlay for readability */
@@ -120,11 +118,24 @@
                 z-index: 2;
                 text-align: center;
                 padding: 2rem;
-                width: 70%;
+                flex: 0 0 70%;
+                max-width: 70%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
+            }
+
+            /* Right column: hosts the login card within the 30% panel */
+            .login-card-column {
+                position: relative;
+                z-index: 2;
+                flex: 0 0 30%;
+                max-width: 30%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
             }
 
             .brand-logo-ring {
@@ -493,10 +504,14 @@
             @media (max-width: 900px) {
                 .login-content {
                     justify-content: center;
-                    padding: 2rem;
                 }
                 .brand-content {
                     display: none;
+                }
+                .login-card-column {
+                    flex: 1 1 100%;
+                    max-width: 100%;
+                    padding: 2rem;
                 }
                 .login-divider-line {
                     display: none;
@@ -508,7 +523,7 @@
             }
 
             @media (max-width: 480px) {
-                .login-content {
+                .login-card-column {
                     padding: 1.25rem;
                 }
                 .login-card {
@@ -550,8 +565,10 @@
                 </div>
 
                 {{-- Right: Login Card --}}
-                <div class="login-card">
-                    {{ $slot }}
+                <div class="login-card-column">
+                    <div class="login-card">
+                        {{ $slot }}
+                    </div>
                 </div>
             </div>
         </div>

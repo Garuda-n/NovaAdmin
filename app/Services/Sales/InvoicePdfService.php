@@ -20,7 +20,7 @@ class InvoicePdfService
     {
         $sale->load([
             'salesInvoiceSnapshot',
-            'details',
+            'details.allocatedItem',
             'salesPayments.paymentMode',
             'customerReceivable',
             'creator',

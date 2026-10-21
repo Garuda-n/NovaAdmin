@@ -19,7 +19,12 @@
             <tr style="border: 1px solid #e2e8f0; color: #1e293b;">
                 <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">{{ $index + 1 }}</td>
                 <td style="padding: 6px; border: 1px solid #e2e8f0; font-family: monospace;">{{ $detail->product_code }}</td>
-                <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">{{ $detail->product_name }}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">
+                    {{ $detail->product_name }}
+                    @if ($detail->allocatedItem)
+                        <br><span style="font-weight: 600; font-size: 10px; color: #4338ca;">Serial: {{ $detail->allocatedItem->item_code }}</span>
+                    @endif
+                </td>
                 <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">{{ $detail->uom->uom_name ?? 'PCS' }}</td>
                 <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: right; font-weight: 600;">{{ number_format($detail->quantity, 2) }}</td>
                 <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: right;">{{ number_format($detail->rate, 2) }}</td>
