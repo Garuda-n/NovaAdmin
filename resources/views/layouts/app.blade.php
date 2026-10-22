@@ -24,7 +24,13 @@
     </head>
     <body
         x-data="{ 
-            sidebarOpen: false, 
+            sidebarPinned: localStorage.getItem('sidebarPinned') === '1',
+            sidebarOpen: localStorage.getItem('sidebarPinned') === '1',
+            toggleSidebarPin() {
+                this.sidebarPinned = !this.sidebarPinned;
+                this.sidebarOpen = this.sidebarPinned;
+                localStorage.setItem('sidebarPinned', this.sidebarPinned ? '1' : '0');
+            },
             darkMode: localStorage.getItem('theme') === 'dark',
             toggleTheme() {
                 this.darkMode = !this.darkMode;

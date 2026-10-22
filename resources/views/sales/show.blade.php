@@ -116,6 +116,11 @@
                                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-white">
                                         {{ $detail->product_name }}
                                         <span class="block text-xs text-slate-400 font-mono">{{ $detail->product_code }}</span>
+                                        @if ($detail->allocatedItem)
+                                            <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                                                Serial: {{ $detail->allocatedItem->item_code }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 text-right font-medium">{{ number_format($detail->quantity, 2) }}</td>
                                     <td class="px-6 py-4 text-right">₹{{ number_format($detail->rate, 2) }}</td>

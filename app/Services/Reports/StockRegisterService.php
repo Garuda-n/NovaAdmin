@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Enums\StockItemStatus;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 
@@ -32,15 +33,19 @@ class StockRegisterService
                 'p.code as item_code',
                 'p.name as product_name',
                 'u.name as uom_name',
-                DB::raw("COALESCE(SUM(CASE WHEN sm.business_date < '{$fromDate}' THEN sm.quantity ELSE 0 END), 0) as opening_qty"),
-                DB::raw("COALESCE(SUM(CASE WHEN sm.business_date BETWEEN '{$fromDate}' AND '{$toDate}' AND sm.quantity > 0 THEN sm.quantity ELSE 0 END), 0) as inward_qty"),
-                DB::raw("COALESCE(SUM(CASE WHEN sm.business_date BETWEEN '{$fromDate}' AND '{$toDate}' AND sm.quantity < 0 THEN ABS(sm.quantity) ELSE 0 END), 0) as outward_qty"),
-                DB::raw("COALESCE(SUM(CASE WHEN sm.business_date <= '{$toDate}' THEN sm.quantity ELSE 0 END), 0) as closing_qty"),
+                // COALESCE guards against a handful of legacy stock_movements rows with a
+                // NULL business_date — without it, SQL's NULL <= x is never true and those
+                // rows silently vanish from every bucket, inflating closing_qty elsewhere.
+                DB::raw("COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) < '{$fromDate}' THEN sm.quantity ELSE 0 END), 0) - COALESCE(MAX(ex.before_qty), 0) as opening_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) BETWEEN '{$fromDate}' AND '{$toDate}' AND sm.quantity > 0 THEN sm.quantity ELSE 0 END), 0) as inward_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) BETWEEN '{$fromDate}' AND '{$toDate}' AND sm.quantity < 0 THEN ABS(sm.quantity) ELSE 0 END), 0) + COALESCE(MAX(ex.within_qty), 0) as outward_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) <= '{$toDate}' THEN sm.quantity ELSE 0 END), 0) - COALESCE(MAX(ex.before_qty), 0) - COALESCE(MAX(ex.within_qty), 0) as closing_qty"),
             ])
             ->leftJoin('uoms as u', 'p.uom_id', '=', 'u.id')
+            ->leftJoinSub($this->excludedItemsQuery($fromDate, $toDate, $branchId, $counterId), 'ex', 'ex.product_id', '=', 'p.id')
             ->leftJoin('stock_movements as sm', function ($join) use ($toDate, $companyId, $branchId, $counterId) {
                 $join->on('p.id', '=', 'sm.product_id')
-                    ->whereDate('sm.business_date', '<=', $toDate);
+                    ->whereRaw('COALESCE(sm.business_date, sm.movement_date) <= ?', [$toDate]);
 
                 if ($companyId) {
                     $join->where('sm.company_id', '=', $companyId);
@@ -101,7 +106,7 @@ class StockRegisterService
 
         $query = DB::table('stock_movements as sm')
             ->join('products as p', 'sm.product_id', '=', 'p.id')
-            ->whereDate('sm.business_date', '<=', $toDate)
+            ->whereRaw('COALESCE(sm.business_date, sm.movement_date) <= ?', [$toDate])
             ->where('p.status', 1);
 
         if ($companyId) {
@@ -121,18 +126,61 @@ class StockRegisterService
         }
 
         $totals = $query->selectRaw("
-            COALESCE(SUM(CASE WHEN sm.business_date < ? THEN sm.quantity ELSE 0 END), 0) as total_opening,
-            COALESCE(SUM(CASE WHEN sm.business_date BETWEEN ? AND ? AND sm.quantity > 0 THEN sm.quantity ELSE 0 END), 0) as total_inward,
-            COALESCE(SUM(CASE WHEN sm.business_date BETWEEN ? AND ? AND sm.quantity < 0 THEN ABS(sm.quantity) ELSE 0 END), 0) as total_outward,
-            COALESCE(SUM(CASE WHEN sm.business_date <= ? THEN sm.quantity ELSE 0 END), 0) as total_closing
+            COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) < ? THEN sm.quantity ELSE 0 END), 0) as total_opening,
+            COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) BETWEEN ? AND ? AND sm.quantity > 0 THEN sm.quantity ELSE 0 END), 0) as total_inward,
+            COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) BETWEEN ? AND ? AND sm.quantity < 0 THEN ABS(sm.quantity) ELSE 0 END), 0) as total_outward,
+            COALESCE(SUM(CASE WHEN COALESCE(sm.business_date, sm.movement_date) <= ? THEN sm.quantity ELSE 0 END), 0) as total_closing
         ", [$fromDate, $fromDate, $toDate, $fromDate, $toDate, $toDate])->first();
 
+        $ex = $this->excludedItemsQuery($fromDate, $toDate, $branchId, $counterId)
+            ->join('products as p', 'p.id', '=', 'si.product_id')
+            ->where('p.status', 1);
+        if ($categoryId) {
+            $ex->where('p.category_id', $categoryId);
+        }
+        if ($productId) {
+            $ex->where('si.product_id', $productId);
+        }
+        $exTotals = DB::query()->fromSub($ex, 'x')
+            ->selectRaw('COALESCE(SUM(before_qty), 0) as before_qty, COALESCE(SUM(within_qty), 0) as within_qty')
+            ->first();
+        $exBefore = (float) ($exTotals->before_qty ?? 0);
+        $exWithin = (float) ($exTotals->within_qty ?? 0);
+
         return [
-            'total_opening' => (float) ($totals->total_opening ?? 0),
+            'total_opening' => (float) ($totals->total_opening ?? 0) - $exBefore,
             'total_inward'  => (float) ($totals->total_inward ?? 0),
-            'total_outward' => (float) ($totals->total_outward ?? 0),
-            'total_closing' => (float) ($totals->total_closing ?? 0),
+            'total_outward' => (float) ($totals->total_outward ?? 0) + $exWithin,
+            'total_closing' => (float) ($totals->total_closing ?? 0) - $exBefore - $exWithin,
         ];
+    }
+
+    /**
+     * Per-product count of serial items now in Returned/Disposed status.
+     *
+     * Allocation doesn't deduct the bulk inward from the ledger, so these units would keep
+     * showing as stock here; they have their own screens. Items moved out before from_date
+     * reduce opening, those moved out inside the period count as outward. updated_at is the
+     * proxy for when the status changed.
+     */
+    protected function excludedItemsQuery(string $fromDate, string $toDate, ?int $branchId, ?int $counterId)
+    {
+        $query = DB::table('stock_items as si')
+            ->select('si.product_id')
+            ->selectRaw('SUM(CASE WHEN DATE(si.updated_at) < ? THEN 1 ELSE 0 END) as before_qty', [$fromDate])
+            ->selectRaw('SUM(CASE WHEN DATE(si.updated_at) BETWEEN ? AND ? THEN 1 ELSE 0 END) as within_qty', [$fromDate, $toDate])
+            ->whereIn('si.status', [StockItemStatus::RETURNED->value, StockItemStatus::DISPOSED->value])
+            ->whereRaw('DATE(si.updated_at) <= ?', [$toDate])
+            ->groupBy('si.product_id');
+
+        if ($branchId) {
+            $query->where('si.branch_id', $branchId);
+        }
+        if ($counterId) {
+            $query->where('si.counter_id', $counterId);
+        }
+
+        return $query;
     }
 
     /**
@@ -147,7 +195,7 @@ class StockRegisterService
     {
         $fromDate = $fromDate ?? now()->startOfMonth()->toDateString();
 
-        $query = StockMovement::whereDate('business_date', '<', $fromDate);
+        $query = StockMovement::whereRaw('COALESCE(business_date, movement_date) < ?', [$fromDate]);
 
         if ($productId) {
             $query->where('product_id', $productId);
@@ -173,8 +221,8 @@ class StockRegisterService
         $fromDate = $fromDate ?? now()->startOfMonth()->toDateString();
         $toDate = $toDate ?? now()->toDateString();
 
-        $query = StockMovement::whereDate('business_date', '>=', $fromDate)
-            ->whereDate('business_date', '<=', $toDate)
+        $query = StockMovement::whereRaw('COALESCE(business_date, movement_date) >= ?', [$fromDate])
+            ->whereRaw('COALESCE(business_date, movement_date) <= ?', [$toDate])
             ->where('quantity', '>', 0);
 
         if ($productId) {
@@ -201,8 +249,8 @@ class StockRegisterService
         $fromDate = $fromDate ?? now()->startOfMonth()->toDateString();
         $toDate = $toDate ?? now()->toDateString();
 
-        $query = StockMovement::whereDate('business_date', '>=', $fromDate)
-            ->whereDate('business_date', '<=', $toDate)
+        $query = StockMovement::whereRaw('COALESCE(business_date, movement_date) >= ?', [$fromDate])
+            ->whereRaw('COALESCE(business_date, movement_date) <= ?', [$toDate])
             ->where('quantity', '<', 0);
 
         if ($productId) {
@@ -228,7 +276,7 @@ class StockRegisterService
     {
         $toDate = $toDate ?? now()->toDateString();
 
-        $query = StockMovement::whereDate('business_date', '<=', $toDate);
+        $query = StockMovement::whereRaw('COALESCE(business_date, movement_date) <= ?', [$toDate]);
 
         if ($productId) {
             $query->where('product_id', $productId);
@@ -393,10 +441,10 @@ class StockRegisterService
                 'color'         => 'emerald',
                 'business_date' => $sDate,
                 'created_at'    => $sale->created_at ? $sale->created_at->format('Y-m-d H:i:s') : $sDate . ' 00:00:00',
-                'reference_no'  => $sale->invoice_number ?? ('INV-' . $sale->id),
+                'reference_no'  => $sale->invoice_no_display ?? ('INV-' . $sale->id),
                 'description'   => "Item sold to customer " . ($sale->customer?->customer_name ?? 'Walk-in Customer'),
                 'metadata'      => [
-                    'Invoice No'  => $sale->invoice_number,
+                    'Invoice No'  => $sale->invoice_no_display,
                     'Customer'    => $sale->customer?->customer_name ?? 'Walk-in Customer',
                     'Sale Rate'   => '₹' . number_format($salesDetail->rate, 2),
                     'Branch'      => $sale->branch?->name ?? 'N/A',

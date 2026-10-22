@@ -6,30 +6,16 @@
     ->roots()
     ->orderBy('order')
     ->get();
-
-    // Determine which parent dropdown should be open based on current route
-    $activeMenu = '';
-    foreach ($sidebarMenus as $menu) {
-        if ($menu->children->isNotEmpty()) {
-            foreach ($menu->children as $child) {
-                if ($child->route && request()->routeIs(str_replace('.index', '.*', $child->route))) {
-                    $activeMenu = \Illuminate\Support\Str::slug($menu->name, '_');
-                    break 2;
-                }
-            }
-        }
-    }
 @endphp
 
 <aside
-    x-data="{ openMenu: '{{ $activeMenu }}' }"
     @mouseenter="sidebarOpen = true"
-    @mouseleave="sidebarOpen = false"
+    @mouseleave="sidebarOpen = sidebarPinned"
     :class="sidebarOpen ? 'w-56' : 'w-16'"
-    class="min-h-screen bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out overflow-hidden flex flex-col border-r border-slate-800 shadow-xl">
+    class="h-screen sticky top-0 shrink-0 bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out overflow-hidden flex flex-col border-r border-slate-800 shadow-xl">
 
     {{-- Logo --}}
-    <div class="h-12 flex items-center justify-center border-b border-slate-800">
+    <div class="relative h-12 shrink-0 flex items-center justify-center border-b border-slate-800">
 
         <div class="flex items-center">
 
@@ -67,7 +53,7 @@
     </div>
 
     {{-- Navigation --}}
-    <nav class="mt-2 flex-1 space-y-0.5">
+    <nav class="sidebar-scroll mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden space-y-0.5 pb-4">
 
         @foreach($sidebarMenus as $menu)
 
@@ -118,142 +104,48 @@
                     </a>
                 @endif
 
-            {{-- Dropdown group (has children) --}}
+            {{-- Section group (has children): label + always-visible items --}}
             @elseif($isDropdown)
 
                 @php
-                    $childPermissions = $menu->children
-                        ->pluck('permission_slug')
-                        ->filter()
-                        ->toArray();
+                    $visibleChildren = $menu->children->filter(
+                        fn ($child) => ! $child->permission_slug || \Illuminate\Support\Facades\Gate::allows($child->permission_slug)
+                    );
                 @endphp
 
-                @if(count($childPermissions) > 0)
-                    @canany($childPermissions)
-                    <div>
-                        <button
-                            type="button"
-                            @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
-                            class="w-full flex items-center justify-between px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
-                            <div class="flex items-center">
-                                <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
-                                <span
-                                    x-show="sidebarOpen"
-                                    x-transition
-                                    class="ml-2.5 whitespace-nowrap">
-                                    {{ $menu->name }}
-                                </span>
-                            </div>
-                            <svg
+                @if($visibleChildren->isNotEmpty())
+                    {{-- Section label (expanded) / divider (collapsed) --}}
+                    <div class="px-3.5 pt-4 pb-1">
+                        <div x-show="!sidebarOpen" class="border-t border-slate-800 mx-1"></div>
+                        <span
+                            x-show="sidebarOpen"
+                            x-transition
+                            class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            {{ $menu->name }}
+                        </span>
+                    </div>
+
+                    @foreach($visibleChildren as $child)
+                        <a href="{{ route($child->route) }}"
+                            class="flex items-center px-3.5 py-2 text-xs transition
+                            {{ request()->routeIs(str_replace('.index', '.*', $child->route))
+                                ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
+                                : 'text-slate-300 hover:bg-slate-800/60 hover:text-white' }}">
+
+                            <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
+
+                            <span
                                 x-show="sidebarOpen"
                                 x-transition
-                                class="w-4 h-4 transition-transform duration-300"
-                                :class="{ '-rotate-90': openMenu === '{{ $menuSlug }}' }"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openMenu === '{{ $menuSlug }}' && sidebarOpen"
-                            x-transition>
-
-                            @foreach($menu->children as $child)
-                                @if($child->permission_slug)
-                                    @can($child->permission_slug)
-                                    <a href="{{ route($child->route) }}"
-                                        @click="sidebarOpen = true"
-                                        class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
-                                        {{ request()->routeIs(str_replace('.index', '.*', $child->route))
-                                            ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
-                                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
-                                        <span x-show="sidebarOpen" x-transition>
-                                            {{ $child->name }}
-                                        </span>
-                                    </a>
-                                    @endcan
-                                @else
-                                    <a href="{{ route($child->route) }}"
-                                        @click="sidebarOpen = true"
-                                        class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
-                                        {{ request()->routeIs(str_replace('.index', '.*', $child->route))
-                                            ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
-                                            : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                        <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
-                                        <span x-show="sidebarOpen" x-transition>
-                                            {{ $child->name }}
-                                        </span>
-                                    </a>
-                                @endif
-                            @endforeach
-
-                        </div>
-
-                    </div>
-                    @endcanany
-                @else
-                    {{-- No permission-gated children, show unconditionally --}}
-                    <div>
-                        <button
-                            type="button"
-                            @click="sidebarOpen = true; openMenu = openMenu === '{{ $menuSlug }}' ? '' : '{{ $menuSlug }}'"
-                            class="w-full flex items-center justify-between px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
-                            <div class="flex items-center">
-                                <x-dynamic-component :component="'heroicon-o-' . ($menu->icon ?? 'stop')" class="w-5 h-5 shrink-0" />
-                                <span
-                                    x-show="sidebarOpen"
-                                    x-transition
-                                    class="ml-2.5 whitespace-nowrap">
-                                    {{ $menu->name }}
-                                </span>
-                            </div>
-                            <svg
-                                x-show="sidebarOpen"
-                                x-transition
-                                class="w-4 h-4 transition-transform duration-300"
-                                :class="{ '-rotate-90': openMenu === '{{ $menuSlug }}' }"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-
-                        <div
-                            x-show="openMenu === '{{ $menuSlug }}' && sidebarOpen"
-                            x-transition>
-
-                            @foreach($menu->children as $child)
-                                <a href="{{ route($child->route) }}"
-                                    @click="sidebarOpen = true"
-                                    class="flex items-center gap-2 pl-10 pr-3 py-1.5 text-xs transition
-                                    {{ request()->routeIs(str_replace('.index', '.*', $child->route))
-                                        ? 'bg-indigo-600/20 text-indigo-400 font-semibold'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
-                                    <x-dynamic-component :component="'heroicon-o-' . ($child->icon ?? 'stop')" class="w-4 h-4 shrink-0" />
-                                    <span x-show="sidebarOpen" x-transition>
-                                        {{ $child->name }}
-                                    </span>
-                                </a>
-                            @endforeach
-
-                        </div>
-
-                    </div>
+                                class="ml-2.5 whitespace-nowrap">
+                                {{ $child->name }}
+                            </span>
+                        </a>
+                    @endforeach
                 @endif
 
             @endif
+
 
         @endforeach
 

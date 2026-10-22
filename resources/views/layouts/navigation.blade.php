@@ -1,8 +1,19 @@
-<nav x-data="{ open: false }" class="bg-indigo-600 border-b border-indigo-700 text-white dark:bg-slate-900 dark:border-slate-800 shadow-md">
+<nav x-data="{ open: false }" class="relative bg-indigo-600 border-b border-indigo-700 text-white dark:bg-slate-900 dark:border-slate-800 shadow-md">
+    <!-- Sidebar toggle: keep sidebar open / collapse to icons (pinned to the far left of the bar) -->
+    <button
+        type="button"
+        @click="toggleSidebarPin()"
+        :title="sidebarPinned ? 'Collapse sidebar' : 'Keep sidebar open'"
+        :aria-pressed="sidebarPinned.toString()"
+        class="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-indigo-100 hover:text-white hover:bg-indigo-700/80 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 focus:outline-none transition-colors duration-200"
+        :class="sidebarPinned ? 'bg-indigo-700/80 text-white dark:bg-slate-800' : ''">
+        <x-heroicon-o-bars-3 class="w-5 h-5" />
+    </button>
+
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-12">
-            <div class="flex">
+            <div class="flex items-center">
                 <!-- Logo -->
                 <!-- <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
