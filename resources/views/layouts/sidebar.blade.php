@@ -51,9 +51,38 @@
         </div>
 
     </div>
+    {{-- Menu search --}}
+    <div x-data="{ menuSearch: '' }" class="contents">
+    <div class="shrink-0 px-2.5 pt-2.5">
+        <button type="button"
+            x-show="!sidebarOpen"
+            @click="sidebarOpen = true; $nextTick(() => $refs.menuSearchInput?.focus())"
+            class="w-full flex items-center justify-center py-1.5 text-slate-400 hover:text-white transition"
+            title="Search menu">
+            <x-heroicon-o-magnifying-glass class="w-5 h-5 shrink-0" />
+        </button>
+        <div x-show="sidebarOpen" class="relative">
+            <x-heroicon-o-magnifying-glass class="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <input
+                x-ref="menuSearchInput"
+                x-model="menuSearch"
+                @keydown.escape="menuSearch = ''"
+                type="text"
+                placeholder="Search menu..."
+                autocomplete="off"
+                class="w-full bg-slate-800 border border-slate-700 rounded-md pl-8 pr-2 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-0">
+        </div>
+    </div>
 
     {{-- Navigation --}}
-    <nav class="sidebar-scroll mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden space-y-0.5 pb-4">
+    <nav class="sidebar-scroll mt-2 flex-1 min-h-0 overflow-y-auto overflow-x-hidden space-y-0.5 pb-4"
+        x-data="{
+            match(name) {
+                const q = menuSearch.trim().toLowerCase();
+                return q === '' || name.toLowerCase().includes(q);
+            },
+            matchAny(names) { return names.some(n => this.match(n)); }
+        }">
 
         @foreach($sidebarMenus as $menu)
 
@@ -69,6 +98,7 @@
                 @if($menu->permission_slug)
                     @can($menu->permission_slug)
                     <a href="{{ route($menu->route) }}"
+                        x-show="match(@js($menu->name))"
                         class="flex items-center px-3.5 py-2 text-xs transition
                         {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
                             ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
@@ -87,6 +117,7 @@
                     @endcan
                 @else
                     <a href="{{ route($menu->route) }}"
+                        x-show="match(@js($menu->name))"
                         class="flex items-center px-3.5 py-2 text-xs transition
                         {{ request()->routeIs(str_replace('.index', '', $menu->route) . '*') || request()->routeIs($menu->route)
                             ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
@@ -115,7 +146,8 @@
 
                 @if($visibleChildren->isNotEmpty())
                     {{-- Section label (expanded) / divider (collapsed) --}}
-                    <div class="px-3.5 pt-4 pb-1">
+                    <div class="px-3.5 pt-4 pb-1"
+                        x-show="matchAny(@js($visibleChildren->pluck('name')->values()))">
                         <div x-show="!sidebarOpen" class="border-t border-slate-800 mx-1"></div>
                         <span
                             x-show="sidebarOpen"
@@ -127,6 +159,7 @@
 
                     @foreach($visibleChildren as $child)
                         <a href="{{ route($child->route) }}"
+                            x-show="match(@js($child->name))"
                             class="flex items-center px-3.5 py-2 text-xs transition
                             {{ request()->routeIs(str_replace('.index', '.*', $child->route))
                                 ? 'bg-slate-800 text-white font-semibold border-l-4 border-indigo-500 shadow-sm'
@@ -151,6 +184,7 @@
 
         <!-- Transactions -->
         <a href="#"
+            x-show="match('Transactions')"
             class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
 
             <x-heroicon-o-arrows-right-left class="w-5 h-5 shrink-0" />
@@ -166,6 +200,7 @@
 
         <!-- Settings -->
         <a href="#"
+            x-show="match('Settings')"
             class="flex items-center px-3.5 py-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-white transition">
 
             <x-heroicon-o-cog-6-tooth class="w-5 h-5 shrink-0" />
@@ -180,5 +215,6 @@
         </a>
 
     </nav>
+    </div>
 
 </aside>
