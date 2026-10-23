@@ -112,6 +112,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'Cancel Sales Invoices', 'slug' => 'sales.cancel', 'group' => 'Sales'],
             ['name' => 'Print Sales Invoices', 'slug' => 'sales.print', 'group' => 'Sales'],
 
+            // Order Management
+            ['name' => 'Create Orders', 'slug' => 'orders.create', 'group' => 'Order Management'],
+
             // Receivables
             ['name' => 'View Receivables', 'slug' => 'receivable.view', 'group' => 'Receivables'],
             ['name' => 'Create Receivables', 'slug' => 'receivable.create', 'group' => 'Receivables'],

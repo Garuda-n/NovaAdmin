@@ -243,5 +243,29 @@ class MenuSeeder extends Seeder
                 array_merge($child, ['parent_id' => $reports->id, 'status' => true])
             );
         }
+
+        // Order Management (Dropdown parent)
+        $orders = Menu::firstOrCreate(
+            ['name' => 'Order Management'],
+            [
+                'route' => null,
+                'icon' => 'clipboard-document-list',
+                'parent_id' => null,
+                'permission_slug' => null,
+                'order' => 10,
+                'status' => true,
+            ]
+        );
+
+        $ordersChildren = [
+            ['name' => 'Create Order', 'route' => 'orders.create', 'icon' => 'plus-circle', 'permission_slug' => 'orders.create', 'order' => 1],
+        ];
+
+        foreach ($ordersChildren as $child) {
+            Menu::updateOrCreate(
+                ['name' => $child['name'], 'parent_id' => $orders->id],
+                array_merge($child, ['parent_id' => $orders->id, 'status' => true])
+            );
+        }
     }
 }

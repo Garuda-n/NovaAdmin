@@ -26,6 +26,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ReceivableController;
@@ -578,6 +579,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('settings', SettingController::class)
         ->only(['destroy'])
         ->middleware('permission:settings.delete');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Management Module
+    |--------------------------------------------------------------------------
+    */
+    Route::get('orders/create', [OrderController::class, 'create'])
+        ->name('orders.create')
+        ->middleware('permission:orders.create');
 
     /*
     |--------------------------------------------------------------------------
